@@ -1,0 +1,468 @@
+:root {
+  --crm-bg: #020617;
+  --crm-surface: #0f172a;
+  --crm-surface-light: #1e293b;
+  --crm-border: #334155;
+  --crm-text: #f8fafc;
+  --crm-muted: #94a3b8;
+
+  --crm-accent: #3b82f6;
+  --crm-accent-hover: #2563eb;
+
+  --crm-admin: #8b5cf6;
+  --crm-manager: #06b6d4;
+  --crm-employee: #22c55e;
+
+  --crm-danger: #ef4444;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,.15), transparent 35%),
+    radial-gradient(circle at top right, rgba(139,92,246,.15), transparent 35%),
+    var(--crm-bg);
+
+  color: var(--crm-text);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ===========================
+   Landing Page
+=========================== */
+
+.crm-page {
+  max-width: 1200px;
+  margin: auto;
+  padding: 60px 20px;
+}
+
+.crm-hero {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.crm-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 15px;
+}
+
+.crm-hero p {
+  color: var(--crm-muted);
+  font-size: 1.1rem;
+}
+
+/* ===========================
+   Portal Cards
+=========================== */
+
+.crm-portals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.crm-portal {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+
+  border: 1px solid var(--crm-border);
+  border-radius: 18px;
+
+  padding: 30px;
+
+  min-height: 240px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  transition: all 0.3s ease;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.crm-portal:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.crm-portal h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.crm-portal p {
+  color: var(--crm-muted);
+  line-height: 1.7;
+}
+
+.crm-portal span {
+  margin-top: 25px;
+  font-weight: 600;
+}
+
+.crm-portal-admin:hover {
+  border-color: var(--crm-admin);
+}
+
+.crm-portal-admin span {
+  color: var(--crm-admin);
+}
+
+.crm-portal-manager:hover {
+  border-color: var(--crm-manager);
+}
+
+.crm-portal-manager span {
+  color: var(--crm-manager);
+}
+
+.crm-portal-employee:hover {
+  border-color: var(--crm-employee);
+}
+
+.crm-portal-employee span {
+  color: var(--crm-employee);
+}
+
+/* ===========================
+   Login Cards
+=========================== */
+
+.crm-card {
+  max-width: 450px;
+  margin: 60px auto;
+
+  background: rgba(15, 23, 42, 0.95);
+
+  border: 1px solid var(--crm-border);
+  border-radius: 18px;
+
+  padding: 35px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.crm-card h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
+
+.crm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.crm-form label {
+  color: var(--crm-muted);
+  font-size: 0.9rem;
+}
+
+.crm-form input {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 10px;
+  border: 1px solid var(--crm-border);
+
+  background: var(--crm-bg);
+  color: white;
+
+  font-size: 1rem;
+
+  transition: all 0.2s ease;
+}
+
+.crm-form input:focus {
+  outline: none;
+  border-color: var(--crm-accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+}
+
+.crm-error {
+  color: var(--crm-danger);
+  font-size: 0.9rem;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.crm-btn {
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: var(--crm-accent);
+  color: white;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.crm-btn:hover {
+  background: var(--crm-accent-hover);
+  transform: translateY(-2px);
+}
+
+.crm-btn-outline {
+  background: transparent;
+  border: 1px solid var(--crm-border);
+}
+
+.crm-btn-outline:hover {
+  background: var(--crm-surface-light);
+}
+
+.crm-link {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  color: var(--crm-muted);
+}
+
+.crm-link:hover {
+  color: var(--crm-accent);
+}
+
+/* ===========================
+   Dashboard
+=========================== */
+
+.crm-dashboard {
+  min-height: 100vh;
+}
+
+.crm-dashboard-header {
+  background: var(--crm-surface);
+
+  border-bottom: 1px solid var(--crm-border);
+
+  padding: 20px 35px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.crm-dashboard-header h1 {
+  font-size: 1.8rem;
+}
+
+.crm-role-badge {
+  color: var(--crm-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.crm-dashboard-main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+.crm-panel {
+  background: var(--crm-surface);
+
+  border: 1px solid var(--crm-border);
+  border-radius: 16px;
+
+  padding: 30px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.crm-panel h2 {
+  margin-bottom: 15px;
+}
+
+.crm-panel p {
+  color: var(--crm-muted);
+  line-height: 1.8;
+}
+
+/* Admin-Login */
+
+.admin-login {
+  width: 350px;
+  margin: 100px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-login h1 {
+  color: black;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+
+.admin-login input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.admin-login input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.admin-login button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.admin-login button:hover {
+  background: #1d4ed8;
+}
+
+/* employee-Login */
+
+.employee-login {
+  width: 350px;
+  margin: 100px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.employee-login h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.employee-login input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.employee-login input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.employee-login a {
+  text-decoration: none;
+}
+
+.employee-login button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.employee-login button:hover {
+  background-color: #0056b3;
+}
+
+
+
+
+/* manager-login */
+
+.manager-login {
+  width: 350px;
+  margin: 100px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.manager-login h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.manager-login input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.manager-login input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.manager-login a {
+  text-decoration: none;
+}
+
+.manager-login button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.manager-login button:hover {
+  background-color: #0056b3;
+}
