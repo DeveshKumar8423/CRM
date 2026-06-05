@@ -5,6 +5,8 @@ function DashboardLayout({ title, roleLabel, children }) {
 
   const handleLogout = () => {
     localStorage.removeItem("role");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
     navigate("/");
   };
 

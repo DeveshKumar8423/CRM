@@ -4,13 +4,13 @@ function ProtectedRoute({ children, allowedRole }) {
   const role = localStorage.getItem("role");
 
   if (role !== allowedRole) {
-    const loginPath =
-      allowedRole === "admin"
-        ? "/admin-login"
-        : allowedRole === "manager"
-          ? "/manager-login"
-          : "/employee-login";
-    return <Navigate to={loginPath} replace />;
+    const loginPaths = {
+      Admin: "/admin-login",
+      Manager: "/manager-login",
+      Employee: "/employee-login",
+      User: "/user-login",
+    };
+    return <Navigate to={loginPaths[allowedRole] || "/"} replace />;
   }
 
   return children;

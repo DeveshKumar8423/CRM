@@ -12,6 +12,7 @@
   --crm-admin: #8b5cf6;
   --crm-manager: #06b6d4;
   --crm-employee: #22c55e;
+  --crm-user: #f59e0b;
 
   --crm-danger: #ef4444;
 }
@@ -141,6 +142,14 @@ a {
   color: var(--crm-employee);
 }
 
+.crm-portal-user:hover {
+  border-color: var(--crm-user);
+}
+
+.crm-portal-user span {
+  color: var(--crm-user);
+}
+
 /* ===========================
    Login Cards
 =========================== */
@@ -249,6 +258,22 @@ a {
 
 .crm-link:hover {
   color: var(--crm-accent);
+}
+
+.crm-auth-switch {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--crm-muted);
+  font-size: 0.95rem;
+}
+
+.crm-auth-switch a {
+  color: var(--crm-accent);
+  font-weight: 600;
+}
+
+.crm-auth-switch a:hover {
+  color: var(--crm-accent-hover);
 }
 
 /* ===========================

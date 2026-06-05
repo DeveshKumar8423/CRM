@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import SessionLocal
 from models import User
-from schemas import LoginRequest
+from schemas import LoginRequest, SignupRequest
 
 from passlib.context import CryptContext
 
@@ -24,6 +24,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.post("/signup")
+def signup(data: SignupRequest):
+    db = SessionLocal()
+
+    existing = db.query(User).filter(User.email == data.email).first()
+    if existing:
+        db.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    hashed_password = pwd_context.hash(data.password)
+    new_user = User(
+        name=data.name,
+        email=data.email,
+        password=hashed_password,
+        role="User",
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    db.close()
+
+    return {
+        "message": "Signup Success",
+        "role": new_user.role,
+        "name": new_user.name,
+        "email": new_user.email,
+    }
+
 
 @app.post("/login")
 def login(data: LoginRequest):
