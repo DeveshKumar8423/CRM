@@ -1,67 +1,74 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import { API_URL, saveSession } from "../utils/api";
 
 function ManagerLogin() {
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const login = async () => {
-    const response = await fetch(
-      "http://127.0.0.1:8000/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const response = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
     const data = await response.json();
 
-    if (response.ok) {
-
-      if (data.role !== "Manager") {
-        alert("You are not a Manager");
-        return;
-      }
-
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("name", data.name);
-
-      navigate("/manager-dashboard");
-
-    } else {
-      alert(data.detail);
+    if (!response.ok) {
+      setError(data.detail || "Login failed");
+      return;
     }
+
+    if (data.role !== "Manager") {
+      setError("You are not a Manager");
+      return;
+    }
+
+    saveSession(data);
+    navigate("/manager-dashboard");
   };
 
   return (
-    <div className="manager-login">
-      <h1>Manager Login</h1>
+    <div className="crm-card">
+      <h2>Manager Login</h2>
+      <form onSubmit={handleSubmit} className="crm-form">
+        <label htmlFor="manager-email">Email</label>
+        <input
+          id="manager-email"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <label htmlFor="manager-password">Password</label>
+        <input
+          id="manager-password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        {error && <p className="crm-error">{error}</p>}
 
-      <button onClick={login}>
-        Login
-      </button>
+        <button type="submit" className="crm-btn">
+          Login
+        </button>
+      </form>
+
+      <Link to="/" className="crm-link">
+        Back to home
+      </Link>
     </div>
   );
 }

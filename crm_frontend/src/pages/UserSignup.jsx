@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = "http://127.0.0.1:8000";
+import { API_URL, saveSession } from "../utils/api";
 
 function UserSignup() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -17,7 +18,12 @@ function UserSignup() {
     const response = await fetch(`${API_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({
+        name,
+        email,
+        phone: phone || null,
+        password,
+      }),
     });
 
     const data = await response.json();
@@ -27,10 +33,7 @@ function UserSignup() {
       return;
     }
 
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("name", data.name);
-    localStorage.setItem("email", data.email);
-
+    saveSession(data);
     navigate("/user-dashboard");
   };
 
@@ -60,6 +63,16 @@ function UserSignup() {
           required
         />
 
+        <label htmlFor="signup-phone">Phone (optional)</label>
+        <input
+          id="signup-phone"
+          type="tel"
+          placeholder="Enter your phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          autoComplete="tel"
+        />
+
         <label htmlFor="signup-password">Password</label>
         <input
           id="signup-password"
@@ -68,6 +81,7 @@ function UserSignup() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
+          minLength={6}
           required
         />
 

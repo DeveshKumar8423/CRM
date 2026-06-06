@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = "http://127.0.0.1:8000";
+import { API_URL, saveSession } from "../utils/api";
 
 function UserLogin() {
   const navigate = useNavigate();
@@ -31,10 +31,7 @@ function UserLogin() {
       return;
     }
 
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("name", data.name);
-    localStorage.setItem("email", data.email);
-
+    saveSession(data);
     navigate("/user-dashboard");
   };
 
