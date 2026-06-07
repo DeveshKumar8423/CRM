@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+passlib
+bcrypt==4.2.0
+pydantic
+pydantic[email]
+python-jose[cryptography]
+alembic
+openpyxl

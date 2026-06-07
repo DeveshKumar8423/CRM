@@ -1,73 +1,76 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import { API_URL, saveSession } from "../utils/api";
 
 function AdminLogin() {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-const login = async () => {
-const response = await fetch(
-"http://127.0.0.1:8000/login",
-{
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-},
-body: JSON.stringify({
-email,
-password,
-}),
-}
-);
+    const response = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
+    const data = await response.json();
 
-const data = await response.json();
+    if (!response.ok) {
+      setError(data.detail || "Login failed");
+      return;
+    }
 
-if (response.ok) {
+    if (data.role !== "Admin") {
+      setError("You are not an Admin");
+      return;
+    }
 
-  if (data.role !== "Admin") {
-    alert("You are not an Admin");
-    return;
-  }
+    saveSession(data);
+    navigate("/admin-dashboard");
+  };
 
-  localStorage.setItem("role", data.role);
-  localStorage.setItem("name", data.name);
+  return (
+    <div className="crm-card">
+      <h2>Admin Login</h2>
+      <form onSubmit={handleSubmit} className="crm-form">
+        <label htmlFor="admin-email">Email</label>
+        <input
+          id="admin-email"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-  navigate("/admin-dashboard");
+        <label htmlFor="admin-password">Password</label>
+        <input
+          id="admin-password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-} else {
-  alert(data.detail);
-}
+        {error && <p className="crm-error">{error}</p>}
 
+        <button type="submit" className="crm-btn">
+          Login
+        </button>
+      </form>
 
-};
-
-return ( <div className="admin-login"> <h1>Admin Login</h1>
-
-
-  <input
-    type="email"
-    placeholder="Email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-  />
-
-  <input
-    type="password"
-    placeholder="Password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-  />
-
-  <button onClick={login}>
-    Login
-  </button>
-</div>
-
-
-);
+      <Link to="/" className="crm-link">
+        Back to home
+      </Link>
+    </div>
+  );
 }
 
 export default AdminLogin;

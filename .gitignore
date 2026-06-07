@@ -1,0 +1,8 @@
+Master Employee Sheet.xlsx
+Final Master_Service_List.xlsx
+clients.json
+crm_backend/.env
+crm_backend/venv/
+crm_backend/__pycache__/
+crm_frontend/node_modules/
+crm_frontend/build/

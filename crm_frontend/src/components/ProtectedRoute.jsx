@@ -1,16 +1,32 @@
 import { Navigate } from "react-router-dom";
 
-function ProtectedRoute({ children, allowedRole }) {
-  const role = localStorage.getItem("role");
+import { hasPermission } from "../utils/permissions";
 
-  if (role !== allowedRole) {
-    const loginPath =
-      allowedRole === "admin"
-        ? "/admin-login"
-        : allowedRole === "manager"
-          ? "/manager-login"
-          : "/employee-login";
-    return <Navigate to={loginPath} replace />;
+const LOGIN_PATHS = {
+  Admin: "/admin-login",
+  Manager: "/manager-login",
+  Employee: "/employee-login",
+  User: "/user-login",
+};
+
+function ProtectedRoute({ children, allowedRoles, requiredPermission }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+  if (!token || !roles.includes(role)) {
+    const redirect = LOGIN_PATHS[roles[0]] || "/";
+    return <Navigate to={redirect} replace />;
+  }
+
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    const dashboardPaths = {
+      Admin: "/admin-dashboard",
+      Manager: "/manager-dashboard",
+      Employee: "/employee-dashboard",
+      User: "/user-dashboard",
+    };
+    return <Navigate to={dashboardPaths[role] || "/"} replace />;
   }
 
   return children;

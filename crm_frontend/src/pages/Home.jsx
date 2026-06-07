@@ -4,18 +4,27 @@ function Home() {
   const portals = [
     {
       title: "Admin",
+      description: "Manage users, settings, and system-wide reports.",
       path: "/admin-login",
       className: "crm-portal-admin",
     },
     {
       title: "Manager",
+      description: "Track team performance and assign leads.",
       path: "/manager-login",
       className: "crm-portal-manager",
     },
     {
       title: "Employee",
+      description: "Update leads, tasks, and daily activity.",
       path: "/employee-login",
       className: "crm-portal-employee",
+    },
+    {
+      title: "User",
+      description: "Sign in or create a new account.",
+      path: "/user-login",
+      className: "crm-portal-user",
     },
   ];
 
