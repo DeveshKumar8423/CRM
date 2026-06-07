@@ -56,6 +56,7 @@ source venv/bin/activate
 # .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cp .env.example .env
+# Edit .env before running the next command
 alembic upgrade head
 uvicorn main:app --reload
 ```
@@ -64,7 +65,7 @@ On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
 Then edit `crm_backend/.env`, for example:
 
 ```env
-DATABASE_URL=postgresql://<db_user>:<db_password>@localhost:5432/crm_db
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/crm_db
 JWT_SECRET=replace-with-a-long-random-secret
 ```
 
