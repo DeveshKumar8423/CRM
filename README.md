@@ -39,6 +39,40 @@ Optional but useful:
 
 ---
 
+## Quick start: what to install and how to run
+
+If you want the shortest setup to run both backend and frontend:
+
+1. Install **Python 3.10+**, **Node.js 18+**, and **PostgreSQL 14+**.
+2. Create database `crm_db` in PostgreSQL.
+3. Run backend in terminal 1:
+
+```bash
+cd crm_backend
+python -m venv venv
+# Linux/macOS:
+source venv/bin/activate
+# Windows PowerShell:
+# .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+cp .env.example .env
+# On Windows PowerShell use: copy .env.example .env
+alembic upgrade head
+uvicorn main:app --reload
+```
+
+4. Run frontend in terminal 2:
+
+```bash
+cd crm_frontend
+npm install
+npm start
+```
+
+Open **http://localhost:3000** (frontend) and **http://127.0.0.1:8000/docs** (backend API docs).
+
+---
+
 ## Project structure
 
 ```
