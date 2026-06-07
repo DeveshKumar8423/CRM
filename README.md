@@ -56,7 +56,8 @@ source venv/bin/activate
 # .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cp .env.example .env
-# On Windows PowerShell use: copy .env.example .env
+# On Windows PowerShell use: Copy-Item .env.example .env
+# Edit .env and set DATABASE_URL and JWT_SECRET
 alembic upgrade head
 uvicorn main:app --reload
 ```
