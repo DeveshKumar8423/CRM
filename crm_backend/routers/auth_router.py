@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
@@ -27,7 +27,10 @@ from schemas import (
 )
 
 router = APIRouter(tags=["auth"])
+from config import FRONTEND_URL
+from services.email_service import send_email, render_template
 
+# Duplicate verify endpoint removed – definition moved later in file
 
 def _token_response(user: User, message: str, db: Session) -> TokenResponse:
     return TokenResponse(
@@ -196,3 +199,109 @@ def change_password(
     )
 
     return {"message": "Password updated successfully"}
+
+# --------------------------------------------------
+# Password Reset Endpoints
+# --------------------------------------------------
+
+# Import additional utilities for password reset
+
+from schemas import (
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    VerifyResetTokenResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
+)
+import secrets
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+def forgot_password(
+    payload: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Generate a reset token and email it to the user (if exists)."""
+    user = db.query(User).filter(User.email == payload.email.lower()).first()
+    # Always respond with success to avoid email enumeration
+    if user:
+        token = secrets.token_urlsafe(32)
+        expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
+        user.reset_token = token
+        user.reset_token_expiry = expiry
+        db.commit()
+        # Build reset URL for frontend
+        reset_link = f"{FRONTEND_URL}/reset-password?token={token}"
+        html_body = render_template(
+            "reset_password.html",
+            crm_name="BlackPapers CRM",
+            user_name=user.name,
+            reset_url=reset_link,
+            year=datetime.now().year,
+        )
+        send_email(
+            to=user.email,
+            subject="Password Reset – BlackPapers CRM",
+            html_body=html_body,
+        )
+        log_activity(
+            db,
+            "forgot_password",
+            user_id=user.id,
+            email=user.email,
+            ip_address=get_client_ip(request),
+        )
+    return ForgotPasswordResponse()
+
+@router.get("/verify-reset-token/{token}", response_model=VerifyResetTokenResponse)
+def verify_reset_token(token: str, db: Session = Depends(get_db)):
+    """Check if a reset token is still valid (exists and not expired)."""
+    user = (
+        db.query(User)
+        .filter(User.reset_token == token, User.reset_token_expiry > datetime.now(timezone.utc))
+        .first()
+    )
+    return VerifyResetTokenResponse(valid=bool(user))
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+def reset_password(
+    payload: ResetPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Validate token, update password, and clear token fields."""
+    user = (
+        db.query(User)
+        .filter(User.reset_token == payload.token, User.reset_token_expiry > datetime.now(timezone.utc))
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    user.password = hash_password(payload.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    db.commit()
+    log_activity(
+        db,
+        "password_reset",
+        user_id=user.id,
+        email=user.email,
+        ip_address=get_client_ip(request),
+    )
+    # Return updated user profile info
+    return ResetPasswordResponse(
+        id=user.id,
+        company_id=user.company_id,
+        employee_id=user.employee_id,
+        name=user.name,
+        email=user.email,
+        phone=user.phone,
+        role=user.role,
+        status=user.status,
+        designation=user.designation,
+        department=user.department,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        last_login_at=user.last_login_at,
+    )
+

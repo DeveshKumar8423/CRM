@@ -23,6 +23,10 @@ import ProductForm from "./pages/ProductForm";
 import ProductDetail from "./pages/ProductDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// New password‑reset pages
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 const ALL_ROLES = ["Admin", "Manager", "Employee", "User"];
 const STAFF_ROLES = ["Admin", "Manager", "Employee"];
 
@@ -199,6 +203,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );

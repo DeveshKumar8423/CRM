@@ -175,6 +175,8 @@ class User(Base):
     phone = Column(String(30), nullable=True)
     password = Column(String(255), nullable=False)
     role = Column(String(30), nullable=False)
+    reset_token = Column(String, nullable=True)
+    reset_token_expiry = Column(DateTime(timezone=True), nullable=True)
     status = Column(String(20), nullable=False, default="active")
     designation = Column(String(120), nullable=True)
     department = Column(String(120), nullable=True)
