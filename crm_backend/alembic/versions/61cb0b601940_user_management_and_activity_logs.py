@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """user management and activity logs
 
 Revision ID: 61cb0b601940

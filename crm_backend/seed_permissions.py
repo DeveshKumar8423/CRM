@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Seed permissions and role-permission mappings."""
 
 from database import SessionLocal

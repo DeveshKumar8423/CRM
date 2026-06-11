@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Seed test users for local development. Safe to re-run: skips if users exist."""
 
 from passlib.context import CryptContext

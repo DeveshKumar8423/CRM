@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from dotenv import load_dotenv
@@ -6,7 +8,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:Sahil%40123@localhost:5432/crm_db",
+ "postgresql://USERNAME:PASSWORD@HOST:5432/DATABASE_NAME"
 )
 
 JWT_SECRET = os.getenv("JWT_SECRET", "crm-dev-secret-change-in-production")

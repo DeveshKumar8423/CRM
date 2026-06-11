@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Import services from Final Master_Service_List.xlsx (BlackPapers sheet)."""
 
 from decimal import Decimal

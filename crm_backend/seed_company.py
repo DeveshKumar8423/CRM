@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Seed BlackPapers company and link all staff users."""
 
 from database import SessionLocal
