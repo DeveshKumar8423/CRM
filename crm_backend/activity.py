@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import Optional
 from sqlalchemy.orm import Session
 
 from models import ActivityLog
@@ -7,10 +10,10 @@ def log_activity(
     db: Session,
     action: str,
     *,
-    user_id: int | None = None,
-    email: str | None = None,
-    details: str | None = None,
-    ip_address: str | None = None,
+    user_id: Optional[int] = None,
+    email: Optional[str] = None,
+    details: Optional[str] = None,
+    ip_address: Optional[str] = None,
 ) -> None:
     db.add(
         ActivityLog(

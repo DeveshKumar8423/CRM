@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Level 1 permission definitions and default role mappings."""
 
 PERMISSIONS = [

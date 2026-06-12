@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Import staff from Master Employee Sheet.xlsx.
 Uses unique Gmail when multiple employees share the same official email.

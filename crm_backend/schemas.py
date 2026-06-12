@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
@@ -41,6 +43,42 @@ class RoleMatrixResponse(BaseModel):
 
 
 class UserProfileResponse(BaseModel):
+    id: int
+    company_id: int | None
+    employee_id: str | None
+    name: str
+    email: str
+    phone: str | None
+    role: str
+    status: str
+    designation: str | None
+    department: str | None
+    created_at: datetime | None
+    updated_at: datetime | None
+    last_login_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+# Password reset schemas
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ForgotPasswordResponse(BaseModel):
+    success: bool = True
+    message: str = "If the account exists, a reset link has been sent."
+
+class VerifyResetTokenResponse(BaseModel):
+    valid: bool
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=6, max_length=128)
+
+class ResetPasswordResponse(BaseModel):
+    success: bool = True
+    message: str = "Password updated successfully"
+
     id: int
     company_id: int | None
     employee_id: str | None

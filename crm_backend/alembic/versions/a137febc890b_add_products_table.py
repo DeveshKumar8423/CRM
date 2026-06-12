@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """add products table
 
 Revision ID: a137febc890b

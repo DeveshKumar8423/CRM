@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Seed sample contacts for development.
 Replace with seed_master_contacts.py when client sheet is available.

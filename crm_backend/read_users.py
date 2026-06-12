@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from database import SessionLocal
 from models import User
 

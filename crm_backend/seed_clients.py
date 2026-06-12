@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Import clients from clients.json into contacts (Customer type).
 Status: ~70% active / ~30% inactive (deterministic by sort order).
