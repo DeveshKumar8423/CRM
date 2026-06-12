@@ -45,6 +45,16 @@ function DashboardLayout({ title, roleLabel, children }) {
               Contacts
             </Link>
           )}
+          {hasPermission("leads.view") && (
+            <Link to="/leads" className="crm-nav-link">
+              Leads
+            </Link>
+          )}
+          {hasPermission("deals.view") && (
+            <Link to="/pipeline" className="crm-nav-link">
+              Pipeline
+            </Link>
+          )}
           {hasPermission("products.view") && (
             <Link to="/products" className="crm-nav-link">
               Products

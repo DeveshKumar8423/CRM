@@ -350,3 +350,186 @@ class ActivityLogListResponse(BaseModel):
     total: int
     page: int
     limit: int
+
+
+class SystemSettingResponse(BaseModel):
+    id: int
+    company_id: int
+    quote_prefix: str
+    invoice_prefix: str
+    quote_date_format: str
+    invoice_date_format: str
+    default_lead_source: str
+    logo_filename: str | None
+
+    class Config:
+        from_attributes = True
+
+
+class LeadBaseFields(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    phone: str | None = Field(default=None, max_length=30)
+    email: str | None = Field(default=None, max_length=255)
+    organization_name: str | None = Field(default=None, max_length=200)
+    city: str | None = Field(default=None, max_length=100)
+    requirement: str | None = Field(default=None, max_length=200)
+    exact_requirement: str | None = Field(default=None, max_length=5000)
+    source: str = Field(default="Omnichannel", max_length=50)
+    status: str = Field(default="open", max_length=30)
+    notes: str | None = Field(default=None, max_length=5000)
+    assigned_to_id: int | None = None
+    registered_at: datetime | None = None
+
+
+class LeadCreateRequest(LeadBaseFields):
+    pass
+
+
+class LeadUpdateRequest(LeadBaseFields):
+    pass
+
+
+class LeadResponse(BaseModel):
+    id: int
+    company_id: int
+    contact_id: int | None
+    name: str
+    phone: str | None
+    email: str | None
+    organization_name: str | None
+    city: str | None
+    requirement: str | None
+    exact_requirement: str | None
+    source: str
+    status: str
+    csv_status: str | None
+    notes: str | None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    registered_at: datetime | None
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class LeadListResponse(BaseModel):
+    items: list[LeadResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class LeadStatsResponse(BaseModel):
+    total: int
+    open: int
+    hot: int
+    follow_up: int
+    cold: int
+    lost: int
+    qualified: int
+    converted: int
+
+
+class LeadDuplicateMatch(BaseModel):
+    id: int
+    name: str
+    phone: str | None
+    organization_name: str | None = None
+
+
+class LeadDuplicateCheckResponse(BaseModel):
+    phone: str
+    has_duplicates: bool
+    leads: list[LeadDuplicateMatch]
+    contacts: list[LeadDuplicateMatch]
+
+
+class LeadConvertResponse(BaseModel):
+    lead: LeadResponse
+    contact_id: int
+    message: str
+
+
+class DealBaseFields(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    stage: str = Field(default="new", max_length=30)
+    expected_value: float | None = Field(default=None, ge=0)
+    currency: str = Field(default="INR", max_length=3)
+    expected_close_date: datetime | None = None
+    notes: str | None = Field(default=None, max_length=5000)
+    lost_reason: str | None = Field(default=None, max_length=255)
+    lead_id: int | None = None
+    contact_id: int | None = None
+    product_id: int | None = None
+    assigned_to_id: int | None = None
+
+
+class DealCreateRequest(DealBaseFields):
+    pass
+
+
+class DealUpdateRequest(DealBaseFields):
+    pass
+
+
+class DealStageUpdateRequest(BaseModel):
+    stage: str = Field(min_length=2, max_length=30)
+    lost_reason: str | None = Field(default=None, max_length=255)
+
+
+class DealResponse(BaseModel):
+    id: int
+    company_id: int
+    title: str
+    stage: str
+    expected_value: float | None
+    currency: str
+    expected_close_date: datetime | None
+    notes: str | None
+    lost_reason: str | None
+    closed_at: datetime | None
+    lead_id: int | None
+    lead_name: str | None = None
+    contact_id: int | None
+    contact_name: str | None = None
+    product_id: int | None
+    product_name: str | None = None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class DealListResponse(BaseModel):
+    items: list[DealResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class DealStatsResponse(BaseModel):
+    total: int
+    new: int
+    contacted: int
+    meeting: int
+    proposal: int
+    won: int
+    lost: int
+    pipeline_value: float
+    won_value: float
+
+
+class DealPipelineColumn(BaseModel):
+    stage: str
+    label: str
+    count: int
+    total_value: float
+    deals: list[DealResponse]
+
+
+class DealPipelineResponse(BaseModel):
+    columns: list[DealPipelineColumn]
+    closed: list[DealResponse]

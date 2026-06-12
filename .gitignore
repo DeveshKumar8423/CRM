@@ -1,6 +1,13 @@
 Master Employee Sheet.xlsx
 Final Master_Service_List.xlsx
 clients.json
+Lead_file.csv
+Copy of Quotation*.docx
+Service Invoice*.pdf
+BlackPapers*.png
+BlackPapers*.svg
+BlackPapers*.jpeg
+BlackPapers*.jpg
 crm_backend/.env
 crm_backend/venv/
 crm_backend/__pycache__/

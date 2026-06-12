@@ -57,6 +57,101 @@ class Company(Base):
     users = relationship("User", back_populates="company")
     contacts = relationship("Contact", back_populates="company")
     products = relationship("Product", back_populates="company")
+    leads = relationship("Lead", back_populates="company")
+    deals = relationship("Deal", back_populates="company")
+    system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
+
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    quote_prefix = Column(String(30), nullable=False, default="Quote-")
+    invoice_prefix = Column(String(30), nullable=False, default="Inv-")
+    quote_date_format = Column(String(20), nullable=False, default="DD/MM/YYYY")
+    invoice_date_format = Column(String(20), nullable=False, default="DD/MM/YYYY")
+    default_lead_source = Column(String(50), nullable=False, default="Omnichannel")
+    logo_filename = Column(String(120), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="system_settings")
+
+
+class Lead(Base):
+    __tablename__ = "leads"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    name = Column(String(120), nullable=False)
+    phone = Column(String(30), nullable=True, index=True)
+    email = Column(String(255), nullable=True)
+    organization_name = Column(String(200), nullable=True)
+    city = Column(String(100), nullable=True)
+    requirement = Column(String(200), nullable=True)
+    exact_requirement = Column(Text, nullable=True)
+    source = Column(String(50), nullable=False, default="Omnichannel")
+    status = Column(String(30), nullable=False, default="open")
+    csv_status = Column(String(80), nullable=True)
+    notes = Column(Text, nullable=True)
+    registered_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="leads")
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    deals = relationship("Deal", back_populates="lead")
+
+
+class Deal(Base):
+    __tablename__ = "deals"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    title = Column(String(200), nullable=False)
+    stage = Column(String(30), nullable=False, default="new", index=True)
+    expected_value = Column(Numeric(14, 2), nullable=True)
+    currency = Column(String(3), nullable=False, default="INR")
+    expected_close_date = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+    lost_reason = Column(String(255), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="deals")
+    lead = relationship("Lead", back_populates="deals")
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    product = relationship("Product")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
 
 
 class Product(Base):
