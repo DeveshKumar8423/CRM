@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import ClientNotesPanel from "../components/ClientNotesPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 
@@ -27,6 +28,8 @@ function DealDetail() {
   const { id } = useParams();
   const role = localStorage.getItem("role") || "Staff";
   const canEdit = hasPermission("deals.edit");
+  const canCreateQuote = hasPermission("quotations.create");
+  const canCreateOrder = hasPermission("sales_orders.create");
   const [deal, setDeal] = useState(null);
   const [stages, setStages] = useState([]);
   const [error, setError] = useState("");
@@ -91,6 +94,16 @@ function DealDetail() {
             {canEdit && (
               <Link to={`/deals/${id}/edit`} className="crm-btn crm-btn-sm crm-btn-outline">Edit</Link>
             )}
+            {canCreateQuote && (
+              <Link to={`/quotations/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}${deal.lead_id ? `&lead_id=${deal.lead_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create quotation
+              </Link>
+            )}
+            {canCreateOrder && (
+              <Link to={`/sales-orders/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create sales order
+              </Link>
+            )}
           </div>
         </div>
 
@@ -150,8 +163,19 @@ function DealDetail() {
 
         {deal.notes && (
           <div className="crm-mt-lg">
-            <h3>Notes</h3>
+            <h3>Deal notes</h3>
             <pre className="crm-pre">{deal.notes}</pre>
+          </div>
+        )}
+
+        {hasPermission("client_notes.view") && (
+          <div className="crm-mt-lg">
+            <ClientNotesPanel
+              dealId={Number(id)}
+              contactId={deal.contact_id || undefined}
+              contactName={deal.contact_name || deal.title}
+              compact
+            />
           </div>
         )}
       </div>

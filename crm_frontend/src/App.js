@@ -28,6 +28,25 @@ import Pipeline from "./pages/Pipeline";
 import Deals from "./pages/Deals";
 import DealForm from "./pages/DealForm";
 import DealDetail from "./pages/DealDetail";
+import Quotations from "./pages/Quotations";
+import QuotationForm from "./pages/QuotationForm";
+import QuotationDetail from "./pages/QuotationDetail";
+import QuotationPreview from "./pages/QuotationPreview";
+import QuotationApprovalQueue from "./pages/QuotationApprovalQueue";
+import ClientQuoteView from "./pages/ClientQuoteView";
+import SalesOrders from "./pages/SalesOrders";
+import SalesOrderForm from "./pages/SalesOrderForm";
+import SalesOrderDetail from "./pages/SalesOrderDetail";
+import ClientOrderView from "./pages/ClientOrderView";
+import Invoices from "./pages/Invoices";
+import InvoiceForm from "./pages/InvoiceForm";
+import InvoiceDetail from "./pages/InvoiceDetail";
+import InvoicePreview from "./pages/InvoicePreview";
+import InvoiceReviewQueue from "./pages/InvoiceReviewQueue";
+import ClientInvoiceView from "./pages/ClientInvoiceView";
+import ClientNotes from "./pages/ClientNotes";
+import ClientNotesFollowUpQueue from "./pages/ClientNotesFollowUpQueue";
+import SalesReports from "./pages/SalesReports";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // New password‑reset pages
@@ -48,6 +67,9 @@ function App() {
         <Route path="/employee-login" element={<EmployeeLogin />} />
         <Route path="/user-login" element={<UserLogin />} />
         <Route path="/user-signup" element={<UserSignup />} />
+        <Route path="/quote/:token" element={<ClientQuoteView />} />
+        <Route path="/order/:token" element={<ClientOrderView />} />
+        <Route path="/invoice/:token" element={<ClientInvoiceView />} />
 
         <Route
           path="/admin-dashboard"
@@ -306,6 +328,215 @@ function App() {
               requiredPermission="deals.view"
             >
               <DealDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.view"
+            >
+              <Quotations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations/approval-queue"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.approve"
+            >
+              <QuotationApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.create"
+            >
+              <QuotationForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.edit_draft"
+            >
+              <QuotationForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations/:id/preview"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.view"
+            >
+              <QuotationPreview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quotations/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="quotations.view"
+            >
+              <QuotationDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-orders"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="sales_orders.view"
+            >
+              <SalesOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-orders/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="sales_orders.create"
+            >
+              <SalesOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-orders/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="sales_orders.edit_draft"
+            >
+              <SalesOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-orders/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="sales_orders.view"
+            >
+              <SalesOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.view"
+            >
+              <Invoices />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/review-queue"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.review"
+            >
+              <InvoiceReviewQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.create"
+            >
+              <InvoiceForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.edit_draft"
+            >
+              <InvoiceForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:id/preview"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.view"
+            >
+              <InvoicePreview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="invoices.view"
+            >
+              <InvoiceDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client-notes"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="client_notes.view"
+            >
+              <ClientNotes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client-notes/follow-ups"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="client_notes.manage_followups"
+            >
+              <ClientNotesFollowUpQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="reports.view"
+            >
+              <SalesReports />
             </ProtectedRoute>
           }
         />

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import DashboardStats from "../components/DashboardStats";
+import { hasPermission } from "../utils/permissions";
 
 function ManagerDashboard() {
   return (
@@ -11,6 +12,9 @@ function ManagerDashboard() {
         <p>
           Browse <Link to="/contacts">Contacts</Link> and{" "}
           <Link to="/products">Products & Services</Link>.
+          {hasPermission("reports.view") && (
+            <> View <Link to="/sales-reports">Sales Reports</Link>.</>
+          )}
         </p>
         <DashboardStats />
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import ClientNotesPanel from "../components/ClientNotesPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 
@@ -16,11 +17,12 @@ function ContactDetail() {
   const { id } = useParams();
   const role = localStorage.getItem("role") || "Staff";
   const canEdit = hasPermission("contacts.edit");
+  const canCreateQuote = hasPermission("quotations.create");
+  const canCreateOrder = hasPermission("sales_orders.create");
+  const canCreateInvoice = hasPermission("invoices.create");
 
   const [contact, setContact] = useState(null);
-  const [notes, setNotes] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [noteText, setNoteText] = useState("");
   const [activityForm, setActivityForm] = useState({
     activity_type: "call",
     subject: "",
@@ -32,12 +34,10 @@ function ContactDetail() {
   const loadAll = () => {
     Promise.all([
       apiFetch(`/contacts/${id}`),
-      apiFetch(`/contacts/${id}/notes`),
       apiFetch(`/contacts/${id}/activities`),
     ])
-      .then(([c, n, a]) => {
+      .then(([c, a]) => {
         setContact(c);
-        setNotes(n);
         setActivities(a);
       })
       .catch((err) => setError(err.message));
@@ -78,23 +78,6 @@ function ContactDetail() {
         }),
       });
       setMessage(`Contact ${label}d.`);
-      loadAll();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleAddNote = async (e) => {
-    e.preventDefault();
-    if (!noteText.trim()) return;
-    setError("");
-    try {
-      await apiFetch(`/contacts/${id}/notes`, {
-        method: "POST",
-        body: JSON.stringify({ body: noteText }),
-      });
-      setNoteText("");
-      setMessage("Note added.");
       loadAll();
     } catch (err) {
       setError(err.message);
@@ -150,6 +133,21 @@ function ContactDetail() {
               <Link to={`/contacts/${id}/edit`} className="crm-btn crm-btn-sm crm-btn-outline">
                 Edit
               </Link>
+              {canCreateQuote && (
+                <Link to={`/quotations/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create quotation
+                </Link>
+              )}
+              {canCreateOrder && (
+                <Link to={`/sales-orders/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create sales order
+                </Link>
+              )}
+              {canCreateInvoice && (
+                <Link to={`/invoices/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create invoice
+                </Link>
+              )}
               <button
                 type="button"
                 className="crm-btn crm-btn-sm"
@@ -202,35 +200,15 @@ function ContactDetail() {
         </div>
 
         <div className="crm-detail-grid crm-mt-lg">
-          <section>
-            <h3>Notes</h3>
-            {canEdit && (
-              <form onSubmit={handleAddNote} className="crm-form">
-                <textarea
-                  className="crm-textarea"
-                  rows={3}
-                  placeholder="Add an internal note…"
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  required
-                />
-                <button type="submit" className="crm-btn crm-btn-sm crm-btn-inline">
-                  Add note
-                </button>
-              </form>
-            )}
-            <ul className="crm-timeline crm-mt">
-              {notes.length === 0 && <li className="crm-muted">No notes yet.</li>}
-              {notes.map((n) => (
-                <li key={n.id}>
-                  <p>{n.body}</p>
-                  <span className="crm-muted">
-                    {n.author_name} · {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {hasPermission("client_notes.view") && (
+            <section className="crm-span-2">
+              <ClientNotesPanel
+                contactId={Number(id)}
+                contactName={contact.name}
+                title="Relationship notes"
+              />
+            </section>
+          )}
 
           <section>
             <h3>Activity log</h3>

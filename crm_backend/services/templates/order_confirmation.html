@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; color: #1a1a2e; line-height: 1.5; }
+    .container { max-width: 600px; margin: 0 auto; padding: 24px; }
+    .btn { display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 16px; }
+    .muted { color: #64748b; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>{{ company_name }}</h2>
+    <p>Dear {{ client_name }},</p>
+    {% if message %}
+    <p>{{ message }}</p>
+    {% else %}
+    <p>Please review and confirm your sales order below.</p>
+    {% endif %}
+    <p>
+      <strong>{{ order_number }}</strong> — {{ order_title }}<br>
+      <strong>Total:</strong> {{ grand_total }}<br>
+      <strong>Due date:</strong> {{ due_date }}
+    </p>
+    <a href="{{ share_url }}" class="btn">Review &amp; Confirm Order</a>
+    <p class="muted">If the button does not work, copy this link: {{ share_url }}</p>
+  </div>
+</body>
+</html>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import ClientNotesPanel from "../components/ClientNotesPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 
@@ -20,6 +21,7 @@ function LeadDetail() {
   const role = localStorage.getItem("role") || "Staff";
   const canEdit = hasPermission("leads.edit");
   const canCreateDeal = hasPermission("deals.create");
+  const canCreateQuote = hasPermission("quotations.create");
   const [lead, setLead] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -86,6 +88,11 @@ function LeadDetail() {
                 Create deal
               </button>
             )}
+            {canCreateQuote && (
+              <Link to={`/quotations/new?lead_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create quotation
+              </Link>
+            )}
             {canEdit && !lead.contact_id && (
               <button type="button" className="crm-btn crm-btn-sm" onClick={handleConvert}>
                 Convert to contact
@@ -129,8 +136,19 @@ function LeadDetail() {
 
         {lead.notes && (
           <div className="crm-mt-lg">
-            <h3>Notes</h3>
+            <h3>Legacy notes</h3>
             <pre className="crm-pre">{lead.notes}</pre>
+          </div>
+        )}
+
+        {hasPermission("client_notes.view") && (
+          <div className="crm-mt-lg">
+            <ClientNotesPanel
+              leadId={Number(id)}
+              contactId={lead.contact_id || undefined}
+              contactName={lead.name}
+              compact
+            />
           </div>
         )}
       </div>

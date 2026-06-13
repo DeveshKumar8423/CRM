@@ -55,6 +55,31 @@ function DashboardLayout({ title, roleLabel, children }) {
               Pipeline
             </Link>
           )}
+          {hasPermission("quotations.view") && (
+            <Link to="/quotations" className="crm-nav-link">
+              Quotations
+            </Link>
+          )}
+          {hasPermission("sales_orders.view") && (
+            <Link to="/sales-orders" className="crm-nav-link">
+              Sales Orders
+            </Link>
+          )}
+          {hasPermission("invoices.view") && (
+            <Link to="/invoices" className="crm-nav-link">
+              Invoices
+            </Link>
+          )}
+          {hasPermission("client_notes.view") && (
+            <Link to="/client-notes" className="crm-nav-link">
+              Client Notes
+            </Link>
+          )}
+          {hasPermission("reports.view") && (
+            <Link to="/sales-reports" className="crm-nav-link">
+              Sales Reports
+            </Link>
+          )}
           {hasPermission("products.view") && (
             <Link to="/products" className="crm-nav-link">
               Products
