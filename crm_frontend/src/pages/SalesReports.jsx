@@ -135,6 +135,65 @@ function SalesReports() {
   const handleExport = () => {
     if (!data || !canExport) return;
     const stamp = new Date().toISOString().slice(0, 10);
+
+    if (tab === "overview" && data.kpis) {
+      const rows = [
+        ["Period", data.period_label || ""],
+        ["From", data.date_from ? new Date(data.date_from).toLocaleDateString() : ""],
+        ["To", data.date_to ? new Date(data.date_to).toLocaleDateString() : ""],
+        [],
+        ["KPI", "Value", "Unit", "Change %"],
+        ...data.kpis.map((k) => [k.label, k.value, k.unit || "", k.delta_percent ?? ""]),
+      ];
+      if (data.top_sources?.length) {
+        rows.push([], ["Top lead sources"], ["Source", "Leads"], ...data.top_sources.map((s) => [s.name, s.count]));
+      }
+      if (data.top_performers?.length) {
+        rows.push([], ["Top performers"], ["Executive", "Deals", "Revenue"], ...data.top_performers.map((p) => [p.name, p.count, p.value]));
+      }
+      if (data.top_pending_deals?.length) {
+        rows.push([], ["Top pending deals"], ["Deal", "Stage", "Value", "Owner", "Flag"], ...data.top_pending_deals.map((d) => [d.title, d.stage_label, d.expected_value, d.owner_name || "", d.badge || ""]));
+      }
+      exportCsv(`sales-overview-${stamp}.csv`, [], rows);
+      return;
+    }
+
+    if (tab === "revenue") {
+      const rows = [
+        ["Booked (won)", data.booked_revenue ?? 0],
+        ["Collected", data.collected_revenue ?? 0],
+        ["Outstanding", data.outstanding_revenue ?? 0],
+        ["Pipeline forecast", data.pipeline_forecast ?? 0],
+        [],
+        ["By executive", "Deals", "Revenue"],
+        ...(data.by_owner || []).map((r) => [r.name, r.count, r.value]),
+        [],
+        ["By customer", "Deals", "Revenue"],
+        ...(data.by_customer || []).map((r) => [r.name, r.count, r.value]),
+        [],
+        ["By source", "Revenue"],
+        ...(data.by_source || []).map((r) => [r.name, r.value]),
+      ];
+      exportCsv(`revenue-${stamp}.csv`, [], rows);
+      return;
+    }
+
+    if (tab === "pipeline" && data.stages) {
+      exportCsv(
+        `pipeline-health-${stamp}.csv`,
+        ["Stage", "Deals", "Value", "Avg age (days)"],
+        [
+          ...data.stages.map((s) => [s.label, s.count, s.value, s.avg_age_days]),
+          [],
+          ["Total pipeline value", "", data.total_pipeline_value, ""],
+          ["Health score", data.health_score, "", ""],
+          ["Health label", data.health_label, "", ""],
+          ["Top deal concentration %", data.concentration_top_deal_percent, "", ""],
+        ],
+      );
+      return;
+    }
+
     if (tab === "pending" && data.deals) {
       exportCsv(
         `pending-deals-${stamp}.csv`,
@@ -154,11 +213,19 @@ function SalesReports() {
         data.executives.map((e) => [e.name, e.count, e.value, e.rate]),
       );
     } else if (tab === "conversion" && data.by_source) {
-      exportCsv(
-        `conversion-${stamp}.csv`,
-        ["Source", "Leads", "Conversion %"],
-        data.by_source.map((s) => [s.name, s.count, s.rate]),
-      );
+      const rows = [
+        ["Lead→Deal", data.lead_to_deal_rate],
+        ["Deal→Win", data.deal_to_win_rate],
+        ["Quote→Order", data.quote_to_order_rate],
+        ["Order→Invoice", data.order_to_invoice_rate],
+        [],
+        ["By source", "Leads", "Conversion %"],
+        ...data.by_source.map((s) => [s.name, s.count, s.rate]),
+        [],
+        ["By owner", "Leads", "Conversion %"],
+        ...(data.by_owner || []).map((o) => [o.name, o.count, o.rate]),
+      ];
+      exportCsv(`conversion-${stamp}.csv`, [], rows);
     }
   };
 
