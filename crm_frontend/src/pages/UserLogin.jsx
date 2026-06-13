@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { API_URL, saveSession } from "../utils/api";
+import { loginRequest, saveSession } from "../utils/api";
 
 function UserLogin() {
   const navigate = useNavigate();
@@ -13,16 +13,11 @@ function UserLogin() {
     e.preventDefault();
     setError("");
 
-    const response = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.detail || "Login failed");
+    let data;
+    try {
+      data = await loginRequest(email, password);
+    } catch (err) {
+      setError(err.message);
       return;
     }
 

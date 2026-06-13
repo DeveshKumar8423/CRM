@@ -2,12 +2,9 @@ from __future__ import annotations
 
 """Seed test users for local development. Safe to re-run: skips if users exist."""
 
-from passlib.context import CryptContext
-
+from auth_utils import hash_password
 from database import SessionLocal
 from models import User
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 TEST_USERS = [
     {
@@ -43,7 +40,7 @@ def seed():
                 User(
                     name=u["name"],
                     email=u["email"],
-                    password=pwd_context.hash(u["password"]),
+                    password=hash_password(u["password"]),
                     role=u["role"],
                 )
             )

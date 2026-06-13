@@ -26,6 +26,30 @@ export function clearSession() {
   clearPermissions();
 }
 
+export async function loginRequest(email, password) {
+  let response;
+  try {
+    response = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new Error(
+      "Cannot reach the server. Make sure the backend is running on port 8000.",
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data.detail || "Login failed. Check your email and password.";
+    throw new Error(typeof message === "string" ? message : JSON.stringify(message));
+  }
+
+  return data;
+}
+
 export async function apiFetch(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
