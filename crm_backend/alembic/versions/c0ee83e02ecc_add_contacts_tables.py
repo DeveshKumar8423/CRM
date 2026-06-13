@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """add contacts tables
 
 Revision ID: c0ee83e02ecc

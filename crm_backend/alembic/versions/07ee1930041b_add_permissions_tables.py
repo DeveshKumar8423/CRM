@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """add permissions tables
 
 Revision ID: 07ee1930041b

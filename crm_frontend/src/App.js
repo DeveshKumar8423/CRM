@@ -21,7 +21,18 @@ import ContactDetail from "./pages/ContactDetail";
 import Products from "./pages/Products";
 import ProductForm from "./pages/ProductForm";
 import ProductDetail from "./pages/ProductDetail";
+import Leads from "./pages/Leads";
+import LeadForm from "./pages/LeadForm";
+import LeadDetail from "./pages/LeadDetail";
+import Pipeline from "./pages/Pipeline";
+import Deals from "./pages/Deals";
+import DealForm from "./pages/DealForm";
+import DealDetail from "./pages/DealDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// New password‑reset pages
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const ALL_ROLES = ["Admin", "Manager", "Employee", "User"];
 const STAFF_ROLES = ["Admin", "Manager", "Employee"];
@@ -199,6 +210,107 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/leads"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="leads.view"
+            >
+              <Leads />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leads/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="leads.create"
+            >
+              <LeadForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leads/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="leads.edit"
+            >
+              <LeadForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leads/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="leads.view"
+            >
+              <LeadDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pipeline"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="deals.view"
+            >
+              <Pipeline />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deals"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="deals.view"
+            >
+              <Deals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deals/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="deals.create"
+            >
+              <DealForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deals/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="deals.edit"
+            >
+              <DealForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deals/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="deals.view"
+            >
+              <DealDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );

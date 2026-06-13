@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """add companies table
 
 Revision ID: 79eea4cb25bc

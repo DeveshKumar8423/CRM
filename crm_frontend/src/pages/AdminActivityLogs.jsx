@@ -22,6 +22,9 @@ const ACTION_LABELS = {
   contact_activity_added: "Contact activity",
   product_created: "Product created",
   product_updated: "Product updated",
+  lead_created: "Lead created",
+  lead_updated: "Lead updated",
+  lead_converted: "Lead converted",
 };
 
 function formatAction(action) {

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """create users table
 
 Revision ID: 75a92ed5bb53

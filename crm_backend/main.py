@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,6 +8,9 @@ from routers.auth_router import router as auth_router
 from routers.company_router import router as company_router
 from routers.contacts_router import router as contacts_router
 from routers.products_router import router as products_router
+from routers.leads_router import router as leads_router
+from routers.deals_router import router as deals_router
+from routers.settings_router import router as settings_router
 
 app = FastAPI(title="CRM API")
 
@@ -25,3 +30,6 @@ app.include_router(admin_router)
 app.include_router(company_router)
 app.include_router(contacts_router)
 app.include_router(products_router)
+app.include_router(leads_router)
+app.include_router(deals_router)
+app.include_router(settings_router)
