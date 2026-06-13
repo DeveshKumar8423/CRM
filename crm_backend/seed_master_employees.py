@@ -8,12 +8,10 @@ Uses unique Gmail when multiple employees share the same official email.
 from pathlib import Path
 
 import openpyxl
-from passlib.context import CryptContext
 
+from auth_utils import hash_password
 from database import SessionLocal
 from models import User
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SHEET_PATH = Path(__file__).resolve().parent.parent / "Master Employee Sheet.xlsx"
 
@@ -131,7 +129,7 @@ def seed():
                 existing.status = status
                 existing.designation = designation
                 existing.department = department
-                existing.password = pwd_context.hash(password)
+                existing.password = hash_password(password)
                 updated += 1
                 print(f"UPDATE {email} ({role})")
             else:
@@ -140,7 +138,7 @@ def seed():
                         employee_id=employee_id,
                         name=name,
                         email=email,
-                        password=pwd_context.hash(password),
+                        password=hash_password(password),
                         role=role,
                         status=status,
                         designation=designation,

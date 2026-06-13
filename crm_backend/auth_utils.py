@@ -2,10 +2,19 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+
+# passlib reads bcrypt.__about__.__version__; removed in bcrypt 4.1+
+if not hasattr(bcrypt, "__about__"):
+    bcrypt.__about__ = type(
+        "_About",
+        (),
+        {"__version__": getattr(bcrypt, "__version__", "4.2.0")},
+    )()
 from sqlalchemy.orm import Session
 
 from config import JWT_ALGORITHM, JWT_EXPIRE_HOURS, JWT_SECRET

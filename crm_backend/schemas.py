@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
@@ -571,3 +571,857 @@ class DealPipelineColumn(BaseModel):
 class DealPipelineResponse(BaseModel):
     columns: list[DealPipelineColumn]
     closed: list[DealResponse]
+
+
+# --- Quotations ---
+
+
+class QuotationLineItemFields(BaseModel):
+    product_id: int | None = None
+    sort_order: int = 0
+    section: str | None = Field(default=None, max_length=100)
+    item_name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=5000)
+    quantity: float = Field(default=1, ge=0)
+    unit: str = Field(default="Service", max_length=30)
+    unit_price: float = Field(default=0, ge=0)
+    discount_percent: float = Field(default=0, ge=0, le=100)
+    discount_amount: float = Field(default=0, ge=0)
+    tax_rate: float = Field(default=18, ge=0, le=100)
+
+
+class QuotationLineItemResponse(QuotationLineItemFields):
+    id: int
+    line_subtotal: float
+    line_total: float
+    product_name: str | None = None
+
+
+class QuotationBaseFields(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    currency: str = Field(default="INR", max_length=3)
+    quote_date: datetime | None = None
+    valid_until: datetime | None = None
+    deal_id: int | None = None
+    lead_id: int | None = None
+    contact_id: int | None = None
+    assigned_to_id: int | None = None
+    client_name: str | None = Field(default=None, max_length=120)
+    client_email: str | None = Field(default=None, max_length=255)
+    client_org: str | None = Field(default=None, max_length=200)
+    attention_to: str | None = Field(default=None, max_length=120)
+    billing_address: str | None = Field(default=None, max_length=5000)
+    shipping_address: str | None = Field(default=None, max_length=5000)
+    header_discount_amount: float = Field(default=0, ge=0)
+    header_discount_percent: float = Field(default=0, ge=0, le=100)
+    scope_notes: str | None = Field(default=None, max_length=5000)
+    deliverables: str | None = Field(default=None, max_length=5000)
+    timeline_notes: str | None = Field(default=None, max_length=5000)
+    payment_terms: str | None = Field(default=None, max_length=5000)
+    validity_clause: str | None = Field(default=None, max_length=5000)
+    cancellation_clause: str | None = Field(default=None, max_length=5000)
+    legal_footer: str | None = Field(default=None, max_length=5000)
+    internal_notes: str | None = Field(default=None, max_length=5000)
+
+
+class QuotationCreateRequest(QuotationBaseFields):
+    line_items: list[QuotationLineItemFields] = Field(default_factory=list)
+
+
+class QuotationUpdateRequest(QuotationCreateRequest):
+    pass
+
+
+class QuotationResponse(BaseModel):
+    id: int
+    company_id: int
+    quote_number: str
+    title: str
+    status: str
+    version: int
+    currency: str
+    quote_date: datetime | None
+    valid_until: datetime | None
+    deal_id: int | None
+    deal_title: str | None = None
+    lead_id: int | None
+    lead_name: str | None = None
+    contact_id: int | None
+    contact_name: str | None = None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    approved_by_id: int | None
+    approved_by_name: str | None = None
+    parent_quote_id: int | None
+    root_quote_id: int | None
+    client_name: str | None
+    client_email: str | None
+    client_org: str | None
+    attention_to: str | None
+    billing_address: str | None
+    shipping_address: str | None
+    subtotal: float
+    line_discount_total: float
+    header_discount_amount: float
+    header_discount_percent: float
+    total_tax: float
+    grand_total: float
+    scope_notes: str | None
+    deliverables: str | None
+    timeline_notes: str | None
+    payment_terms: str | None
+    validity_clause: str | None
+    cancellation_clause: str | None
+    legal_footer: str | None
+    internal_notes: str | None
+    approval_comments: str | None
+    requires_approval: bool
+    share_token: str | None = None
+    share_url: str | None = None
+    sent_at: datetime | None
+    viewed_at: datetime | None
+    accepted_at: datetime | None
+    rejected_at: datetime | None
+    approved_at: datetime | None
+    cancelled_at: datetime | None
+    client_rejection_reason: str | None
+    line_items: list[QuotationLineItemResponse] = Field(default_factory=list)
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class QuotationListResponse(BaseModel):
+    items: list[QuotationResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class QuotationStatsResponse(BaseModel):
+    total: int
+    draft: int
+    pending_approval: int
+    approved: int
+    sent: int
+    viewed: int
+    negotiation: int
+    accepted: int
+    rejected: int
+    expired: int
+    cancelled: int
+    total_value: float
+    accepted_value: float
+    expiring_soon: int
+
+
+class QuotationStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class QuotationApprovalRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class QuotationRejectRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class QuotationSendRequest(BaseModel):
+    recipient_email: str | None = Field(default=None, max_length=255)
+    message: str | None = Field(default=None, max_length=2000)
+
+
+class QuotationClientActionRequest(BaseModel):
+    reason: str | None = Field(default=None, max_length=2000)
+    message: str | None = Field(default=None, max_length=2000)
+
+
+class QuotationVersionSummary(BaseModel):
+    id: int
+    quote_number: str
+    version: int
+    status: str
+    grand_total: float
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class QuotationCompanyBranding(BaseModel):
+    display_name: str
+    legal_name: str
+    email: str | None
+    phone: str | None
+    website: str | None
+    address_line1: str | None
+    address_line2: str | None
+    city: str | None
+    state: str | None
+    pincode: str | None
+    country: str
+    gstin: str | None
+    pan: str | None
+    logo_filename: str | None
+
+
+class QuotationPublicResponse(BaseModel):
+    quote: QuotationResponse
+    company: QuotationCompanyBranding
+    is_expired: bool
+    can_accept: bool
+
+
+# --- Sales Orders ---
+
+
+class SalesOrderMilestoneFields(BaseModel):
+    sort_order: int = 0
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+    status: str = Field(default="pending", max_length=20)
+    due_date: datetime | None = None
+    owner_id: int | None = None
+
+
+class SalesOrderMilestoneResponse(SalesOrderMilestoneFields):
+    id: int
+    completed_at: datetime | None = None
+    owner_name: str | None = None
+
+
+class SalesOrderLineItemFields(BaseModel):
+    product_id: int | None = None
+    quotation_line_item_id: int | None = None
+    sort_order: int = 0
+    section: str | None = Field(default=None, max_length=100)
+    item_name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=5000)
+    quantity: float = Field(default=1, ge=0)
+    unit: str = Field(default="Service", max_length=30)
+    unit_price: float = Field(default=0, ge=0)
+    discount_percent: float = Field(default=0, ge=0, le=100)
+    discount_amount: float = Field(default=0, ge=0)
+    tax_rate: float = Field(default=18, ge=0, le=100)
+
+
+class SalesOrderLineItemResponse(SalesOrderLineItemFields):
+    id: int
+    line_subtotal: float
+    line_total: float
+    fulfilled_quantity: float
+    fulfillment_status: str
+    product_name: str | None = None
+
+
+class SalesOrderBaseFields(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    order_type: str = Field(default="mixed", max_length=30)
+    currency: str = Field(default="INR", max_length=3)
+    order_date: datetime | None = None
+    due_date: datetime | None = None
+    internal_target_date: datetime | None = None
+    quotation_id: int | None = None
+    deal_id: int | None = None
+    lead_id: int | None = None
+    contact_id: int | None = None
+    assigned_to_id: int | None = None
+    client_name: str | None = Field(default=None, max_length=120)
+    client_email: str | None = Field(default=None, max_length=255)
+    client_phone: str | None = Field(default=None, max_length=30)
+    client_org: str | None = Field(default=None, max_length=200)
+    attention_to: str | None = Field(default=None, max_length=120)
+    billing_address: str | None = Field(default=None, max_length=5000)
+    delivery_address: str | None = Field(default=None, max_length=5000)
+    header_discount_amount: float = Field(default=0, ge=0)
+    header_discount_percent: float = Field(default=0, ge=0, le=100)
+    billing_notes: str | None = Field(default=None, max_length=5000)
+    payment_milestone_notes: str | None = Field(default=None, max_length=5000)
+    delivery_instructions: str | None = Field(default=None, max_length=5000)
+    internal_notes: str | None = Field(default=None, max_length=5000)
+
+
+class SalesOrderCreateRequest(SalesOrderBaseFields):
+    line_items: list[SalesOrderLineItemFields] = Field(default_factory=list)
+    milestones: list[SalesOrderMilestoneFields] = Field(default_factory=list)
+
+
+class SalesOrderUpdateRequest(SalesOrderCreateRequest):
+    pass
+
+
+class SalesOrderResponse(BaseModel):
+    id: int
+    company_id: int
+    order_number: str
+    title: str
+    status: str
+    version: int
+    order_type: str
+    source_type: str
+    currency: str
+    order_date: datetime | None
+    confirmation_date: datetime | None
+    due_date: datetime | None
+    internal_target_date: datetime | None
+    quotation_id: int | None
+    quotation_number: str | None = None
+    deal_id: int | None
+    deal_title: str | None = None
+    lead_id: int | None
+    lead_name: str | None = None
+    contact_id: int | None
+    contact_name: str | None = None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    confirmed_by_id: int | None
+    confirmed_by_name: str | None = None
+    parent_order_id: int | None
+    root_order_id: int | None
+    client_name: str | None
+    client_email: str | None
+    client_phone: str | None
+    client_org: str | None
+    attention_to: str | None
+    billing_address: str | None
+    delivery_address: str | None
+    subtotal: float
+    line_discount_total: float
+    header_discount_amount: float
+    header_discount_percent: float
+    total_tax: float
+    grand_total: float
+    billing_notes: str | None
+    payment_milestone_notes: str | None
+    delivery_instructions: str | None
+    internal_notes: str | None
+    hold_reason: str | None
+    cancellation_reason: str | None
+    completion_notes: str | None
+    fulfillment_progress: int
+    billing_status: str
+    preparation_status: str
+    share_token: str | None = None
+    share_url: str | None = None
+    sent_for_confirmation_at: datetime | None
+    confirmed_at: datetime | None
+    closed_at: datetime | None
+    cancelled_at: datetime | None
+    hold_at: datetime | None
+    hold_resume_date: datetime | None
+    last_status_change_at: datetime | None
+    line_items: list[SalesOrderLineItemResponse] = Field(default_factory=list)
+    milestones: list[SalesOrderMilestoneResponse] = Field(default_factory=list)
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class SalesOrderListResponse(BaseModel):
+    items: list[SalesOrderResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class SalesOrderStatsResponse(BaseModel):
+    total: int
+    draft: int
+    awaiting_confirmation: int
+    confirmed: int
+    in_preparation: int
+    in_execution: int
+    partially_delivered: int
+    delivered: int
+    in_billing: int
+    on_hold: int
+    completed: int
+    cancelled: int
+    closed: int
+    total_value: float
+    confirmed_value: float
+    due_soon: int
+    overdue: int
+
+
+class SalesOrderStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class SalesOrderReasonRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+    resume_date: datetime | None = None
+
+
+class SalesOrderProgressRequest(BaseModel):
+    fulfillment_progress: int = Field(ge=0, le=100)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class SalesOrderSendConfirmationRequest(BaseModel):
+    recipient_email: str | None = Field(default=None, max_length=255)
+    message: str | None = Field(default=None, max_length=2000)
+
+
+class SalesOrderClientActionRequest(BaseModel):
+    reason: str | None = Field(default=None, max_length=2000)
+    message: str | None = Field(default=None, max_length=2000)
+
+
+class SalesOrderVersionSummary(BaseModel):
+    id: int
+    order_number: str
+    version: int
+    status: str
+    grand_total: float
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class SalesOrderPublicResponse(BaseModel):
+    order: SalesOrderResponse
+    company: QuotationCompanyBranding
+    can_confirm: bool
+
+
+# --- Invoices ---
+
+
+class InvoiceLineItemFields(BaseModel):
+    product_id: int | None = None
+    sales_order_line_item_id: int | None = None
+    sort_order: int = 0
+    section: str | None = Field(default=None, max_length=100)
+    item_name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=5000)
+    quantity: float = Field(default=1, ge=0)
+    unit: str = Field(default="Service", max_length=30)
+    unit_price: float = Field(default=0, ge=0)
+    discount_percent: float = Field(default=0, ge=0, le=100)
+    discount_amount: float = Field(default=0, ge=0)
+    tax_rate: float = Field(default=18, ge=0, le=100)
+
+
+class InvoiceLineItemResponse(InvoiceLineItemFields):
+    id: int
+    line_subtotal: float
+    line_total: float
+    product_name: str | None = None
+
+
+class InvoicePaymentFields(BaseModel):
+    amount: float = Field(gt=0)
+    payment_date: datetime
+    payment_method: str = Field(default="bank_transfer", max_length=30)
+    reference: str | None = Field(default=None, max_length=100)
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class InvoicePaymentResponse(InvoicePaymentFields):
+    id: int
+    recorded_by_id: int | None
+    recorded_by_name: str | None = None
+    created_at: datetime | None
+
+
+class InvoiceBaseFields(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    invoice_type: str = Field(default="standard", max_length=30)
+    currency: str = Field(default="INR", max_length=3)
+    issue_date: datetime | None = None
+    due_date: datetime | None = None
+    sales_order_id: int | None = None
+    quotation_id: int | None = None
+    deal_id: int | None = None
+    contact_id: int | None = None
+    assigned_to_id: int | None = None
+    client_name: str | None = Field(default=None, max_length=120)
+    client_email: str | None = Field(default=None, max_length=255)
+    client_phone: str | None = Field(default=None, max_length=30)
+    client_org: str | None = Field(default=None, max_length=200)
+    client_gstin: str | None = Field(default=None, max_length=15)
+    attention_to: str | None = Field(default=None, max_length=120)
+    billing_address: str | None = Field(default=None, max_length=5000)
+    header_discount_amount: float = Field(default=0, ge=0)
+    header_discount_percent: float = Field(default=0, ge=0, le=100)
+    round_off: float = Field(default=0)
+    payment_terms: str | None = Field(default=None, max_length=5000)
+    bank_instructions: str | None = Field(default=None, max_length=5000)
+    billing_notes: str | None = Field(default=None, max_length=5000)
+    internal_notes: str | None = Field(default=None, max_length=5000)
+
+
+class InvoiceCreateRequest(InvoiceBaseFields):
+    line_items: list[InvoiceLineItemFields] = Field(default_factory=list)
+
+
+class InvoiceUpdateRequest(InvoiceCreateRequest):
+    pass
+
+
+class InvoiceResponse(BaseModel):
+    id: int
+    company_id: int
+    invoice_number: str | None
+    title: str
+    status: str
+    version: int
+    invoice_type: str
+    source_type: str
+    currency: str
+    issue_date: datetime | None
+    due_date: datetime | None
+    sales_order_id: int | None
+    sales_order_number: str | None = None
+    quotation_id: int | None
+    quotation_number: str | None = None
+    deal_id: int | None
+    deal_title: str | None = None
+    contact_id: int | None
+    contact_name: str | None = None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    reviewed_by_id: int | None
+    reviewed_by_name: str | None = None
+    issued_by_id: int | None
+    issued_by_name: str | None = None
+    parent_invoice_id: int | None
+    root_invoice_id: int | None
+    client_name: str | None
+    client_email: str | None
+    client_phone: str | None
+    client_org: str | None
+    client_gstin: str | None
+    attention_to: str | None
+    billing_address: str | None
+    subtotal: float
+    line_discount_total: float
+    header_discount_amount: float
+    header_discount_percent: float
+    total_tax: float
+    round_off: float
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    write_off_amount: float
+    payment_terms: str | None
+    bank_instructions: str | None
+    billing_notes: str | None
+    internal_notes: str | None
+    review_comments: str | None
+    cancellation_reason: str | None
+    adjustment_reason: str | None
+    requires_review: bool
+    share_token: str | None = None
+    share_url: str | None = None
+    reviewed_at: datetime | None
+    approved_at: datetime | None
+    issued_at: datetime | None
+    sent_at: datetime | None
+    viewed_at: datetime | None
+    closed_at: datetime | None
+    cancelled_at: datetime | None
+    last_status_change_at: datetime | None
+    last_payment_at: datetime | None
+    line_items: list[InvoiceLineItemResponse] = Field(default_factory=list)
+    payments: list[InvoicePaymentResponse] = Field(default_factory=list)
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class InvoiceListResponse(BaseModel):
+    items: list[InvoiceResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class InvoiceStatsResponse(BaseModel):
+    total: int
+    draft: int
+    awaiting_review: int
+    issued: int
+    sent: int
+    partially_paid: int
+    paid: int
+    overdue: int
+    total_billed: float
+    total_collected: float
+    total_outstanding: float
+
+
+class InvoiceStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class InvoiceReviewRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class InvoiceReasonRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class InvoiceSendRequest(BaseModel):
+    recipient_email: str | None = Field(default=None, max_length=255)
+    message: str | None = Field(default=None, max_length=2000)
+
+
+class InvoicePublicResponse(BaseModel):
+    invoice: InvoiceResponse
+    company: QuotationCompanyBranding
+    is_overdue: bool
+
+
+# Client Notes
+
+
+class ClientNoteCreateRequest(BaseModel):
+    contact_id: int | None = None
+    lead_id: int | None = None
+    deal_id: int | None = None
+    quotation_id: int | None = None
+    sales_order_id: int | None = None
+    invoice_id: int | None = None
+    note_type: str = "call"
+    title: str = Field(min_length=1, max_length=200)
+    body: str = Field(min_length=1, max_length=10000)
+    visibility_scope: str = "team"
+    tags: str | None = Field(default=None, max_length=500)
+    structured_data: str | None = Field(default=None, max_length=5000)
+    is_pinned: bool = False
+    is_sensitive: bool = False
+    follow_up_required: bool = False
+    follow_up_due_date: datetime | None = None
+    follow_up_priority: str = "normal"
+    assigned_to_id: int | None = None
+
+
+class ClientNoteUpdateRequest(BaseModel):
+    note_type: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    body: str | None = Field(default=None, min_length=1, max_length=10000)
+    visibility_scope: str | None = None
+    tags: str | None = Field(default=None, max_length=500)
+    structured_data: str | None = Field(default=None, max_length=5000)
+    is_pinned: bool | None = None
+    is_sensitive: bool | None = None
+    is_resolved: bool | None = None
+    follow_up_required: bool | None = None
+    follow_up_due_date: datetime | None = None
+    follow_up_priority: str | None = None
+    assigned_to_id: int | None = None
+
+
+class ClientNoteRevisionResponse(BaseModel):
+    id: int
+    editor_id: int
+    editor_name: str | None = None
+    note_type: str
+    title: str
+    body: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ClientNoteResponse(BaseModel):
+    id: int
+    contact_id: int | None = None
+    contact_name: str | None = None
+    lead_id: int | None = None
+    deal_id: int | None = None
+    deal_title: str | None = None
+    quotation_id: int | None = None
+    quotation_number: str | None = None
+    sales_order_id: int | None = None
+    sales_order_number: str | None = None
+    invoice_id: int | None = None
+    invoice_number: str | None = None
+    author_id: int
+    author_name: str | None = None
+    assigned_to_id: int | None = None
+    assigned_to_name: str | None = None
+    last_edited_by_id: int | None = None
+    last_edited_by_name: str | None = None
+    note_type: str
+    title: str
+    body: str
+    visibility_scope: str
+    tags: str | None = None
+    structured_data: str | None = None
+    is_pinned: bool
+    pin_order: int
+    is_sensitive: bool
+    is_resolved: bool
+    follow_up_required: bool
+    follow_up_due_date: datetime | None = None
+    follow_up_priority: str
+    follow_up_completed_at: datetime | None = None
+    follow_up_overdue: bool = False
+    revision_count: int
+    created_at: datetime
+    updated_at: datetime
+    revisions: list[ClientNoteRevisionResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ClientNoteListResponse(BaseModel):
+    items: list[ClientNoteResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class ClientNoteStatsResponse(BaseModel):
+    total: int
+    pinned: int
+    follow_up_pending: int
+    follow_up_overdue: int
+    recent_7_days: int
+
+
+class ClientNoteTypeOption(BaseModel):
+    value: str
+    label: str
+
+
+# Sales Reports
+
+
+class SalesReportPeriodOption(BaseModel):
+    value: str
+    label: str
+
+
+class SalesReportKpiCard(BaseModel):
+    key: str
+    label: str
+    value: float | int | str
+    unit: str | None = None
+    delta_percent: float | None = None
+    delta_label: str | None = None
+
+
+class SalesReportTrendPoint(BaseModel):
+    label: str
+    value: float
+
+
+class SalesReportRankRow(BaseModel):
+    id: int | str | None = None
+    name: str
+    count: int = 0
+    value: float = 0
+    rate: float | None = None
+    link: str | None = None
+    badge: str | None = None
+
+
+class SalesReportConversionFunnel(BaseModel):
+    stage: str
+    label: str
+    count: int
+    value: float
+    rate_from_previous: float | None = None
+
+
+class SalesReportPendingDeal(BaseModel):
+    id: int
+    title: str
+    stage: str
+    stage_label: str
+    expected_value: float
+    currency: str
+    owner_name: str | None
+    expected_close_date: datetime | None
+    updated_at: datetime | None
+    days_stale: int
+    is_overdue: bool
+    is_stale: bool
+    badge: str | None = None
+
+
+class SalesReportPipelineStage(BaseModel):
+    stage: str
+    label: str
+    count: int
+    value: float
+    avg_age_days: float
+
+
+class SalesReportOverviewResponse(BaseModel):
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    kpis: list[SalesReportKpiCard]
+    revenue_trend: list[SalesReportTrendPoint]
+    top_sources: list[SalesReportRankRow]
+    top_performers: list[SalesReportRankRow]
+    top_pending_deals: list[SalesReportPendingDeal]
+
+
+class SalesReportConversionResponse(BaseModel):
+    period_label: str
+    funnel: list[SalesReportConversionFunnel]
+    lead_to_deal_rate: float
+    deal_to_win_rate: float
+    quote_to_order_rate: float
+    order_to_invoice_rate: float
+    by_source: list[SalesReportRankRow]
+    by_owner: list[SalesReportRankRow]
+    previous_lead_to_deal_rate: float | None = None
+    previous_deal_to_win_rate: float | None = None
+
+
+class SalesReportRevenueResponse(BaseModel):
+    period_label: str
+    booked_revenue: float
+    collected_revenue: float
+    outstanding_revenue: float
+    pipeline_forecast: float
+    avg_deal_size: float
+    trend: list[SalesReportTrendPoint]
+    by_owner: list[SalesReportRankRow]
+    by_customer: list[SalesReportRankRow]
+    by_source: list[SalesReportRankRow]
+    previous_booked_revenue: float | None = None
+
+
+class SalesReportLeadSourceResponse(BaseModel):
+    period_label: str
+    sources: list[SalesReportRankRow]
+    conversion_chart: list[SalesReportTrendPoint]
+
+
+class SalesReportExecutiveResponse(BaseModel):
+    period_label: str
+    executives: list[SalesReportRankRow]
+    detail: list[dict]
+
+
+class SalesReportPendingDealsResponse(BaseModel):
+    period_label: str
+    total_count: int
+    total_value: float
+    overdue_count: int
+    stale_count: int
+    aging_buckets: list[SalesReportTrendPoint]
+    deals: list[SalesReportPendingDeal]
+
+
+class SalesReportPipelineHealthResponse(BaseModel):
+    period_label: str
+    stages: list[SalesReportPipelineStage]
+    total_pipeline_value: float
+    concentration_top_deal_percent: float
+    health_score: int
+    health_label: str
+

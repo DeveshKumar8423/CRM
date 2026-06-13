@@ -10,6 +10,14 @@ from routers.contacts_router import router as contacts_router
 from routers.products_router import router as products_router
 from routers.leads_router import router as leads_router
 from routers.deals_router import router as deals_router
+from routers.quotations_router import public_router as quotations_public_router
+from routers.quotations_router import router as quotations_router
+from routers.sales_orders_router import public_router as sales_orders_public_router
+from routers.sales_orders_router import router as sales_orders_router
+from routers.invoices_router import public_router as invoices_public_router
+from routers.invoices_router import router as invoices_router
+from routers.client_notes_router import router as client_notes_router
+from routers.sales_reports_router import router as sales_reports_router
 from routers.settings_router import router as settings_router
 
 app = FastAPI(title="CRM API")
@@ -32,4 +40,12 @@ app.include_router(contacts_router)
 app.include_router(products_router)
 app.include_router(leads_router)
 app.include_router(deals_router)
+app.include_router(quotations_router)
+app.include_router(quotations_public_router)
+app.include_router(sales_orders_router)
+app.include_router(sales_orders_public_router)
+app.include_router(invoices_router)
+app.include_router(invoices_public_router)
+app.include_router(client_notes_router)
+app.include_router(sales_reports_router)
 app.include_router(settings_router)
