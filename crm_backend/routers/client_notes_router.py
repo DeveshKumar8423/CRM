@@ -209,7 +209,7 @@ def note_types(_: User = Depends(require_permission("client_notes.view"))):
 @router.get("/assignees", response_model=list[StaffAssigneeResponse])
 def assignees(_: User = Depends(require_permission("client_notes.view")), db: Session = Depends(get_db)):
     users = db.query(User).filter(User.role.in_(STAFF_ROLES), User.status == "active").order_by(User.name).all()
-    return [StaffAssigneeResponse(id=u.id, name=u.name, email=u.email) for u in users]
+    return [StaffAssigneeResponse(id=u.id, name=u.name, email=u.email, role=u.role) for u in users]
 
 
 @router.get("/stats/summary", response_model=ClientNoteStatsResponse)

@@ -1425,3 +1425,149 @@ class SalesReportPipelineHealthResponse(BaseModel):
     health_score: int
     health_label: str
 
+
+class FollowUpReminderCreateRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    reminder_type: str = Field(default="call", max_length=30)
+    priority: str = Field(default="normal", max_length=20)
+    due_at: datetime
+    notes: str | None = Field(default=None, max_length=2000)
+    lead_id: int | None = None
+    deal_id: int | None = None
+    contact_id: int | None = None
+    assigned_to_id: int | None = None
+
+
+class FollowUpReminderUpdateRequest(FollowUpReminderCreateRequest):
+    status: str = Field(default="pending", max_length=20)
+
+
+class FollowUpReminderResponse(BaseModel):
+    id: int
+    company_id: int
+    lead_id: int | None
+    deal_id: int | None
+    contact_id: int | None
+    entity_label: str | None = None
+    entity_path: str | None = None
+    reminder_type: str
+    reminder_type_label: str
+    title: str
+    notes: str | None
+    status: str
+    priority: str
+    due_at: datetime
+    completed_at: datetime | None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    is_overdue: bool = False
+    is_due_today: bool = False
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class FollowUpReminderListResponse(BaseModel):
+    items: list[FollowUpReminderResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class FollowUpReminderStatsResponse(BaseModel):
+    total_pending: int
+    due_today: int
+    overdue: int
+    upcoming: int
+    note_follow_ups_pending: int
+
+
+class UnifiedFollowUpItem(BaseModel):
+    source: str
+    id: int
+    title: str
+    subtitle: str | None = None
+    entity_path: str | None = None
+    reminder_type: str
+    priority: str
+    due_at: datetime | None
+    assigned_to_name: str | None = None
+    is_overdue: bool = False
+    is_due_today: bool = False
+
+
+class UnifiedFollowUpQueueResponse(BaseModel):
+    items: list[UnifiedFollowUpItem]
+    total: int
+
+
+class PaymentAgingBucket(BaseModel):
+    label: str
+    count: int
+    amount: float
+
+
+class PaymentSummaryResponse(BaseModel):
+    total_received: float
+    total_outstanding: float
+    invoice_count_outstanding: int
+    invoice_count_overdue: int
+    payment_count: int
+    aging_buckets: list[PaymentAgingBucket]
+
+
+class PaymentRecordItem(BaseModel):
+    id: int
+    invoice_id: int
+    invoice_number: str | None
+    invoice_title: str
+    client_name: str | None
+    client_org: str | None
+    amount: float
+    payment_date: datetime
+    payment_method: str
+    reference: str | None
+    note: str | None
+    recorded_by_name: str | None = None
+
+
+class PaymentListResponse(BaseModel):
+    items: list[PaymentRecordItem]
+    total: int
+    page: int
+    limit: int
+
+
+class InvoiceOutstandingItem(BaseModel):
+    id: int
+    invoice_number: str | None
+    title: str
+    client_name: str | None
+    client_org: str | None
+    status: str
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    issue_date: datetime | None
+    due_date: datetime | None
+    is_overdue: bool
+    age_days: int | None = None
+
+
+class InvoiceOutstandingListResponse(BaseModel):
+    items: list[InvoiceOutstandingItem]
+    total: int
+    page: int
+    limit: int
+
+
+class DashboardKpiResponse(BaseModel):
+    pipeline_value: float = 0
+    open_deals: int = 0
+    pending_quotes: int = 0
+    overdue_invoices: int = 0
+    total_outstanding: float = 0
+    follow_ups_due_today: int = 0
+    follow_ups_overdue: int = 0
+

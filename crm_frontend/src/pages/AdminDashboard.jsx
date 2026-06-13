@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import DashboardStats from "../components/DashboardStats";
+import SalesKpis from "../components/SalesKpis";
 import { apiFetch } from "../utils/api";
 
 function AdminDashboard() {
@@ -42,7 +42,7 @@ function AdminDashboard() {
           catalogue, and <Link to="/admin/users">User Management</Link> for
           staff.
         </p>
-        <DashboardStats />
+        <SalesKpis />
       </div>
     </DashboardLayout>
   );

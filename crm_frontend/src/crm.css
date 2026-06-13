@@ -516,6 +516,14 @@ a {
   background: var(--crm-surface-light);
 }
 
+.crm-nav-link-active,
+.crm-nav-link-active:hover {
+  color: var(--crm-text);
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
 .crm-btn-sm {
   width: auto;
   padding: 8px 14px;
@@ -1029,6 +1037,19 @@ a {
 .crm-deal-lost {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+.crm-section-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.crm-mt-sm {
+  margin-top: 10px;
+}
+
+.crm-ml {
+  margin-left: 8px;
 }
 
 /* Quotations */

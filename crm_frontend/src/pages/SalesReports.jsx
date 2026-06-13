@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
@@ -14,7 +14,18 @@ import {
   formatPercent,
 } from "../utils/salesReports";
 
+const REPORT_ENDPOINTS = {
+  overview: "/sales-reports/overview",
+  conversion: "/sales-reports/conversion",
+  revenue: "/sales-reports/revenue",
+  sources: "/sales-reports/lead-sources",
+  team: "/sales-reports/executives",
+  pending: "/sales-reports/pending-deals",
+  pipeline: "/sales-reports/pipeline-health",
+};
+
 function BarChart({ data, valueKey = "value", labelKey = "label", format = (v) => v }) {
+  if (!data?.length) return <p className="crm-muted">No data for this period.</p>;
   const max = Math.max(...data.map((d) => d[valueKey] || 0), 1);
   return (
     <div className="crm-report-chart">
@@ -66,48 +77,60 @@ function SalesReports() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const requestIdRef = useRef(0);
 
   const canFinancial = hasPermission("reports.view_financial");
   const canTeam = hasPermission("reports.view_team");
   const canExport = hasPermission("reports.export");
 
-  const endpoints = {
-    overview: "/sales-reports/overview",
-    conversion: "/sales-reports/conversion",
-    revenue: "/sales-reports/revenue",
-    sources: "/sales-reports/lead-sources",
-    team: "/sales-reports/executives",
-    pending: "/sales-reports/pending-deals",
-    pipeline: "/sales-reports/pipeline-health",
-  };
-
   useEffect(() => {
     apiFetch("/sales-reports/assignees").then(setAssignees).catch(() => {});
   }, []);
 
-  const load = () => {
+  const changeTab = (nextTab) => {
+    setTab(nextTab);
+    setData(null);
+    setError("");
+    setLoading(true);
+  };
+
+  const load = useCallback(() => {
     if (tab === "revenue" && !canFinancial) {
       setData(null);
+      setError("You do not have permission to view financial revenue reports.");
       setLoading(false);
       return;
     }
     if (tab === "team" && !canTeam) {
       setData(null);
+      setError("You do not have permission to view team performance reports.");
       setLoading(false);
       return;
     }
+
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError("");
     const params = buildReportParams(period, ownerId || null, dateFrom, dateTo);
-    apiFetch(`${endpoints[tab]}?${params}`)
-      .then(setData)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
+    apiFetch(`${REPORT_ENDPOINTS[tab]}?${params}`)
+      .then((result) => {
+        if (requestId !== requestIdRef.current) return;
+        setData(result);
+      })
+      .catch((err) => {
+        if (requestId !== requestIdRef.current) return;
+        setData(null);
+        setError(err.message);
+      })
+      .finally(() => {
+        if (requestId !== requestIdRef.current) return;
+        setLoading(false);
+      });
+  }, [tab, period, ownerId, dateFrom, dateTo, canFinancial, canTeam]);
 
   useEffect(() => {
     load();
-  }, [tab, period, ownerId]);
+  }, [load]);
 
   const handleExport = () => {
     if (!data || !canExport) return;
@@ -178,7 +201,7 @@ function SalesReports() {
 
         <div className="crm-tabs crm-mt">
           {visibleTabs.map((t) => (
-            <button key={t.key} type="button" className={`crm-tab ${tab === t.key ? "crm-tab-active" : ""}`} onClick={() => setTab(t.key)}>
+            <button key={t.key} type="button" className={`crm-tab ${tab === t.key ? "crm-tab-active" : ""}`} onClick={() => changeTab(t.key)}>
               {t.label}
             </button>
           ))}
@@ -194,7 +217,13 @@ function SalesReports() {
               {data.kpis.map((k) => (
                 <div key={k.key} className="crm-stat-card crm-report-kpi" onClick={() => {
                   const map = { conversion: "conversion", win_rate: "conversion", revenue: "revenue", pending_value: "pending", stale: "pending" };
-                  if (map[k.key]) setTab(map[k.key]);
+                  const nextTab = map[k.key];
+                  if (!nextTab) return;
+                  if (nextTab === "revenue" && !canFinancial) {
+                    setError("You do not have permission to view financial revenue reports.");
+                    return;
+                  }
+                  changeTab(nextTab);
                 }}>
                   <p className="crm-stat-label">{k.label}</p>
                   <p className="crm-stat-value">

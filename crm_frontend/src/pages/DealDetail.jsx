@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import RemindersPanel from "../components/RemindersPanel";
 import ClientNotesPanel from "../components/ClientNotesPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
@@ -166,6 +167,15 @@ function DealDetail() {
             <h3>Deal notes</h3>
             <pre className="crm-pre">{deal.notes}</pre>
           </div>
+        )}
+
+        {hasPermission("reminders.view") && (
+          <RemindersPanel
+            dealId={Number(id)}
+            leadId={deal.lead_id || undefined}
+            contactId={deal.contact_id || undefined}
+            compact
+          />
         )}
 
         {hasPermission("client_notes.view") && (

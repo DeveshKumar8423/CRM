@@ -65,6 +65,7 @@ class Company(Base):
     sales_orders = relationship("SalesOrder", back_populates="company")
     invoices = relationship("Invoice", back_populates="company")
     client_notes = relationship("ClientNote", back_populates="company")
+    follow_up_reminders = relationship("FollowUpReminder", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
 
 
@@ -748,6 +749,40 @@ class ClientNoteRevision(Base):
 
     client_note = relationship("ClientNote", back_populates="revisions")
     editor = relationship("User", foreign_keys=[editor_id])
+
+
+class FollowUpReminder(Base):
+    __tablename__ = "follow_up_reminders"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    reminder_type = Column(String(30), nullable=False, default="call")
+    title = Column(String(200), nullable=False)
+    notes = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, default="pending", index=True)
+    priority = Column(String(20), nullable=False, default="normal")
+    due_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="follow_up_reminders")
+    lead = relationship("Lead", foreign_keys=[lead_id])
+    deal = relationship("Deal", foreign_keys=[deal_id])
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
 
 
 class ActivityLog(Base):

@@ -60,6 +60,7 @@ export function badgeClass(badge) {
     "High Value": "crm-report-high_value",
     "On Track": "crm-report-on_track",
     "At Risk": "crm-report-at_risk",
+    "Needs Attention": "crm-report-needs_attention",
   };
   return `crm-badge ${map[badge] || "crm-report-default"}`;
 }

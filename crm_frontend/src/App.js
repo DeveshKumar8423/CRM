@@ -47,6 +47,8 @@ import ClientInvoiceView from "./pages/ClientInvoiceView";
 import ClientNotes from "./pages/ClientNotes";
 import ClientNotesFollowUpQueue from "./pages/ClientNotesFollowUpQueue";
 import SalesReports from "./pages/SalesReports";
+import FollowUps from "./pages/FollowUps";
+import Payments from "./pages/Payments";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // New password‑reset pages
@@ -537,6 +539,28 @@ function App() {
               requiredPermission="reports.view"
             >
               <SalesReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/follow-ups"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="reminders.view"
+            >
+              <FollowUps />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="payments.view"
+            >
+              <Payments />
             </ProtectedRoute>
           }
         />

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import RemindersPanel from "../components/RemindersPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 
@@ -139,6 +140,10 @@ function LeadDetail() {
             <h3>Legacy notes</h3>
             <pre className="crm-pre">{lead.notes}</pre>
           </div>
+        )}
+
+        {hasPermission("reminders.view") && (
+          <RemindersPanel leadId={Number(id)} contactId={lead.contact_id || undefined} compact />
         )}
 
         {hasPermission("client_notes.view") && (

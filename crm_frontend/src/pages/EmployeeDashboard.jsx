@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import DashboardStats from "../components/DashboardStats";
+import SalesKpis from "../components/SalesKpis";
 
 function EmployeeDashboard() {
   return (
@@ -12,7 +12,7 @@ function EmployeeDashboard() {
           View <Link to="/contacts">Contacts</Link> and{" "}
           <Link to="/products">Products & Services</Link>.
         </p>
-        <DashboardStats />
+        <SalesKpis />
       </div>
     </DashboardLayout>
   );
