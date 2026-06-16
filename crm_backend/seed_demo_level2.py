@@ -85,6 +85,7 @@ def _clear_demo(db, company_id: int) -> None:
     ).all()
     for note in demo_notes:
         db.delete(note)
+    db.commit()
 
     demo_invoices = db.query(Invoice).filter(
         Invoice.company_id == company_id,
@@ -92,6 +93,7 @@ def _clear_demo(db, company_id: int) -> None:
     ).all()
     for inv in demo_invoices:
         db.delete(inv)
+    db.commit()
 
     demo_orders = db.query(SalesOrder).filter(
         SalesOrder.company_id == company_id,
@@ -99,6 +101,7 @@ def _clear_demo(db, company_id: int) -> None:
     ).all()
     for order in demo_orders:
         db.delete(order)
+    db.commit()
 
     demo_quotes = db.query(Quotation).filter(
         Quotation.company_id == company_id,
@@ -106,7 +109,6 @@ def _clear_demo(db, company_id: int) -> None:
     ).all()
     for quote in demo_quotes:
         db.delete(quote)
-
     db.commit()
 
 
