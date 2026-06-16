@@ -1571,3 +1571,102 @@ class DashboardKpiResponse(BaseModel):
     follow_ups_due_today: int = 0
     follow_ups_overdue: int = 0
 
+
+# --- System Configuration ---
+
+
+class SystemConfigResponse(BaseModel):
+    id: int
+    company_name: str
+    default_currency: str
+    date_format: str
+    timezone: str
+    support_email: str
+    maintenance_mode: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+class SystemConfigUpdate(BaseModel):
+    company_name: str = Field(min_length=2, max_length=200)
+    default_currency: str = Field(min_length=1, max_length=3)
+    date_format: str = Field(min_length=1, max_length=20)
+    timezone: str = Field(min_length=1, max_length=80)
+    support_email: EmailStr
+    maintenance_mode: bool = False
+
+
+# --- Numbering Configuration ---
+
+
+class NumberingConfigBaseFields(BaseModel):
+    entity_name: str = Field(min_length=2, max_length=50)
+    prefix: str = Field(min_length=1, max_length=20)
+    starting_number: int = Field(default=1, ge=1)
+    current_number: int = Field(default=0, ge=0)
+    suffix: str | None = Field(default=None, max_length=20)
+    is_active: bool = True
+
+
+class NumberingConfigCreateRequest(NumberingConfigBaseFields):
+    pass
+
+
+class NumberingConfigUpdateRequest(BaseModel):
+    prefix: str | None = Field(default=None, min_length=1, max_length=20)
+    starting_number: int | None = Field(default=None, ge=1)
+    current_number: int | None = Field(default=None, ge=0)
+    suffix: str | None = Field(default=None, max_length=20)
+    is_active: bool | None = None
+
+
+class NumberingConfigResponse(BaseModel):
+    id: int
+    entity_name: str
+    prefix: str
+    starting_number: int
+    current_number: int
+    suffix: str | None
+    is_active: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+# --- Email Templates ---
+
+
+class EmailTemplateCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    subject: str = Field(min_length=2, max_length=255)
+    body: str = Field(min_length=1)
+    description: str | None = Field(default=None, max_length=2000)
+    is_active: bool = True
+
+
+class EmailTemplateUpdate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    subject: str = Field(min_length=2, max_length=255)
+    body: str = Field(min_length=1)
+    description: str | None = Field(default=None, max_length=2000)
+    is_active: bool = True
+
+
+class EmailTemplateResponse(BaseModel):
+    id: int
+    name: str
+    subject: str
+    body: str
+    description: str | None
+    is_active: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+

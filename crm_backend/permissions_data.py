@@ -86,6 +86,10 @@ PERMISSIONS = [
     ("dashboard.view", "View dashboard KPIs", "dashboard"),
     ("settings.view", "View system settings", "settings"),
     ("settings.edit", "Edit system settings", "settings"),
+    ("numbering_config.view", "View numbering configurations", "numbering_config"),
+    ("numbering_config.create", "Create numbering configurations", "numbering_config"),
+    ("numbering_config.edit", "Edit numbering configurations", "numbering_config"),
+    ("numbering_config.delete", "Delete numbering configurations", "numbering_config"),
 ]
 
 ROLE_PERMISSIONS: dict[str, list[str]] = {

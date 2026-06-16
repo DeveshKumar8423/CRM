@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import AdminActivityLogs from "./pages/AdminActivityLogs";
 import AdminCompany from "./pages/AdminCompany";
+import NumberingConfig from "./pages/NumberingConfig";
 import Contacts from "./pages/Contacts";
 import ContactForm from "./pages/ContactForm";
 import ContactDetail from "./pages/ContactDetail";
@@ -54,6 +55,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // New password‑reset pages
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import SystemConfiguration from "./pages/SystemConfiguration";
+import EmailTemplates from "./pages/EmailTemplates";
 
 const ALL_ROLES = ["Admin", "Manager", "Employee", "User"];
 const STAFF_ROLES = ["Admin", "Manager", "Employee"];
@@ -143,6 +146,33 @@ function App() {
               requiredPermission="company.view"
             >
               <AdminCompany />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/numbering-config"
+          element={
+            <ProtectedRoute
+              allowedRoles={["Admin"]}
+              requiredPermission="numbering_config.view"
+            >
+              <NumberingConfig />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/system-config"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <SystemConfiguration />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email-templates"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <EmailTemplates />
             </ProtectedRoute>
           }
         />

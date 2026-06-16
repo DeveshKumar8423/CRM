@@ -8,7 +8,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
- "postgresql://bharatrathore:Bharat%401425@localhost:5432/crm_db"
+ "postgresql://bharat:Bharat2004@localhost:5432/crm_db"
 )
 
 JWT_SECRET = os.getenv("JWT_SECRET", "crm-dev-secret-change-in-production")

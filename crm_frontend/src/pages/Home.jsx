@@ -31,7 +31,16 @@ function Home() {
   return (
     <div className="crm-page">
       <header className="crm-hero">
-        <h1>Customer relationship management</h1>
+        <img
+          src="/branding/logo.svg"
+          alt="BlackPapers"
+          className="blackpapers-logo"
+        />
+
+        <h3 className="blackpapers-title">BlackPapers CRM</h3>
+
+        <h1>Customer Relationship Management</h1>
+
         <p>Choose your portal to sign in.</p>
       </header>
 
@@ -47,6 +56,7 @@ function Home() {
               <h2>{portal.title}</h2>
               <p>{portal.description}</p>
             </div>
+
             <span>Sign in →</span>
           </Link>
         ))}

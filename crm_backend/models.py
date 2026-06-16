@@ -785,6 +785,67 @@ class FollowUpReminder(Base):
     created_by = relationship("User", foreign_keys=[created_by_id])
 
 
+class NumberingConfiguration(Base):
+    __tablename__ = "numbering_configurations"
+
+    id = Column(Integer, primary_key=True)
+    entity_name = Column(String(50), nullable=False, unique=True, index=True)
+    prefix = Column(String(20), nullable=False)
+    starting_number = Column(Integer, nullable=False, default=1)
+    current_number = Column(Integer, nullable=False, default=0)
+    suffix = Column(String(20), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class EmailTemplate(Base):
+    """Reusable email templates for CRM notifications.
+
+    Placeholders (e.g. {{name}}, {{reset_link}}) are stored as-is.
+    Rendering is handled by the notification layer, not here.
+    """
+
+    __tablename__ = "email_templates"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False, unique=True, index=True)
+    subject = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class SystemConfiguration(Base):
+    """Global CRM configuration — only one row should exist (id=1)."""
+
+    __tablename__ = "system_configurations"
+
+    id = Column(Integer, primary_key=True)
+    company_name = Column(String(200), nullable=False, default="BlackPapers")
+    default_currency = Column(String(3), nullable=False, default="INR")
+    date_format = Column(String(20), nullable=False, default="DD/MM/YYYY")
+    timezone = Column(String(80), nullable=False, default="Asia/Kolkata")
+    support_email = Column(String(255), nullable=False, default="support@blackpapers.in")
+    maintenance_mode = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
