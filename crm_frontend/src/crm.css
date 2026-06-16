@@ -57,10 +57,45 @@ a {
 }
 
 .crm-hero h1 {
-  font-size: 3.5rem;
+  font-size: 3rem;
   font-weight: 800;
   letter-spacing: -1px;
   margin-bottom: 15px;
+}
+
+/* BlackPapers branding */
+.blackpapers-logo {
+  display: block;
+  margin: 0 auto 18px auto;
+  width: 140px;
+  height: auto;
+  max-width: 40%;
+}
+
+.blackpapers-title {
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  color: var(--crm-text);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+/* Responsive adjustments for logo */
+@media (max-width: 640px) {
+  .blackpapers-logo {
+    width: 110px;
+    margin-bottom: 12px;
+  }
+
+  .crm-hero h1 {
+    font-size: 2.2rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .blackpapers-logo {
+    width: 160px;
+  }
 }
 
 .crm-hero p {
@@ -286,14 +321,18 @@ a {
 
 .crm-dashboard-header {
   background: var(--crm-surface);
-
   border-bottom: 1px solid var(--crm-border);
-
-  padding: 20px 35px;
-
+  padding: 16px 24px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 20px;
+  /* prevent the header itself from growing taller when nav overflows */
+  overflow: hidden;
+}
+
+.crm-dashboard-title {
+  /* title block: shrinks only as a last resort */
+  flex-shrink: 0;
 }
 
 .crm-dashboard-header h1 {
@@ -305,6 +344,47 @@ a {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* Outer wrapper: takes remaining space, clips overflow, pins Logout to the right */
+.crm-dashboard-nav-wrap {
+  flex: 1;
+  min-width: 0;          /* allow flex child to shrink below its content width */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* Scrollable nav strip */
+.crm-dashboard-nav {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  /* smooth momentum scroll on iOS / macOS trackpad */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+
+  /* hide scrollbar visually on all browsers */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge legacy */
+}
+
+.crm-dashboard-nav::-webkit-scrollbar {
+  display: none;                  /* Chrome / Safari / Opera */
+}
+
+/* Logout stays pinned to the right, never scrolls away */
+.crm-nav-logout {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .crm-dashboard-main {
@@ -496,11 +576,7 @@ a {
    User Management / Tables
 =========================== */
 
-.crm-dashboard-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+/* nav links — shared style for all items inside .crm-dashboard-nav */
 
 .crm-nav-link {
   color: var(--crm-muted);
@@ -508,6 +584,8 @@ a {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid transparent;
+  white-space: nowrap;   /* keep each label on one line */
+  flex-shrink: 0;        /* never squish a link narrower than its text */
 }
 
 .crm-nav-link:hover {
@@ -1530,3 +1608,104 @@ a {
 .crm-report-on_track { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .crm-report-at_risk { background: rgba(249, 115, 22, 0.15); color: #f97316; }
 .crm-report-default { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+/* ===========================
+   Email Template Modal / Preview
+=========================== */
+
+.crm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.crm-modal {
+  background: var(--crm-surface);
+  border: 1px solid var(--crm-border);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.crm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--crm-border);
+  flex-shrink: 0;
+}
+
+.crm-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.crm-modal-close {
+  background: none;
+  border: none;
+  color: var(--crm-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.2s, background 0.2s;
+}
+
+.crm-modal-close:hover {
+  color: var(--crm-text);
+  background: var(--crm-surface-light);
+}
+
+.crm-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.crm-modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--crm-border);
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Subject preview pill */
+.crm-preview-subject {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+/* Body preview */
+.crm-preview-body {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--crm-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 0;
+  word-break: break-word;
+}
