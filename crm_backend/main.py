@@ -22,6 +22,9 @@ from routers.reminders_router import router as reminders_router
 from routers.payments_router import router as payments_router
 from routers.dashboard_router import router as dashboard_router
 from routers.settings_router import router as settings_router
+from routers.numbering_config_router import router as numbering_config_router
+from routers.system_config_router import router as system_config_router
+from routers.email_templates_router import router as email_templates_router
 
 app = FastAPI(title="CRM API")
 
@@ -55,3 +58,6 @@ app.include_router(reminders_router)
 app.include_router(payments_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
+app.include_router(numbering_config_router)
+app.include_router(system_config_router)
+app.include_router(email_templates_router)
