@@ -4,8 +4,10 @@ import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
 import RemindersPanel from "../components/RemindersPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 
 const STATUS_LABELS = {
   open: "Open",
@@ -156,9 +158,14 @@ function LeadDetail() {
             />
           </div>
         )}
+
+        {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+          <DocumentsPanel leadId={Number(id)} />
+        )}
       </div>
     </DashboardLayout>
   );
 }
+
 
 export default LeadDetail;

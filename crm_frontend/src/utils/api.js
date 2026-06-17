@@ -51,13 +51,18 @@ export async function loginRequest(email, password) {
 }
 
 export async function apiFetch(path, options = {}) {
+  const authHeaders = getAuthHeaders();
+  if (options.body instanceof FormData) {
+    delete authHeaders["Content-Type"];
+  }
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
-      ...getAuthHeaders(),
+      ...authHeaders,
       ...options.headers,
     },
   });
+
 
   const data = await response.json().catch(() => ({}));
 

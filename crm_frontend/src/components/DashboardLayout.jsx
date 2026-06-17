@@ -26,6 +26,8 @@ function isNavActive(pathname, to) {
       return (pathname === "/client-notes" || pathname.startsWith("/client-notes/")) && pathname !== "/client-notes/follow-ups";
     case "/sales-reports":
       return pathname === "/sales-reports";
+    case "/documents":
+      return pathname === "/documents" || pathname.startsWith("/documents/");
     case "/contacts":
       return pathname === "/contacts" || pathname.startsWith("/contacts/");
     case "/products":
@@ -140,6 +142,11 @@ function DashboardLayout({ title, roleLabel, children }) {
             {hasPermission("client_notes.view") && (
               <Link to="/client-notes" className={navLinkClass(pathname, "/client-notes")}>
                 Notes
+              </Link>
+            )}
+            {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+              <Link to="/documents" className={navLinkClass(pathname, "/documents")}>
+                Documents
               </Link>
             )}
             {hasPermission("reports.view") && (

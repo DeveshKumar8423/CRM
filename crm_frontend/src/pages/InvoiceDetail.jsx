@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 import { STATUS_LABELS, formatCurrency, formatDate, statusBadgeClass } from "../utils/invoices";
 
 function InvoiceDetail() {
@@ -167,8 +169,15 @@ function InvoiceDetail() {
           />
         </div>
       )}
+
+      {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+        <div className="crm-panel crm-mt">
+          <DocumentsPanel invoiceId={Number(id)} />
+        </div>
+      )}
     </DashboardLayout>
   );
 }
+
 
 export default InvoiceDetail;

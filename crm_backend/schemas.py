@@ -1670,3 +1670,21 @@ class EmailTemplateResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+class UploadedFileResponse(BaseModel):
+    id: int
+    company_id: int | None
+    original_filename: str
+    stored_filename: str
+    file_type: str
+    file_size: int
+    uploaded_by: StaffAssigneeResponse
+    related_module: str | None
+    related_record_id: int | None
+    created_at: datetime
+    file_url: str
+
+    class Config:
+        from_attributes = True
+
+

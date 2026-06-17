@@ -90,6 +90,13 @@ PERMISSIONS = [
     ("numbering_config.create", "Create numbering configurations", "numbering_config"),
     ("numbering_config.edit", "Edit numbering configurations", "numbering_config"),
     ("numbering_config.delete", "Delete numbering configurations", "numbering_config"),
+    # Files
+    ("files.upload", "Upload files", "files"),
+    ("files.view", "View all files", "files"),
+    ("files.view_own", "View own files", "files"),
+    ("files.download", "Download all files", "files"),
+    ("files.download_own", "Download own files", "files"),
+    ("files.delete", "Delete files", "files"),
 ]
 
 ROLE_PERMISSIONS: dict[str, list[str]] = {
@@ -156,6 +163,9 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "reminders.edit",
         "payments.view",
         "dashboard.view",
+        "files.upload",
+        "files.view",
+        "files.download",
     ],
     "Employee": [
         "profile.view",
@@ -190,6 +200,9 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "reminders.edit",
         "payments.view",
         "dashboard.view",
+        "files.upload",
+        "files.view_own",
+        "files.download_own",
     ],
     "User": [
         "profile.view",
