@@ -1509,3 +1509,91 @@ a {
 .crm-report-on_track { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .crm-report-at_risk { background: rgba(249, 115, 22, 0.15); color: #f97316; }
 .crm-report-default { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+.crm-expense-draft { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.crm-expense-submitted { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-expense-under_review { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.crm-expense-approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.crm-expense-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-expense-paid { background: rgba(34, 197, 94, 0.2); color: #16a34a; }
+.crm-expense-cancelled { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.crm-expense-missing_proof { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+
+.crm-btn-link-style {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.crm-po-draft { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.crm-po-submitted { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-po-under_review { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.crm-po-approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.crm-po-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-po-sent_to_vendor { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.crm-po-partially_received { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.crm-po-fully_received { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-po-partially_billed { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.crm-po-fully_billed { background: rgba(34, 197, 94, 0.2); color: #16a34a; }
+.crm-po-closed { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.crm-po-cancelled { background: rgba(75, 85, 99, 0.15); color: #4b5563; }
+
+.crm-inv-not_tracked { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+.crm-inv-awaiting_opening { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-inv-active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-inv-low_stock { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.crm-inv-out_of_stock { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-inv-inactive { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.crm-inv-move-opening { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-inv-move-purchase { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-inv-move-sale { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.crm-inv-move-damage { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-inv-move-adjustment { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
+.crm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.crm-modal {
+  background: var(--crm-panel-bg, #fff);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.crm-wh-status-active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-wh-status-inactive { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.crm-wh-status-maintenance { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.crm-wh-status-closed { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-wh-type-branch { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-wh-type-warehouse { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.crm-wh-type-store { background: rgba(20, 184, 166, 0.15); color: #14b8a6; }
+.crm-wh-type-zone { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.crm-wh-type-rack { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.crm-wh-type-bin { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+.crm-wh-type-project_site { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+.crm-wh-type-staging_area { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.crm-wh-type-quarantine { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-wh-move-receipt { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-wh-move-issue { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.crm-wh-move-damage { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-wh-move-adjustment { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.crm-wh-move-transfer_in { background: rgba(20, 184, 166, 0.15); color: #14b8a6; }
+.crm-wh-move-transfer_out { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.crm-wh-stock-active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.crm-wh-stock-low_stock { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.crm-wh-stock-out_of_stock { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-stat-value-sm { font-size: 1rem; line-height: 1.4; }

@@ -18,6 +18,10 @@ from routers.invoices_router import public_router as invoices_public_router
 from routers.invoices_router import router as invoices_router
 from routers.client_notes_router import router as client_notes_router
 from routers.sales_reports_router import router as sales_reports_router
+from routers.expenses_router import router as expenses_router
+from routers.purchase_orders_router import router as purchase_orders_router
+from routers.inventory_router import router as inventory_router
+from routers.warehouses_router import router as warehouses_router
 from routers.settings_router import router as settings_router
 
 app = FastAPI(title="CRM API")
@@ -48,4 +52,8 @@ app.include_router(invoices_router)
 app.include_router(invoices_public_router)
 app.include_router(client_notes_router)
 app.include_router(sales_reports_router)
+app.include_router(expenses_router)
+app.include_router(purchase_orders_router)
+app.include_router(inventory_router)
+app.include_router(warehouses_router)
 app.include_router(settings_router)

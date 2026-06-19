@@ -1425,3 +1425,618 @@ class SalesReportPipelineHealthResponse(BaseModel):
     health_score: int
     health_label: str
 
+
+# Expenses
+
+
+class ExpenseCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    category: str = Field(min_length=1, max_length=50)
+    vendor_name: str = Field(min_length=1, max_length=200)
+    amount: float = Field(gt=0)
+    tax_amount: float = Field(default=0, ge=0)
+    currency: str = Field(default="INR", max_length=3)
+    expense_date: datetime
+    reimbursement_due_date: datetime | None = None
+    payment_mode: str = Field(min_length=1, max_length=30)
+    notes: str | None = Field(default=None, max_length=5000)
+    receipt_reference: str | None = Field(default=None, max_length=100)
+    cost_center: str | None = Field(default=None, max_length=100)
+    deal_id: int | None = None
+    contact_id: int | None = None
+
+
+class ExpenseUpdateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    category: str = Field(min_length=1, max_length=50)
+    vendor_name: str = Field(min_length=1, max_length=200)
+    amount: float = Field(gt=0)
+    tax_amount: float = Field(default=0, ge=0)
+    currency: str = Field(default="INR", max_length=3)
+    expense_date: datetime
+    reimbursement_due_date: datetime | None = None
+    payment_mode: str = Field(min_length=1, max_length=30)
+    notes: str | None = Field(default=None, max_length=5000)
+    receipt_reference: str | None = Field(default=None, max_length=100)
+    cost_center: str | None = Field(default=None, max_length=100)
+    deal_id: int | None = None
+    contact_id: int | None = None
+
+
+class ExpenseReviewRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class ExpenseRejectRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class ExpenseAttachmentResponse(BaseModel):
+    id: int
+    original_filename: str
+    content_type: str | None = None
+    file_size: int
+    uploaded_by_name: str | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExpenseResponse(BaseModel):
+    id: int
+    expense_number: str | None = None
+    title: str
+    category: str
+    vendor_name: str
+    amount: float
+    tax_amount: float
+    total_amount: float
+    currency: str
+    expense_date: datetime
+    reimbursement_due_date: datetime | None = None
+    payment_mode: str
+    status: str
+    notes: str | None = None
+    receipt_reference: str | None = None
+    rejection_reason: str | None = None
+    reviewer_comments: str | None = None
+    cost_center: str | None = None
+    deal_id: int | None = None
+    deal_title: str | None = None
+    contact_id: int | None = None
+    contact_name: str | None = None
+    submitted_by_id: int
+    submitted_by_name: str | None = None
+    reviewed_by_name: str | None = None
+    approved_by_name: str | None = None
+    paid_by_name: str | None = None
+    submitted_at: datetime | None = None
+    reviewed_at: datetime | None = None
+    approved_at: datetime | None = None
+    paid_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+    attachments: list[ExpenseAttachmentResponse] = []
+    has_proof: bool = False
+    requires_proof: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExpenseListResponse(BaseModel):
+    items: list[ExpenseResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class ExpenseStatsResponse(BaseModel):
+    total_spend_month: float
+    pending_approval_amount: float
+    approved_unpaid_amount: float
+    rejected_count: int
+    top_category: str | None = None
+    top_vendor: str | None = None
+    by_category: list[dict]
+    by_vendor: list[dict]
+
+
+class ExpenseStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class ExpenseCategoryOption(BaseModel):
+    value: str
+    label: str
+
+
+class ExpensePaymentModeOption(BaseModel):
+    value: str
+    label: str
+
+
+# Purchase Orders
+
+
+class PurchaseOrderLineItemFields(BaseModel):
+    product_id: int | None = None
+    sort_order: int = 0
+    description: str = Field(min_length=1, max_length=255)
+    sku: str | None = Field(default=None, max_length=80)
+    unit: str = Field(default="Unit", max_length=30)
+    ordered_quantity: float = Field(default=1, gt=0)
+    unit_price: float = Field(default=0, ge=0)
+    tax_rate: float = Field(default=18, ge=0, le=100)
+
+
+class PurchaseOrderLineItemResponse(PurchaseOrderLineItemFields):
+    id: int
+    received_quantity: float
+    billed_quantity: float
+    pending_receipt_quantity: float
+    pending_billing_quantity: float
+    line_subtotal: float
+    line_total: float
+    billed_amount: float
+    product_name: str | None = None
+
+
+class PurchaseOrderCreateRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    vendor_name: str = Field(min_length=1, max_length=200)
+    vendor_contact: str | None = Field(default=None, max_length=120)
+    vendor_email: str | None = Field(default=None, max_length=255)
+    vendor_phone: str | None = Field(default=None, max_length=30)
+    currency: str = Field(default="INR", max_length=3)
+    payment_terms: str | None = Field(default=None, max_length=40)
+    po_date: datetime
+    expected_delivery_date: datetime | None = None
+    delivery_location: str | None = Field(default=None, max_length=5000)
+    notes: str | None = Field(default=None, max_length=5000)
+    internal_reference: str | None = Field(default=None, max_length=100)
+    vendor_quote_reference: str | None = Field(default=None, max_length=100)
+    cost_center: str | None = Field(default=None, max_length=100)
+    deal_id: int | None = None
+    contact_id: int | None = None
+    line_items: list[PurchaseOrderLineItemFields] = Field(default_factory=list)
+
+
+class PurchaseOrderUpdateRequest(PurchaseOrderCreateRequest):
+    pass
+
+
+class PurchaseOrderReceiptResponse(BaseModel):
+    id: int
+    line_item_id: int
+    line_description: str | None = None
+    quantity: float
+    receipt_date: datetime
+    grn_reference: str | None = None
+    notes: str | None = None
+    recorded_by_name: str | None = None
+    created_at: datetime
+
+
+class PurchaseOrderBillingResponse(BaseModel):
+    id: int
+    line_item_id: int
+    line_description: str | None = None
+    quantity: float
+    amount: float
+    bill_reference: str | None = None
+    notes: str | None = None
+    recorded_by_name: str | None = None
+    created_at: datetime
+
+
+class PurchaseOrderAttachmentResponse(BaseModel):
+    id: int
+    original_filename: str
+    content_type: str | None = None
+    file_size: int
+    uploaded_by_name: str | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PurchaseOrderResponse(BaseModel):
+    id: int
+    po_number: str | None = None
+    title: str
+    vendor_name: str
+    vendor_contact: str | None = None
+    vendor_email: str | None = None
+    vendor_phone: str | None = None
+    status: str
+    currency: str
+    payment_terms: str | None = None
+    po_date: datetime
+    expected_delivery_date: datetime | None = None
+    delivery_location: str | None = None
+    notes: str | None = None
+    internal_reference: str | None = None
+    vendor_quote_reference: str | None = None
+    cost_center: str | None = None
+    rejection_reason: str | None = None
+    reviewer_comments: str | None = None
+    subtotal: float
+    total_tax: float
+    grand_total: float
+    received_value: float
+    billed_value: float
+    pending_receipt_value: float
+    pending_billing_value: float
+    received_percent: float
+    billed_percent: float
+    deal_id: int | None = None
+    deal_title: str | None = None
+    contact_id: int | None = None
+    contact_name: str | None = None
+    created_by_id: int
+    created_by_name: str | None = None
+    reviewed_by_name: str | None = None
+    approved_by_name: str | None = None
+    sent_by_name: str | None = None
+    closed_by_name: str | None = None
+    submitted_at: datetime | None = None
+    reviewed_at: datetime | None = None
+    approved_at: datetime | None = None
+    sent_at: datetime | None = None
+    closed_at: datetime | None = None
+    cancelled_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    line_items: list[PurchaseOrderLineItemResponse] = Field(default_factory=list)
+    receipts: list[PurchaseOrderReceiptResponse] = Field(default_factory=list)
+    billings: list[PurchaseOrderBillingResponse] = Field(default_factory=list)
+    attachments: list[PurchaseOrderAttachmentResponse] = Field(default_factory=list)
+
+
+class PurchaseOrderListResponse(BaseModel):
+    items: list[PurchaseOrderResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class PurchaseOrderStatsResponse(BaseModel):
+    open_po_value: float
+    pending_approval_amount: float
+    pending_receipt_value: float
+    pending_billing_value: float
+    overdue_delivery_count: int
+    top_vendor: str | None = None
+    by_vendor: list[dict]
+
+
+class PurchaseOrderStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class PurchaseOrderPaymentTermOption(BaseModel):
+    value: str
+    label: str
+
+
+class PurchaseOrderReviewRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class PurchaseOrderRejectRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class PurchaseOrderRecordReceiptRequest(BaseModel):
+    line_item_id: int
+    quantity: float = Field(gt=0)
+    receipt_date: datetime
+    grn_reference: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class PurchaseOrderRecordBillingRequest(BaseModel):
+    line_item_id: int
+    quantity: float = Field(gt=0)
+    amount: float = Field(gt=0)
+    bill_reference: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+# Inventory
+
+
+class InventoryEnableTrackingRequest(BaseModel):
+    reorder_level: float | None = Field(default=None, ge=0)
+    unit_valuation: float = Field(default=0, ge=0)
+
+
+class InventoryOpeningStockRequest(BaseModel):
+    quantity: float = Field(gt=0)
+    unit_valuation: float = Field(ge=0)
+    movement_date: datetime
+    reference_number: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class InventoryRecordMovementRequest(BaseModel):
+    movement_type: str = Field(min_length=1, max_length=20)
+    quantity: float = Field(gt=0)
+    unit_valuation: float = Field(ge=0)
+    movement_date: datetime
+    adjustment_direction: str | None = Field(default=None, max_length=3)
+    reason: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=2000)
+    reference_number: str | None = Field(default=None, max_length=100)
+
+
+class InventorySettingsUpdateRequest(BaseModel):
+    reorder_level: float | None = Field(default=None, ge=0)
+    unit_valuation: float | None = Field(default=None, ge=0)
+
+
+class StockMovementResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str | None = None
+    product_sku: str | None = None
+    movement_type: str
+    direction: str
+    quantity: float
+    unit_value: float
+    total_value: float
+    quantity_before: float
+    quantity_after: float
+    movement_date: datetime
+    reference_type: str | None = None
+    reference_id: int | None = None
+    reference_number: str | None = None
+    source_module: str
+    reason: str | None = None
+    notes: str | None = None
+    negative_override: bool
+    recorded_by_name: str | None = None
+    created_at: datetime
+
+
+class InventoryProductResponse(BaseModel):
+    id: int
+    service_code: str | None = None
+    name: str
+    category: str | None = None
+    unit: str
+    status: str
+    inventory_tracked: bool
+    on_hand_quantity: float
+    unit_valuation: float
+    stock_value: float
+    reorder_level: float | None = None
+    opening_recorded: bool
+    inventory_status: str
+    last_movement_at: datetime | None = None
+    total_purchased: float = 0
+    total_sold: float = 0
+    total_damaged: float = 0
+    net_adjustments: float = 0
+    movements: list[StockMovementResponse] = Field(default_factory=list)
+
+
+class InventoryListResponse(BaseModel):
+    items: list[InventoryProductResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class StockMovementListResponse(BaseModel):
+    items: list[StockMovementResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class InventoryStatsResponse(BaseModel):
+    total_stock_value: float
+    tracked_products: int
+    low_stock_count: int
+    out_of_stock_count: int
+    movements_this_month: int
+    top_product_name: str | None = None
+    top_product_value: float = 0
+    by_category: list[dict]
+    recent_movements: list[StockMovementResponse]
+
+
+class InventoryMovementTypeOption(BaseModel):
+    value: str
+    label: str
+
+
+class InventoryStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class InventoryReasonOption(BaseModel):
+    value: str
+    label: str
+
+
+# Warehouses
+
+
+class WarehouseLocationCreateRequest(BaseModel):
+    location_code: str = Field(min_length=1, max_length=50)
+    name: str = Field(min_length=1, max_length=200)
+    location_type: str = Field(min_length=1, max_length=30)
+    parent_id: int | None = None
+    status: str = Field(default="active", max_length=20)
+    address: str | None = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
+    is_default_receiving: bool = False
+    is_default_dispatch: bool = False
+
+
+class WarehouseLocationUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    status: str | None = Field(default=None, max_length=20)
+    address: str | None = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
+    is_default_receiving: bool | None = None
+    is_default_dispatch: bool | None = None
+
+
+class WarehouseLocationResponse(BaseModel):
+    id: int
+    location_code: str
+    name: str
+    location_type: str
+    parent_id: int | None = None
+    parent_name: str | None = None
+    status: str
+    address: str | None = None
+    notes: str | None = None
+    is_default_receiving: bool
+    is_default_dispatch: bool
+    branch_name: str | None = None
+    warehouse_name: str | None = None
+    path: str | None = None
+    sku_count: int = 0
+    total_on_hand: float = 0
+    total_stock_value: float = 0
+    low_stock_count: int = 0
+    child_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class WarehouseLocationListResponse(BaseModel):
+    items: list[WarehouseLocationResponse]
+    total: int
+    summary: dict
+
+
+class WarehouseLocationDetailResponse(WarehouseLocationResponse):
+    children: list[WarehouseLocationResponse] = Field(default_factory=list)
+    recent_movements: list["LocationStockMovementResponse"] = Field(default_factory=list)
+    stock: list["LocationStockResponse"] = Field(default_factory=list)
+
+
+class LocationStockResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str | None = None
+    product_sku: str | None = None
+    product_category: str | None = None
+    location_id: int
+    location_name: str | None = None
+    location_code: str | None = None
+    location_type: str | None = None
+    branch_name: str | None = None
+    warehouse_name: str | None = None
+    location_path: str | None = None
+    on_hand_quantity: float
+    available_quantity: float
+    unit_valuation: float
+    stock_value: float
+    reorder_level: float | None = None
+    stock_status: str
+    last_movement_at: datetime | None = None
+
+
+class LocationStockListResponse(BaseModel):
+    items: list[LocationStockResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class LocationStockMovementResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str | None = None
+    product_sku: str | None = None
+    location_id: int
+    location_name: str | None = None
+    location_path: str | None = None
+    movement_type: str
+    direction: str
+    quantity: float
+    unit_value: float
+    total_value: float
+    quantity_before: float
+    quantity_after: float
+    movement_date: datetime
+    transfer_reference: str | None = None
+    reference_number: str | None = None
+    linked_stock_movement_id: int | None = None
+    reason: str | None = None
+    notes: str | None = None
+    negative_override: bool
+    recorded_by_name: str | None = None
+    created_at: datetime
+
+
+class LocationStockMovementListResponse(BaseModel):
+    items: list[LocationStockMovementResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class WarehouseRecordMovementRequest(BaseModel):
+    product_id: int
+    location_id: int
+    movement_type: str = Field(min_length=1, max_length=20)
+    quantity: float = Field(gt=0)
+    unit_valuation: float = Field(ge=0)
+    movement_date: datetime
+    adjustment_direction: str | None = Field(default=None, max_length=3)
+    reason: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=2000)
+    reference_number: str | None = Field(default=None, max_length=100)
+
+
+class WarehouseTransferRequest(BaseModel):
+    product_id: int
+    source_location_id: int
+    destination_location_id: int
+    quantity: float = Field(gt=0)
+    movement_date: datetime
+    notes: str | None = Field(default=None, max_length=2000)
+    reference_number: str | None = Field(default=None, max_length=100)
+
+
+class WarehouseTransferResponse(BaseModel):
+    transfer_reference: str
+    transfer_out: LocationStockMovementResponse
+    transfer_in: LocationStockMovementResponse
+
+
+class WarehouseTransferListResponse(BaseModel):
+    items: list[WarehouseTransferResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class WarehouseStatsResponse(BaseModel):
+    total_stock_value: float
+    active_warehouses: int
+    total_locations: int
+    locations_with_stock: int
+    low_stock_locations: int
+    stock_by_branch: list[dict]
+    stock_by_warehouse: list[dict]
+    recent_transfers: list[WarehouseTransferResponse]
+    recent_movements: list[LocationStockMovementResponse]
+
+
+class WarehouseOptionResponse(BaseModel):
+    value: str
+    label: str
+

@@ -70,6 +70,26 @@ function DashboardLayout({ title, roleLabel, children }) {
               Invoices
             </Link>
           )}
+          {hasPermission("expenses.view") && (
+            <Link to="/expenses" className="crm-nav-link">
+              Expenses
+            </Link>
+          )}
+          {hasPermission("purchase_orders.view") && (
+            <Link to="/purchase-orders" className="crm-nav-link">
+              Purchase Orders
+            </Link>
+          )}
+          {hasPermission("inventory.view") && (
+            <Link to="/inventory" className="crm-nav-link">
+              Inventory
+            </Link>
+          )}
+          {hasPermission("warehouses.view") && (
+            <Link to="/warehouses" className="crm-nav-link">
+              Warehouses
+            </Link>
+          )}
           {hasPermission("client_notes.view") && (
             <Link to="/client-notes" className="crm-nav-link">
               Client Notes

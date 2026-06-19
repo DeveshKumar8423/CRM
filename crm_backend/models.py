@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
 
@@ -65,6 +65,12 @@ class Company(Base):
     sales_orders = relationship("SalesOrder", back_populates="company")
     invoices = relationship("Invoice", back_populates="company")
     client_notes = relationship("ClientNote", back_populates="company")
+    expenses = relationship("Expense", back_populates="company")
+    purchase_orders = relationship("PurchaseOrder", back_populates="company")
+    stock_movements = relationship("StockMovement", back_populates="company")
+    warehouse_locations = relationship("WarehouseLocation", back_populates="company")
+    location_stocks = relationship("LocationStock", back_populates="company")
+    location_stock_movements = relationship("LocationStockMovement", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
 
 
@@ -183,6 +189,12 @@ class Product(Base):
     completion_timeline = Column(String(80), nullable=True)
     description = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, default="active")
+    inventory_tracked = Column(Boolean, nullable=False, default=False)
+    on_hand_quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    unit_valuation = Column(Numeric(14, 2), nullable=False, default=0)
+    reorder_level = Column(Numeric(12, 2), nullable=True)
+    opening_recorded = Column(Boolean, nullable=False, default=False)
+    last_movement_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
@@ -191,6 +203,140 @@ class Product(Base):
     )
 
     company = relationship("Company", back_populates="products")
+    stock_movements = relationship(
+        "StockMovement",
+        back_populates="product",
+        order_by="StockMovement.movement_date.desc()",
+    )
+    location_stocks = relationship("LocationStock", back_populates="product")
+
+
+class StockMovement(Base):
+    __tablename__ = "stock_movements"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    movement_type = Column(String(20), nullable=False, index=True)
+    direction = Column(String(3), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    unit_value = Column(Numeric(14, 2), nullable=False, default=0)
+    total_value = Column(Numeric(14, 2), nullable=False, default=0)
+    quantity_before = Column(Numeric(12, 2), nullable=False, default=0)
+    quantity_after = Column(Numeric(12, 2), nullable=False, default=0)
+    movement_date = Column(DateTime(timezone=True), nullable=False)
+    reference_type = Column(String(30), nullable=True)
+    reference_id = Column(Integer, nullable=True)
+    reference_number = Column(String(100), nullable=True)
+    source_module = Column(String(30), nullable=False, default="manual")
+    reason = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    negative_override = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company", back_populates="stock_movements")
+    product = relationship("Product", back_populates="stock_movements")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+    location_movements = relationship("LocationStockMovement", back_populates="linked_stock_movement")
+
+
+class WarehouseLocation(Base):
+    __tablename__ = "warehouse_locations"
+    __table_args__ = (UniqueConstraint("company_id", "location_code", name="uq_warehouse_location_code"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    parent_id = Column(Integer, ForeignKey("warehouse_locations.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    location_code = Column(String(50), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    location_type = Column(String(30), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="active", index=True)
+    address = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    is_default_receiving = Column(Boolean, nullable=False, default=False)
+    is_default_dispatch = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="warehouse_locations")
+    parent = relationship("WarehouseLocation", remote_side=[id], back_populates="children")
+    children = relationship("WarehouseLocation", back_populates="parent", order_by="WarehouseLocation.name")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    location_stocks = relationship("LocationStock", back_populates="location")
+    movements = relationship(
+        "LocationStockMovement",
+        back_populates="location",
+        order_by="LocationStockMovement.movement_date.desc()",
+    )
+
+
+class LocationStock(Base):
+    __tablename__ = "location_stocks"
+    __table_args__ = (UniqueConstraint("product_id", "location_id", name="uq_location_stock_product"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    location_id = Column(Integer, ForeignKey("warehouse_locations.id"), nullable=False)
+
+    on_hand_quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    unit_valuation = Column(Numeric(14, 2), nullable=False, default=0)
+    reorder_level = Column(Numeric(12, 2), nullable=True)
+    last_movement_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="location_stocks")
+    product = relationship("Product", back_populates="location_stocks")
+    location = relationship("WarehouseLocation", back_populates="location_stocks")
+
+
+class LocationStockMovement(Base):
+    __tablename__ = "location_stock_movements"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    location_id = Column(Integer, ForeignKey("warehouse_locations.id"), nullable=False)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    linked_stock_movement_id = Column(Integer, ForeignKey("stock_movements.id"), nullable=True)
+
+    movement_type = Column(String(20), nullable=False, index=True)
+    direction = Column(String(3), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    unit_value = Column(Numeric(14, 2), nullable=False, default=0)
+    total_value = Column(Numeric(14, 2), nullable=False, default=0)
+    quantity_before = Column(Numeric(12, 2), nullable=False, default=0)
+    quantity_after = Column(Numeric(12, 2), nullable=False, default=0)
+    movement_date = Column(DateTime(timezone=True), nullable=False)
+    transfer_reference = Column(String(50), nullable=True, index=True)
+    reference_number = Column(String(100), nullable=True)
+    reason = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    negative_override = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company", back_populates="location_stock_movements")
+    product = relationship("Product")
+    location = relationship("WarehouseLocation", back_populates="movements")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+    linked_stock_movement = relationship("StockMovement", back_populates="location_movements")
 
 
 class Contact(Base):
@@ -748,6 +894,239 @@ class ClientNoteRevision(Base):
 
     client_note = relationship("ClientNote", back_populates="revisions")
     editor = relationship("User", foreign_keys=[editor_id])
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    submitted_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    paid_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+
+    expense_number = Column(String(40), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
+    category = Column(String(50), nullable=False)
+    vendor_name = Column(String(200), nullable=False)
+    amount = Column(Numeric(14, 2), nullable=False)
+    tax_amount = Column(Numeric(14, 2), nullable=False, default=0)
+    currency = Column(String(3), nullable=False, default="INR")
+    expense_date = Column(DateTime(timezone=True), nullable=False)
+    reimbursement_due_date = Column(DateTime(timezone=True), nullable=True)
+    payment_mode = Column(String(30), nullable=False)
+    status = Column(String(30), nullable=False, default="draft", index=True)
+    notes = Column(Text, nullable=True)
+    receipt_reference = Column(String(100), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    reviewer_comments = Column(Text, nullable=True)
+    cost_center = Column(String(100), nullable=True)
+
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    paid_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="expenses")
+    submitted_by = relationship("User", foreign_keys=[submitted_by_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
+    approved_by = relationship("User", foreign_keys=[approved_by_id])
+    paid_by = relationship("User", foreign_keys=[paid_by_id])
+    deal = relationship("Deal", foreign_keys=[deal_id])
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    attachments = relationship(
+        "ExpenseAttachment",
+        back_populates="expense",
+        cascade="all, delete-orphan",
+        order_by="ExpenseAttachment.created_at",
+    )
+
+
+class ExpenseAttachment(Base):
+    __tablename__ = "expense_attachments"
+
+    id = Column(Integer, primary_key=True)
+    expense_id = Column(Integer, ForeignKey("expenses.id"), nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    original_filename = Column(String(255), nullable=False)
+    stored_filename = Column(String(255), nullable=False)
+    content_type = Column(String(100), nullable=True)
+    file_size = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    expense = relationship("Expense", back_populates="attachments")
+    uploaded_by = relationship("User", foreign_keys=[uploaded_by_id])
+
+
+class PurchaseOrder(Base):
+    __tablename__ = "purchase_orders"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    sent_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    closed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+
+    po_number = Column(String(40), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
+    vendor_name = Column(String(200), nullable=False)
+    vendor_contact = Column(String(120), nullable=True)
+    vendor_email = Column(String(255), nullable=True)
+    vendor_phone = Column(String(30), nullable=True)
+    status = Column(String(30), nullable=False, default="draft", index=True)
+    currency = Column(String(3), nullable=False, default="INR")
+    payment_terms = Column(String(40), nullable=True)
+    po_date = Column(DateTime(timezone=True), nullable=False)
+    expected_delivery_date = Column(DateTime(timezone=True), nullable=True)
+    delivery_location = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    internal_reference = Column(String(100), nullable=True)
+    vendor_quote_reference = Column(String(100), nullable=True)
+    cost_center = Column(String(100), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    reviewer_comments = Column(Text, nullable=True)
+
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    total_tax = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    received_value = Column(Numeric(14, 2), nullable=False, default=0)
+    billed_value = Column(Numeric(14, 2), nullable=False, default=0)
+
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="purchase_orders")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
+    approved_by = relationship("User", foreign_keys=[approved_by_id])
+    sent_by = relationship("User", foreign_keys=[sent_by_id])
+    closed_by = relationship("User", foreign_keys=[closed_by_id])
+    deal = relationship("Deal", foreign_keys=[deal_id])
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    line_items = relationship(
+        "PurchaseOrderLineItem",
+        back_populates="purchase_order",
+        cascade="all, delete-orphan",
+        order_by="PurchaseOrderLineItem.sort_order",
+    )
+    receipts = relationship(
+        "PurchaseOrderReceipt",
+        back_populates="purchase_order",
+        cascade="all, delete-orphan",
+        order_by="PurchaseOrderReceipt.created_at.desc()",
+    )
+    billings = relationship(
+        "PurchaseOrderBilling",
+        back_populates="purchase_order",
+        cascade="all, delete-orphan",
+        order_by="PurchaseOrderBilling.created_at.desc()",
+    )
+    attachments = relationship(
+        "PurchaseOrderAttachment",
+        back_populates="purchase_order",
+        cascade="all, delete-orphan",
+        order_by="PurchaseOrderAttachment.created_at",
+    )
+
+
+class PurchaseOrderLineItem(Base):
+    __tablename__ = "purchase_order_line_items"
+
+    id = Column(Integer, primary_key=True)
+    purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+    description = Column(String(255), nullable=False)
+    sku = Column(String(80), nullable=True)
+    unit = Column(String(30), nullable=False, default="Unit")
+    ordered_quantity = Column(Numeric(12, 2), nullable=False, default=1)
+    received_quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    billed_quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    unit_price = Column(Numeric(14, 2), nullable=False, default=0)
+    tax_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    line_total = Column(Numeric(14, 2), nullable=False, default=0)
+    billed_amount = Column(Numeric(14, 2), nullable=False, default=0)
+
+    purchase_order = relationship("PurchaseOrder", back_populates="line_items")
+    product = relationship("Product")
+
+
+class PurchaseOrderReceipt(Base):
+    __tablename__ = "purchase_order_receipts"
+
+    id = Column(Integer, primary_key=True)
+    purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=False)
+    line_item_id = Column(Integer, ForeignKey("purchase_order_line_items.id"), nullable=False)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    receipt_date = Column(DateTime(timezone=True), nullable=False)
+    grn_reference = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    purchase_order = relationship("PurchaseOrder", back_populates="receipts")
+    line_item = relationship("PurchaseOrderLineItem")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+
+
+class PurchaseOrderBilling(Base):
+    __tablename__ = "purchase_order_billings"
+
+    id = Column(Integer, primary_key=True)
+    purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=False)
+    line_item_id = Column(Integer, ForeignKey("purchase_order_line_items.id"), nullable=False)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    amount = Column(Numeric(14, 2), nullable=False)
+    bill_reference = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    purchase_order = relationship("PurchaseOrder", back_populates="billings")
+    line_item = relationship("PurchaseOrderLineItem")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+
+
+class PurchaseOrderAttachment(Base):
+    __tablename__ = "purchase_order_attachments"
+
+    id = Column(Integer, primary_key=True)
+    purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    original_filename = Column(String(255), nullable=False)
+    stored_filename = Column(String(255), nullable=False)
+    content_type = Column(String(100), nullable=True)
+    file_size = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    purchase_order = relationship("PurchaseOrder", back_populates="attachments")
+    uploaded_by = relationship("User", foreign_keys=[uploaded_by_id])
 
 
 class ActivityLog(Base):

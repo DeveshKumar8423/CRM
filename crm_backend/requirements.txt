@@ -10,3 +10,4 @@ pydantic[email]
 python-jose[cryptography]
 alembic
 openpyxl
+python-multipart

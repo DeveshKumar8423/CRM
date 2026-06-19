@@ -47,6 +47,26 @@ import ClientInvoiceView from "./pages/ClientInvoiceView";
 import ClientNotes from "./pages/ClientNotes";
 import ClientNotesFollowUpQueue from "./pages/ClientNotesFollowUpQueue";
 import SalesReports from "./pages/SalesReports";
+import Expenses from "./pages/Expenses";
+import ExpenseForm from "./pages/ExpenseForm";
+import ExpenseDetail from "./pages/ExpenseDetail";
+import ExpenseApprovalQueue from "./pages/ExpenseApprovalQueue";
+import PurchaseOrders from "./pages/PurchaseOrders";
+import PurchaseOrderForm from "./pages/PurchaseOrderForm";
+import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
+import PurchaseOrderApprovalQueue from "./pages/PurchaseOrderApprovalQueue";
+import Inventory from "./pages/Inventory";
+import InventoryProductDetail from "./pages/InventoryProductDetail";
+import InventoryRecordMovement from "./pages/InventoryRecordMovement";
+import InventoryOpeningStock from "./pages/InventoryOpeningStock";
+import InventoryMovements from "./pages/InventoryMovements";
+import InventoryLowStock from "./pages/InventoryLowStock";
+import Warehouses from "./pages/Warehouses";
+import WarehouseLocationDetail from "./pages/WarehouseLocationDetail";
+import WarehouseStockByLocation from "./pages/WarehouseStockByLocation";
+import WarehouseRecordMovement from "./pages/WarehouseRecordMovement";
+import WarehouseTransfer from "./pages/WarehouseTransfer";
+import WarehouseTransferHistory from "./pages/WarehouseTransferHistory";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // New password‑reset pages
@@ -537,6 +557,212 @@ function App() {
               requiredPermission="reports.view"
             >
               <SalesReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="expenses.view"
+            >
+              <Expenses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses/approval-queue"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="expenses.approve"
+            >
+              <ExpenseApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="expenses.create"
+            >
+              <ExpenseForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="expenses.edit_own"
+            >
+              <ExpenseForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="expenses.view"
+            >
+              <ExpenseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-orders"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="purchase_orders.view"
+            >
+              <PurchaseOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-orders/approval-queue"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="purchase_orders.approve"
+            >
+              <PurchaseOrderApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-orders/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="purchase_orders.create"
+            >
+              <PurchaseOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-orders/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="purchase_orders.edit_own"
+            >
+              <PurchaseOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-orders/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="purchase_orders.view"
+            >
+              <PurchaseOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.view">
+              <Warehouses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/stock"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.view_stock">
+              <WarehouseStockByLocation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/record-movement"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.record_receipt">
+              <WarehouseRecordMovement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/transfer"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.transfer">
+              <WarehouseTransfer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/transfers"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.view">
+              <WarehouseTransferHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/locations/:locationId"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.view">
+              <WarehouseLocationDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.view">
+              <Inventory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory/movements"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.view">
+              <InventoryMovements />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory/low-stock"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.view">
+              <InventoryLowStock />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory/record-movement"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.record_purchase">
+              <InventoryRecordMovement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory/opening-stock"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.record_opening">
+              <InventoryOpeningStock />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory/:productId"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="inventory.view">
+              <InventoryProductDetail />
             </ProtectedRoute>
           }
         />
