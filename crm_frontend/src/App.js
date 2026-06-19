@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import AdminActivityLogs from "./pages/AdminActivityLogs";
 import AdminCompany from "./pages/AdminCompany";
+import NumberingConfig from "./pages/NumberingConfig";
 import Contacts from "./pages/Contacts";
 import ContactForm from "./pages/ContactForm";
 import ContactDetail from "./pages/ContactDetail";
@@ -67,11 +68,17 @@ import WarehouseStockByLocation from "./pages/WarehouseStockByLocation";
 import WarehouseRecordMovement from "./pages/WarehouseRecordMovement";
 import WarehouseTransfer from "./pages/WarehouseTransfer";
 import WarehouseTransferHistory from "./pages/WarehouseTransferHistory";
+import FollowUps from "./pages/FollowUps";
+import Payments from "./pages/Payments";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // New password‑reset pages
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import SystemConfiguration from "./pages/SystemConfiguration";
+import EmailTemplates from "./pages/EmailTemplates";
+import Documents from "./pages/Documents";
+
 
 const ALL_ROLES = ["Admin", "Manager", "Employee", "User"];
 const STAFF_ROLES = ["Admin", "Manager", "Employee"];
@@ -161,6 +168,33 @@ function App() {
               requiredPermission="company.view"
             >
               <AdminCompany />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/numbering-config"
+          element={
+            <ProtectedRoute
+              allowedRoles={["Admin"]}
+              requiredPermission="numbering_config.view"
+            >
+              <NumberingConfig />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/system-config"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <SystemConfiguration />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email-templates"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <EmailTemplates />
             </ProtectedRoute>
           }
         />
@@ -766,11 +800,42 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/follow-ups"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="reminders.view"
+            >
+              <FollowUps />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="payments.view"
+            >
+              <Payments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES}>
+              <Documents />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;

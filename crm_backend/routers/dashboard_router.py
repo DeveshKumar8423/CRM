@@ -1,0 +1,122 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from auth_utils import get_db, require_permission
+from deal_config import PIPELINE_STAGES
+from models import ClientNote, Company, Deal, FollowUpReminder, Invoice, Quotation, User
+from schemas import DashboardKpiResponse
+
+router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+
+
+@router.get("/kpis", response_model=DashboardKpiResponse)
+def dashboard_kpis(
+    user: User = Depends(require_permission("dashboard.view")),
+    db: Session = Depends(get_db),
+):
+    company = db.query(Company).first()
+    if not company:
+        return DashboardKpiResponse()
+
+    now = datetime.now(timezone.utc)
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = start_of_day + timedelta(days=1)
+
+    pipeline_value = (
+        db.query(func.coalesce(func.sum(Deal.expected_value), 0))
+        .filter(Deal.company_id == company.id, Deal.stage.in_(PIPELINE_STAGES))
+        .scalar()
+    )
+    open_deals = (
+        db.query(func.count(Deal.id))
+        .filter(Deal.company_id == company.id, Deal.stage.in_(PIPELINE_STAGES))
+        .scalar()
+    )
+
+    pending_quotes = (
+        db.query(func.count(Quotation.id))
+        .filter(
+            Quotation.company_id == company.id,
+            Quotation.status.in_(["draft", "pending_approval", "approved", "sent", "viewed", "negotiation"]),
+        )
+        .scalar()
+    )
+
+    outstanding_statuses = ["issued", "sent", "viewed", "partially_paid", "overdue"]
+    overdue_invoices = (
+        db.query(func.count(Invoice.id))
+        .filter(
+            Invoice.company_id == company.id,
+            Invoice.status.in_(outstanding_statuses),
+            Invoice.outstanding_amount > 0,
+            Invoice.due_date < now,
+        )
+        .scalar()
+    )
+    total_outstanding = (
+        db.query(func.coalesce(func.sum(Invoice.outstanding_amount), 0))
+        .filter(
+            Invoice.company_id == company.id,
+            Invoice.status.in_(outstanding_statuses),
+            Invoice.outstanding_amount > 0,
+        )
+        .scalar()
+    )
+
+    reminder_due = (
+        db.query(func.count(FollowUpReminder.id))
+        .filter(
+            FollowUpReminder.company_id == company.id,
+            FollowUpReminder.status == "pending",
+            FollowUpReminder.due_at >= start_of_day,
+            FollowUpReminder.due_at < end_of_day,
+        )
+        .scalar()
+    )
+    reminder_overdue = (
+        db.query(func.count(FollowUpReminder.id))
+        .filter(
+            FollowUpReminder.company_id == company.id,
+            FollowUpReminder.status == "pending",
+            FollowUpReminder.due_at < now,
+        )
+        .scalar()
+    )
+    note_overdue = (
+        db.query(func.count(ClientNote.id))
+        .filter(
+            ClientNote.company_id == company.id,
+            ClientNote.is_deleted.is_(False),
+            ClientNote.follow_up_required.is_(True),
+            ClientNote.follow_up_completed_at.is_(None),
+            ClientNote.follow_up_due_date < now,
+        )
+        .scalar()
+    )
+    note_due_today = (
+        db.query(func.count(ClientNote.id))
+        .filter(
+            ClientNote.company_id == company.id,
+            ClientNote.is_deleted.is_(False),
+            ClientNote.follow_up_required.is_(True),
+            ClientNote.follow_up_completed_at.is_(None),
+            ClientNote.follow_up_due_date >= start_of_day,
+            ClientNote.follow_up_due_date < end_of_day,
+        )
+        .scalar()
+    )
+
+    return DashboardKpiResponse(
+        pipeline_value=float(pipeline_value or 0),
+        open_deals=open_deals or 0,
+        pending_quotes=pending_quotes or 0,
+        overdue_invoices=overdue_invoices or 0,
+        total_outstanding=float(total_outstanding or 0),
+        follow_ups_due_today=(reminder_due or 0) + (note_due_today or 0),
+        follow_ups_overdue=(reminder_overdue or 0) + (note_overdue or 0),
+    )

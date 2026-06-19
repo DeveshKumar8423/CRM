@@ -1,29 +1,84 @@
-# BlackPapers CRM — Level 1 Core Foundation
+# BlackPapers CRM
 
 A full-stack CRM for **BlackPapers** (Tributaries Unicorn LLP), built as an Odoo-style SaaS foundation for compliance, legal, and business services (India-first).
 
 **Stack:** FastAPI + SQLAlchemy + PostgreSQL + Alembic (backend) · React (Create React App) frontend
 
+**Current build:** Level 1 core foundation is largely complete. Level 2 sales, CRM, and billing is ~85% complete — the full sales flow from lead → deal → quotation → order → invoice is working in the app.
+
 ---
 
-## Level 1 — What’s implemented
+## Build status at a glance
+
+| Level | Progress | Summary |
+|-------|----------|---------|
+| **Level 1** | ~70% done | Users, company, roles, contacts, products, dashboard, activity logs |
+| **Level 2** | ~85% done | Leads, pipeline, quotes, orders, invoices, notes, reports, follow-ups, payments |
+
+---
+
+## Level 1 — Core Foundation
 
 | # | Module | Status |
 |---|--------|--------|
-| 1 | User Management | Done — staff accounts, profile, JWT auth |
-| 2 | Company Management | Done — business profile, GSTIN/PAN, currency |
-| 3 | Role & Permission System | Done — backend permissions on APIs |
-| 4 | Contact Database | Done — CRUD, notes, activities, 297 clients |
-| 5 | Product / Service Master | Done — service catalogue, pricing, categories |
-| 6 | Basic Dashboard | Done — welcome + client KPIs (active/inactive %) |
-| 7 | Activity Logs | Done — login/edit audit trail (Admin) |
-| 8–10 | Notifications, File Upload, System Settings | Deferred to later levels |
+| 1 | User Management | **Done** — staff accounts, profile, JWT auth, forgot/reset password |
+| 2 | Company Management | **Done** — business profile, GSTIN/PAN, currency |
+| 3 | Role & Permission System | **Done** — permission-gated APIs and frontend nav |
+| 4 | Contact Database | **Done** — CRUD, notes, activities (~297 clients) |
+| 5 | Product / Service Master | **Done** — service catalogue, pricing, categories (~134 services) |
+| 6 | Basic Dashboard | **Done** — welcome screen + client KPIs + sales KPIs |
+| 7 | Activity Logs | **Done** — login/edit audit trail (Admin) |
+| 8 | Notifications | **Deferred** |
+| 9 | File Upload | **Deferred** |
+| 10 | System Settings | **Partial** — company settings live; advanced templates/numbering later |
+
+---
+
+## Level 2 — Sales, CRM & Billing
+
+| # | Module | Status | Notes |
+|---|--------|--------|-------|
+| 1 | Lead Management | **Done** | CSV import, list/filter, assign, convert to contact (20k+ leads supported) |
+| 2 | Sales Pipeline | **Done** | Deal stages, kanban board, expected value, demo deals |
+| 3 | Follow-up Reminders | **Partial** | `/follow-ups` queue, reminders on lead/deal pages, overdue logic; auto email/WhatsApp not live |
+| 4 | Quotation System | **Done** | Create, approve, preview, send, client share link, demo data |
+| 5 | Sales Orders | **Done** | Convert from quote, milestones, status flow, demo data |
+| 6 | Invoice Generator | **Done** | GST invoice, PDF preview, client share link, demo data |
+| 7 | Payment Tracking | **Partial** | Outstanding invoices, ageing buckets, payments page; full reconciliation TBD |
+| 8 | Client Notes | **Done** | Notes on leads/deals/contacts, follow-up flags, demo data |
+| 9 | WhatsApp / Email | **Not started** | Needs SMTP + WhatsApp Business API credentials |
+| 10 | Sales Reports | **Done** | Overview, conversion, revenue, lead sources, team, pending deals, pipeline health |
+
+### Sales flow currently working
+
+```
+Lead → Deal → Quotation → Sales Order → Invoice → Payments
+```
+
+### UI polish already added
+
+- Dashboard sales KPI widget
+- Cross-links between lead, deal, quote, order, and invoice detail pages
+- Active section highlight in the top navigation
+- Unified follow-up queue (reminders + client note follow-ups)
+
+---
+
+## What’s remaining
+
+| Area | What’s still needed |
+|------|---------------------|
+| WhatsApp / Email module | SMTP credentials + WhatsApp Business API from manager/IT |
+| Auto follow-up reminders | Email/WhatsApp provider + reminder rules |
+| Payment tracking (full) | Payment entry workflow, reconciliation, optional payment gateway |
+| Level 1 deferred items | In-app notifications, file upload, advanced system settings |
+| Production billing polish | Final GSTIN, bank details, SAC codes, invoice/quote layout sign-off |
+| Lead capture integrations | Website forms, WhatsApp, Meta ads (if required) |
+| Deployment | Live server hosting, domain, SSL, production `.env` |
 
 ---
 
 ## Prerequisites
-
-Install these **before** cloning:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
@@ -32,10 +87,7 @@ Install these **before** cloning:
 | **PostgreSQL** | 14+ (16 recommended) | Database |
 | **Git** | Latest | Clone repo |
 
-Optional but useful:
-
-- **pgAdmin 4** — browse database tables and data
-- **VS Code** or any editor
+Optional: **pgAdmin 4**, **VS Code**
 
 ---
 
@@ -43,31 +95,34 @@ Optional but useful:
 
 ```
 CRM/
-├── crm_backend/          # FastAPI API, models, migrations, seeds
-│   ├── alembic/          # Database migrations (creates tables)
-│   ├── routers/          # API routes
-│   ├── .env.example      # Copy to .env and edit
-│   └── seed_*.py         # Data import scripts
-├── crm_frontend/         # React UI
-│   └── src/
-├── clients.json          # NOT in Git — get from team lead
-├── Final Master_Service_List.xlsx   # NOT in Git
-└── Master Employee Sheet.xlsx       # NOT in Git
+├── crm_backend/              # FastAPI API, models, migrations, seeds
+│   ├── alembic/              # Database migrations
+│   ├── routers/              # API routes (leads, deals, quotes, invoices, …)
+│   ├── services/             # Email service, PDF helpers
+│   ├── .env.example          # Copy to .env and edit
+│   └── seed_*.py             # Data import and demo scripts
+├── crm_frontend/             # React UI (see crm_frontend/README.md)
+├── docs/                     # PRDs for Level 2 modules
+├── clients.json              # NOT in Git — get from team lead
+├── Lead_file.csv             # NOT in Git — lead import source
+├── Final Master_Service_List.xlsx
+└── Master Employee Sheet.xlsx
 ```
 
 ---
 
 ## Data files (required for full setup)
 
-These files are **not pushed to GitHub** (privacy/size). Ask your team lead to share them (Google Drive, Slack, etc.) and place them in the **repo root** (`CRM/`):
+These files are **not pushed to GitHub** (privacy/size). Place them in the **repo root** (`CRM/`):
 
 | File | Used by | Purpose |
 |------|---------|---------|
 | `clients.json` | `seed_clients.py` | ~297 client records |
+| `Lead_file.csv` | `seed_leads.py` | Lead import (20k+ rows) |
 | `Final Master_Service_List.xlsx` | `seed_master_services.py` | ~134 services (sheet: **BlackPapers**) |
 | `Master Employee Sheet.xlsx` | `seed_master_employees.py` | Staff logins and roles |
 
-Without these files, the app still runs but contacts/products/staff will be empty or minimal.
+Without these files, the app still runs but contacts, products, staff, and leads will be empty or minimal.
 
 ---
 
@@ -80,37 +135,21 @@ git clone <your-repo-url>
 cd CRM
 ```
 
-### Step 2 — Install PostgreSQL and create the database
-
-1. Install PostgreSQL and note your **postgres user password**.
-2. Open **pgAdmin** or **psql** and run:
+### Step 2 — Create PostgreSQL database
 
 ```sql
 CREATE DATABASE crm_db;
 ```
 
-> **Important:** All CRM tables live in `crm_db`, not the default `postgres` database.
+> All CRM tables live in `crm_db`, not the default `postgres` database.
 
 ### Step 3 — Backend setup
 
 ```powershell
 cd crm_backend
-
-# Create virtual environment
 python -m venv venv
-
-# Activate (Windows PowerShell)
 .\venv\Scripts\Activate.ps1
-
-# If activation is blocked, run once:
-# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
 pip install -r requirements.txt
-```
-
-### Step 4 — Environment variables
-
-```powershell
 copy .env.example .env
 ```
 
@@ -119,24 +158,27 @@ Edit `crm_backend/.env`:
 ```env
 DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/crm_db
 JWT_SECRET=your-random-secret-key-change-this
+FRONTEND_URL=http://localhost:3000
+
+# Optional — needed for forgot-password and outbound email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_gmail_app_password
+SMTP_FROM=your_email@gmail.com
 ```
 
-- Replace `YOUR_PASSWORD` with your PostgreSQL password.
-- If the password contains `@`, URL-encode it (e.g. `Sahil@123` → `Sahil%40123`).
+If the password contains `@`, URL-encode it (e.g. `Sahil@123` → `Sahil%40123`).
 
-### Step 5 — Create database tables (migrations)
-
-Still in `crm_backend` with venv activated:
+### Step 4 — Migrations
 
 ```powershell
 alembic upgrade head
 ```
 
-This creates all tables (empty). It does **not** copy data from another machine — each developer runs this on their own PostgreSQL.
+### Step 5 — Seed data (run in this order)
 
-### Step 6 — Seed data (run in this order)
-
-Place the three data files in the repo root first, then:
+Place data files in the repo root first:
 
 ```powershell
 python seed_permissions.py
@@ -144,27 +186,35 @@ python seed_company.py
 python seed_master_employees.py
 python seed_clients.py
 python seed_master_services.py
+python seed_leads.py
 ```
 
 | Script | What it does |
 |--------|----------------|
-| `seed_permissions.py` | Permission codes + role matrix (Admin/Manager/Employee) |
-| `seed_company.py` | BlackPapers company profile + links staff to company |
-| `seed_master_employees.py` | Staff users from Excel (emails/passwords from sheet) |
-| `seed_clients.py` | Imports clients from `clients.json` (~70% active / ~30% inactive) |
+| `seed_permissions.py` | Permission codes + role matrix |
+| `seed_company.py` | BlackPapers company profile |
+| `seed_master_employees.py` | Staff users from Excel |
+| `seed_clients.py` | Imports clients from `clients.json` |
 | `seed_master_services.py` | Imports services from Excel |
+| `seed_leads.py` | Imports leads from `Lead_file.csv` |
 
-Optional (dev test users only — skip if you use the employee sheet):
+**Optional demo data (Level 2 testing):**
+
+```powershell
+python seed_demo_deals.py --reset
+python seed_demo_level2.py --reset
+python seed_demo_reminders.py --reset
+```
+
+**Optional dev test users** (skip if using the employee sheet):
 
 ```powershell
 python seed_users.py
 ```
 
-Creates `admin@crm.com`, `manager@crm.com`, `employee@crm.com` with simple passwords.
+> After running `seed_permissions.py`, users who are already logged in should **log out and log back in** so new nav items (Follow-ups, Payments, Reports) appear.
 
-### Step 7 — Frontend setup
-
-Open a **new terminal**:
+### Step 6 — Frontend setup
 
 ```powershell
 cd crm_frontend
@@ -175,14 +225,14 @@ npm install
 
 ## How to run (every day)
 
-You need **two terminals** — backend and frontend.
+Two terminals — backend and frontend.
 
 **Terminal 1 — Backend** (port 8000):
 
 ```powershell
 cd crm_backend
 .\venv\Scripts\Activate.ps1
-uvicorn main:app --reload
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **Terminal 2 — Frontend** (port 3000):
@@ -192,9 +242,8 @@ cd crm_frontend
 npm start
 ```
 
-Open in browser: **http://localhost:3000**
-
-API docs (Swagger): **http://127.0.0.1:8000/docs**
+- App: **http://localhost:3000**
+- API docs: **http://127.0.0.1:8000/docs**
 
 ---
 
@@ -202,12 +251,8 @@ API docs (Swagger): **http://127.0.0.1:8000/docs**
 
 ### Production staff (from Master Employee Sheet)
 
-After `seed_master_employees.py`, use the **email and password from the Excel sheet**.
-
-Example (if seeded on your team’s sheet):
-
-| Role | Email (example) | Password (from sheet) |
-|------|-----------------|------------------------|
+| Role | Email (example) | Password |
+|------|-----------------|----------|
 | Admin | `hr@blackpapers.in` | See Master Employee Sheet |
 | Employee | `bgc.blackpapers01@gmail.com` | See Master Employee Sheet |
 
@@ -233,105 +278,17 @@ Example (if seeded on your team’s sheet):
 
 | Feature | Admin | Manager | Employee |
 |---------|-------|---------|----------|
-| Dashboard + client stats | Yes | Yes | Yes |
-| Contacts (view/create/edit) | Yes | Yes | View only |
+| Dashboard + KPIs | Yes | Yes | Yes |
+| Contacts | Full | Full | View only |
 | Products & services | Full | View | View |
+| Leads & pipeline | Full | Full | Own records |
+| Quotations, orders, invoices | Full | Full | Limited by permission |
+| Follow-ups & payments | Yes | Yes | Yes |
+| Sales reports (financial) | Yes | Yes | Own reports only |
+| Client notes | Full | Full | Own notes |
 | Company settings | Yes | No | No |
 | User management | Yes | No | No |
 | Activity logs | Yes | No | No |
-
----
-
-## Viewing data in PostgreSQL (pgAdmin)
-
-1. Connect to server → open database **`crm_db`** (not `postgres`).
-2. **Schemas → public → Tables** — you should see ~10 tables.
-3. If the tree shows only 2 tables, right-click **Tables → Refresh**.
-4. Right-click a table → **View/Edit Data → All Rows**.
-
-Or run in Query Tool:
-
-```sql
-SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;
-SELECT COUNT(*) FROM contacts;
-SELECT COUNT(*) FROM products;
-SELECT COUNT(*) FROM users;
-```
-
-Expected counts after full seed: **~297 contacts**, **~134 products**, **~11 users** (varies slightly).
-
----
-
-## Troubleshooting
-
-### `connection refused` / database error
-
-- PostgreSQL service is running (Windows: Services → `postgresql-x64-16`).
-- `DATABASE_URL` in `.env` matches your password and database name `crm_db`.
-- Database `crm_db` exists.
-
-### `alembic upgrade head` fails
-
-- Run from `crm_backend` folder with venv activated.
-- `.env` exists and `DATABASE_URL` is correct.
-
-### Login fails / `bcrypt` errors
-
-- Use `bcrypt==4.2.0` as in `requirements.txt` (bcrypt 5.x breaks passlib).
-- Re-run: `pip install -r requirements.txt`
-
-### Frontend can’t reach API
-
-- Backend must be running on `http://127.0.0.1:8000`.
-- API URL is set in `crm_frontend/src/utils/api.js` (default `http://127.0.0.1:8000`).
-
-### Seed script: file not found
-
-- Put `clients.json`, Excel files in **repo root** (`CRM/`), not inside `crm_backend/`.
-
-### pgAdmin shows empty tables after seed
-
-- Confirm seeds finished without errors.
-- Confirm you’re viewing **`crm_db`**, not `postgres`.
-
-### Re-import clients from scratch
-
-```powershell
-python seed_clients.py
-```
-
-Default behaviour replaces existing contacts for the company.
-
----
-
-## Re-seeding / fresh database
-
-To reset tables and start over:
-
-```powershell
-# Drop and recreate database in pgAdmin/psql:
-# DROP DATABASE crm_db; CREATE DATABASE crm_db;
-
-alembic upgrade head
-python seed_permissions.py
-python seed_company.py
-python seed_master_employees.py
-python seed_clients.py
-python seed_master_services.py
-```
-
----
-
-## What Git does and does not include
-
-| Included in Git | Not in Git (each machine / team share) |
-|-----------------|----------------------------------------|
-| Source code | `.env` (secrets) |
-| Alembic migrations (table structure) | `clients.json`, Excel files |
-| Seed scripts | Your actual PostgreSQL data |
-| `.env.example` | `venv/`, `node_modules/` |
-
-**Pulling the repo does not copy database rows.** Every teammate runs migrations + seeds on their own machine.
 
 ---
 
@@ -339,19 +296,92 @@ python seed_master_services.py
 
 | Area | Base path |
 |------|-----------|
-| Auth (login, profile) | `/login`, `/users/me`, … |
-| Admin (users, activity logs) | `/admin/...` |
-| Company | `/admin/company` |
-| Contacts | `/contacts` |
-| Products | `/products` |
+| Auth | `/login`, `/logout`, `/users/me`, forgot/reset password |
+| Admin | `/admin/users`, `/admin/activity-logs`, `/admin/company` |
+| Contacts & products | `/contacts`, `/products` |
+| Leads & deals | `/leads`, `/deals` |
+| Sales documents | `/quotations`, `/sales-orders`, `/invoices` |
+| Follow-ups | `/reminders` |
+| Payments | `/payments` |
+| Reports | `/sales-reports` |
+| Dashboard KPIs | `/dashboard/kpis` |
+| Client notes | `/client-notes` |
 
-Full interactive docs: **http://127.0.0.1:8000/docs** (with backend running).
+Full interactive docs: **http://127.0.0.1:8000/docs**
 
 ---
 
-## Next steps (Level 2+)
+## Viewing data in PostgreSQL
 
-Planned later: leads, deals, tasks, invoicing, notifications, file uploads, system settings (numbering/templates).
+```sql
+SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;
+SELECT COUNT(*) FROM contacts;
+SELECT COUNT(*) FROM products;
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM leads;
+SELECT COUNT(*) FROM deals;
+```
+
+Expected counts after full seed: **~297 contacts**, **~134 products**, **~11 users**, **20k+ leads** (if `Lead_file.csv` imported).
+
+---
+
+## Troubleshooting
+
+### Database / connection errors
+
+- PostgreSQL service is running.
+- `DATABASE_URL` in `.env` is correct and points to `crm_db`.
+
+### Login fails / `bcrypt` errors
+
+- Use `bcrypt==4.2.0` as in `requirements.txt`.
+- Re-run: `pip install -r requirements.txt`
+
+### Frontend can’t reach API
+
+- Backend must be running on `http://127.0.0.1:8000`.
+- API URL is in `crm_frontend/src/utils/api.js`.
+
+### New nav items missing after update
+
+- Run `python seed_permissions.py`, then **log out and log back in**.
+
+### Seed script: file not found
+
+- Put data files in **repo root** (`CRM/`), not inside `crm_backend/`.
+
+---
+
+## Re-seeding / fresh database
+
+```powershell
+# In pgAdmin/psql: DROP DATABASE crm_db; CREATE DATABASE crm_db;
+
+alembic upgrade head
+python seed_permissions.py
+python seed_company.py
+python seed_master_employees.py
+python seed_clients.py
+python seed_master_services.py
+python seed_leads.py
+python seed_demo_deals.py --reset
+python seed_demo_level2.py --reset
+python seed_demo_reminders.py --reset
+```
+
+---
+
+## What Git does and does not include
+
+| Included in Git | Not in Git |
+|-----------------|------------|
+| Source code | `.env` (secrets) |
+| Alembic migrations | `clients.json`, `Lead_file.csv`, Excel files |
+| Seed scripts | Your actual PostgreSQL data |
+| `.env.example` | `venv/`, `node_modules/` |
+
+**Pulling the repo does not copy database rows.** Every teammate runs migrations + seeds locally.
 
 ---
 
@@ -359,14 +389,14 @@ Planned later: leads, deals, tasks, invoicing, notifications, file uploads, syst
 
 - [ ] Python, Node, PostgreSQL installed
 - [ ] Repo cloned
-- [ ] Data files placed in repo root (from team lead)
-- [ ] `crm_db` database created
-- [ ] `crm_backend/.env` created from `.env.example`
+- [ ] Data files placed in repo root
+- [ ] `crm_db` created
+- [ ] `crm_backend/.env` configured
 - [ ] `pip install -r requirements.txt`
 - [ ] `alembic upgrade head`
-- [ ] All seed scripts run successfully
+- [ ] Seed scripts run successfully
 - [ ] `npm install` in `crm_frontend`
 - [ ] Backend + frontend running
 - [ ] Login works at http://localhost:3000
 
-If anything fails, check **Troubleshooting** above or ask the team lead with the exact error message.
+If anything fails, check **Troubleshooting** above or share the exact error message with the team lead.

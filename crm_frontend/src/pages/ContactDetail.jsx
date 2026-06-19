@@ -3,8 +3,10 @@ import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 
 const ACTIVITY_TYPES = [
   { value: "note", label: "Note" },
@@ -275,9 +277,14 @@ function ContactDetail() {
             </ul>
           </section>
         </div>
+
+        {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+          <DocumentsPanel contactId={Number(id)} />
+        )}
       </div>
     </DashboardLayout>
   );
 }
+
 
 export default ContactDetail;

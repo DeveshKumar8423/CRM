@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import RemindersPanel from "../components/RemindersPanel";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 
 const STAGE_LABELS = {
   new: "New",
@@ -180,6 +183,15 @@ function DealDetail() {
           </div>
         )}
 
+        {hasPermission("reminders.view") && (
+          <RemindersPanel
+            dealId={Number(id)}
+            leadId={deal.lead_id || undefined}
+            contactId={deal.contact_id || undefined}
+            compact
+          />
+        )}
+
         {hasPermission("client_notes.view") && (
           <div className="crm-mt-lg">
             <ClientNotesPanel
@@ -190,9 +202,14 @@ function DealDetail() {
             />
           </div>
         )}
+
+        {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+          <DocumentsPanel dealId={Number(id)} />
+        )}
       </div>
     </DashboardLayout>
   );
 }
+
 
 export default DealDetail;

@@ -155,9 +155,9 @@ def periods(_: User = Depends(require_permission("reports.view"))):
 @router.get("/assignees", response_model=list[StaffAssigneeResponse])
 def assignees(user: User = Depends(require_permission("reports.view")), db: Session = Depends(get_db)):
     if not _can_view_team(user, db):
-        return [StaffAssigneeResponse(id=user.id, name=user.name, email=user.email)]
+        return [StaffAssigneeResponse(id=user.id, name=user.name, email=user.email, role=user.role)]
     users = db.query(User).filter(User.role.in_(STAFF_ROLES), User.status == "active").order_by(User.name).all()
-    return [StaffAssigneeResponse(id=u.id, name=u.name, email=u.email) for u in users]
+    return [StaffAssigneeResponse(id=u.id, name=u.name, email=u.email, role=u.role) for u in users]
 
 
 @router.get("/overview", response_model=SalesReportOverviewResponse)

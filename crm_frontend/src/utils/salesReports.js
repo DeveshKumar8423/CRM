@@ -40,7 +40,11 @@ export function buildReportParams(period, ownerId, dateFrom, dateTo) {
 
 export function exportCsv(filename, headers, rows) {
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lines = [headers.map(escape).join(","), ...rows.map((r) => r.map(escape).join(","))];
+  const lines = [];
+  if (headers?.length) {
+    lines.push(headers.map(escape).join(","));
+  }
+  lines.push(...rows.map((r) => (Array.isArray(r) ? r : [r]).map(escape).join(",")));
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
@@ -60,6 +64,7 @@ export function badgeClass(badge) {
     "High Value": "crm-report-high_value",
     "On Track": "crm-report-on_track",
     "At Risk": "crm-report-at_risk",
+    "Needs Attention": "crm-report-needs_attention",
   };
   return `crm-badge ${map[badge] || "crm-report-default"}`;
 }

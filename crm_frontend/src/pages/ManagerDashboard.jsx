@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import DashboardStats from "../components/DashboardStats";
+import SalesKpis from "../components/SalesKpis";
 import { hasPermission } from "../utils/permissions";
 
 function ManagerDashboard() {
@@ -16,7 +16,7 @@ function ManagerDashboard() {
             <> View <Link to="/sales-reports">Sales Reports</Link>.</>
           )}
         </p>
-        <DashboardStats />
+        <SalesKpis />
       </div>
     </DashboardLayout>
   );

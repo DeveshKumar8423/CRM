@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 import {
   STATUS_LABELS,
   formatCurrency,
@@ -372,8 +374,15 @@ function QuotationDetail() {
           />
         </div>
       )}
+
+      {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+        <div className="crm-panel crm-mt">
+          <DocumentsPanel quotationId={Number(id)} />
+        </div>
+      )}
     </DashboardLayout>
   );
 }
+
 
 export default QuotationDetail;

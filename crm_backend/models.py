@@ -71,6 +71,7 @@ class Company(Base):
     warehouse_locations = relationship("WarehouseLocation", back_populates="company")
     location_stocks = relationship("LocationStock", back_populates="company")
     location_stock_movements = relationship("LocationStockMovement", back_populates="company")
+    follow_up_reminders = relationship("FollowUpReminder", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
 
 
@@ -1129,6 +1130,101 @@ class PurchaseOrderAttachment(Base):
     uploaded_by = relationship("User", foreign_keys=[uploaded_by_id])
 
 
+class FollowUpReminder(Base):
+    __tablename__ = "follow_up_reminders"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    reminder_type = Column(String(30), nullable=False, default="call")
+    title = Column(String(200), nullable=False)
+    notes = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, default="pending", index=True)
+    priority = Column(String(20), nullable=False, default="normal")
+    due_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="follow_up_reminders")
+    lead = relationship("Lead", foreign_keys=[lead_id])
+    deal = relationship("Deal", foreign_keys=[deal_id])
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class NumberingConfiguration(Base):
+    __tablename__ = "numbering_configurations"
+
+    id = Column(Integer, primary_key=True)
+    entity_name = Column(String(50), nullable=False, unique=True, index=True)
+    prefix = Column(String(20), nullable=False)
+    starting_number = Column(Integer, nullable=False, default=1)
+    current_number = Column(Integer, nullable=False, default=0)
+    suffix = Column(String(20), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class EmailTemplate(Base):
+    """Reusable email templates for CRM notifications.
+
+    Placeholders (e.g. {{name}}, {{reset_link}}) are stored as-is.
+    Rendering is handled by the notification layer, not here.
+    """
+
+    __tablename__ = "email_templates"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False, unique=True, index=True)
+    subject = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class SystemConfiguration(Base):
+    """Global CRM configuration — only one row should exist (id=1)."""
+
+    __tablename__ = "system_configurations"
+
+    id = Column(Integer, primary_key=True)
+    company_name = Column(String(200), nullable=False, default="BlackPapers")
+    default_currency = Column(String(3), nullable=False, default="INR")
+    date_format = Column(String(20), nullable=False, default="DD/MM/YYYY")
+    timezone = Column(String(80), nullable=False, default="Asia/Kolkata")
+    support_email = Column(String(255), nullable=False, default="support@blackpapers.in")
+    maintenance_mode = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
@@ -1141,3 +1237,23 @@ class ActivityLog(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="activities")
+
+
+class UploadedFile(Base):
+    __tablename__ = "uploaded_files"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    original_filename = Column(String(255), nullable=False)
+    stored_filename = Column(String(255), unique=True, nullable=False, index=True)
+    file_path = Column(String(500), nullable=False)
+    file_type = Column(String(100), nullable=False)
+    file_size = Column(Integer, nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    related_module = Column(String(50), nullable=True, index=True)
+    related_record_id = Column(Integer, nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company")
+    uploaded_by = relationship("User")
+

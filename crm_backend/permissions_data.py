@@ -125,8 +125,25 @@ PERMISSIONS = [
     ("warehouses.override_negative", "Override negative location stock blocks", "warehouses"),
     ("warehouses.export", "Export warehouse data", "warehouses"),
     ("warehouses.manage_settings", "Manage warehouse settings", "warehouses"),
+    ("reminders.view", "View follow-up reminders", "reminders"),
+    ("reminders.create", "Create follow-up reminders", "reminders"),
+    ("reminders.edit", "Edit and complete reminders", "reminders"),
+    ("payments.view", "View payments and outstanding balances", "payments"),
+    ("dashboard.view", "View dashboard KPIs", "dashboard"),
+
     ("settings.view", "View system settings", "settings"),
     ("settings.edit", "Edit system settings", "settings"),
+    ("numbering_config.view", "View numbering configurations", "numbering_config"),
+    ("numbering_config.create", "Create numbering configurations", "numbering_config"),
+    ("numbering_config.edit", "Edit numbering configurations", "numbering_config"),
+    ("numbering_config.delete", "Delete numbering configurations", "numbering_config"),
+    # Files
+    ("files.upload", "Upload files", "files"),
+    ("files.view", "View all files", "files"),
+    ("files.view_own", "View own files", "files"),
+    ("files.download", "Download all files", "files"),
+    ("files.download_own", "Download own files", "files"),
+    ("files.delete", "Delete files", "files"),
 ]
 
 ROLE_PERMISSIONS: dict[str, list[str]] = {
@@ -230,6 +247,15 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "warehouses.transfer",
         "warehouses.override_negative",
         "warehouses.export",
+        "reminders.view",
+        "reminders.create",
+        "reminders.edit",
+        "payments.view",
+        "dashboard.view",
+        "files.upload",
+        "files.view",
+        "files.download",
+
     ],
     "Employee": [
         "profile.view",
@@ -279,6 +305,15 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "warehouses.record_receipt",
         "warehouses.record_issue",
         "warehouses.record_damage",
+        "reminders.view",
+        "reminders.create",
+        "reminders.edit",
+        "payments.view",
+        "dashboard.view",
+        "files.upload",
+        "files.view_own",
+        "files.download_own",
+
     ],
     "User": [
         "profile.view",

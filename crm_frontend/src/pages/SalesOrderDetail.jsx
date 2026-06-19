@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
 import ClientNotesPanel from "../components/ClientNotesPanel";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+
 import {
   ORDER_TYPES,
   STATUS_LABELS,
@@ -275,8 +277,15 @@ function SalesOrderDetail() {
           />
         </div>
       )}
+
+      {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+        <div className="crm-panel crm-mt">
+          <DocumentsPanel salesOrderId={Number(id)} />
+        </div>
+      )}
     </DashboardLayout>
   );
 }
+
 
 export default SalesOrderDetail;

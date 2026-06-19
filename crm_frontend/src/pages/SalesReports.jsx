@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
@@ -14,7 +14,18 @@ import {
   formatPercent,
 } from "../utils/salesReports";
 
+const REPORT_ENDPOINTS = {
+  overview: "/sales-reports/overview",
+  conversion: "/sales-reports/conversion",
+  revenue: "/sales-reports/revenue",
+  sources: "/sales-reports/lead-sources",
+  team: "/sales-reports/executives",
+  pending: "/sales-reports/pending-deals",
+  pipeline: "/sales-reports/pipeline-health",
+};
+
 function BarChart({ data, valueKey = "value", labelKey = "label", format = (v) => v }) {
+  if (!data?.length) return <p className="crm-muted">No data for this period.</p>;
   const max = Math.max(...data.map((d) => d[valueKey] || 0), 1);
   return (
     <div className="crm-report-chart">
@@ -66,52 +77,123 @@ function SalesReports() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const requestIdRef = useRef(0);
 
   const canFinancial = hasPermission("reports.view_financial");
   const canTeam = hasPermission("reports.view_team");
   const canExport = hasPermission("reports.export");
 
-  const endpoints = {
-    overview: "/sales-reports/overview",
-    conversion: "/sales-reports/conversion",
-    revenue: "/sales-reports/revenue",
-    sources: "/sales-reports/lead-sources",
-    team: "/sales-reports/executives",
-    pending: "/sales-reports/pending-deals",
-    pipeline: "/sales-reports/pipeline-health",
-  };
-
   useEffect(() => {
     apiFetch("/sales-reports/assignees").then(setAssignees).catch(() => {});
   }, []);
 
-  const load = () => {
+  const changeTab = (nextTab) => {
+    setTab(nextTab);
+    setData(null);
+    setError("");
+    setLoading(true);
+  };
+
+  const load = useCallback(() => {
     if (tab === "revenue" && !canFinancial) {
       setData(null);
+      setError("You do not have permission to view financial revenue reports.");
       setLoading(false);
       return;
     }
     if (tab === "team" && !canTeam) {
       setData(null);
+      setError("You do not have permission to view team performance reports.");
       setLoading(false);
       return;
     }
+
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError("");
     const params = buildReportParams(period, ownerId || null, dateFrom, dateTo);
-    apiFetch(`${endpoints[tab]}?${params}`)
-      .then(setData)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
+    apiFetch(`${REPORT_ENDPOINTS[tab]}?${params}`)
+      .then((result) => {
+        if (requestId !== requestIdRef.current) return;
+        setData(result);
+      })
+      .catch((err) => {
+        if (requestId !== requestIdRef.current) return;
+        setData(null);
+        setError(err.message);
+      })
+      .finally(() => {
+        if (requestId !== requestIdRef.current) return;
+        setLoading(false);
+      });
+  }, [tab, period, ownerId, dateFrom, dateTo, canFinancial, canTeam]);
 
   useEffect(() => {
     load();
-  }, [tab, period, ownerId]);
+  }, [load]);
 
   const handleExport = () => {
     if (!data || !canExport) return;
     const stamp = new Date().toISOString().slice(0, 10);
+
+    if (tab === "overview" && data.kpis) {
+      const rows = [
+        ["Period", data.period_label || ""],
+        ["From", data.date_from ? new Date(data.date_from).toLocaleDateString() : ""],
+        ["To", data.date_to ? new Date(data.date_to).toLocaleDateString() : ""],
+        [],
+        ["KPI", "Value", "Unit", "Change %"],
+        ...data.kpis.map((k) => [k.label, k.value, k.unit || "", k.delta_percent ?? ""]),
+      ];
+      if (data.top_sources?.length) {
+        rows.push([], ["Top lead sources"], ["Source", "Leads"], ...data.top_sources.map((s) => [s.name, s.count]));
+      }
+      if (data.top_performers?.length) {
+        rows.push([], ["Top performers"], ["Executive", "Deals", "Revenue"], ...data.top_performers.map((p) => [p.name, p.count, p.value]));
+      }
+      if (data.top_pending_deals?.length) {
+        rows.push([], ["Top pending deals"], ["Deal", "Stage", "Value", "Owner", "Flag"], ...data.top_pending_deals.map((d) => [d.title, d.stage_label, d.expected_value, d.owner_name || "", d.badge || ""]));
+      }
+      exportCsv(`sales-overview-${stamp}.csv`, [], rows);
+      return;
+    }
+
+    if (tab === "revenue") {
+      const rows = [
+        ["Booked (won)", data.booked_revenue ?? 0],
+        ["Collected", data.collected_revenue ?? 0],
+        ["Outstanding", data.outstanding_revenue ?? 0],
+        ["Pipeline forecast", data.pipeline_forecast ?? 0],
+        [],
+        ["By executive", "Deals", "Revenue"],
+        ...(data.by_owner || []).map((r) => [r.name, r.count, r.value]),
+        [],
+        ["By customer", "Deals", "Revenue"],
+        ...(data.by_customer || []).map((r) => [r.name, r.count, r.value]),
+        [],
+        ["By source", "Revenue"],
+        ...(data.by_source || []).map((r) => [r.name, r.value]),
+      ];
+      exportCsv(`revenue-${stamp}.csv`, [], rows);
+      return;
+    }
+
+    if (tab === "pipeline" && data.stages) {
+      exportCsv(
+        `pipeline-health-${stamp}.csv`,
+        ["Stage", "Deals", "Value", "Avg age (days)"],
+        [
+          ...data.stages.map((s) => [s.label, s.count, s.value, s.avg_age_days]),
+          [],
+          ["Total pipeline value", "", data.total_pipeline_value, ""],
+          ["Health score", data.health_score, "", ""],
+          ["Health label", data.health_label, "", ""],
+          ["Top deal concentration %", data.concentration_top_deal_percent, "", ""],
+        ],
+      );
+      return;
+    }
+
     if (tab === "pending" && data.deals) {
       exportCsv(
         `pending-deals-${stamp}.csv`,
@@ -131,11 +213,19 @@ function SalesReports() {
         data.executives.map((e) => [e.name, e.count, e.value, e.rate]),
       );
     } else if (tab === "conversion" && data.by_source) {
-      exportCsv(
-        `conversion-${stamp}.csv`,
-        ["Source", "Leads", "Conversion %"],
-        data.by_source.map((s) => [s.name, s.count, s.rate]),
-      );
+      const rows = [
+        ["Lead→Deal", data.lead_to_deal_rate],
+        ["Deal→Win", data.deal_to_win_rate],
+        ["Quote→Order", data.quote_to_order_rate],
+        ["Order→Invoice", data.order_to_invoice_rate],
+        [],
+        ["By source", "Leads", "Conversion %"],
+        ...data.by_source.map((s) => [s.name, s.count, s.rate]),
+        [],
+        ["By owner", "Leads", "Conversion %"],
+        ...(data.by_owner || []).map((o) => [o.name, o.count, o.rate]),
+      ];
+      exportCsv(`conversion-${stamp}.csv`, [], rows);
     }
   };
 
@@ -178,7 +268,7 @@ function SalesReports() {
 
         <div className="crm-tabs crm-mt">
           {visibleTabs.map((t) => (
-            <button key={t.key} type="button" className={`crm-tab ${tab === t.key ? "crm-tab-active" : ""}`} onClick={() => setTab(t.key)}>
+            <button key={t.key} type="button" className={`crm-tab ${tab === t.key ? "crm-tab-active" : ""}`} onClick={() => changeTab(t.key)}>
               {t.label}
             </button>
           ))}
@@ -194,7 +284,13 @@ function SalesReports() {
               {data.kpis.map((k) => (
                 <div key={k.key} className="crm-stat-card crm-report-kpi" onClick={() => {
                   const map = { conversion: "conversion", win_rate: "conversion", revenue: "revenue", pending_value: "pending", stale: "pending" };
-                  if (map[k.key]) setTab(map[k.key]);
+                  const nextTab = map[k.key];
+                  if (!nextTab) return;
+                  if (nextTab === "revenue" && !canFinancial) {
+                    setError("You do not have permission to view financial revenue reports.");
+                    return;
+                  }
+                  changeTab(nextTab);
                 }}>
                   <p className="crm-stat-label">{k.label}</p>
                   <p className="crm-stat-value">

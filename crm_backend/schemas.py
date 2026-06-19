@@ -1426,6 +1426,153 @@ class SalesReportPipelineHealthResponse(BaseModel):
     health_label: str
 
 
+
+class FollowUpReminderCreateRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    reminder_type: str = Field(default="call", max_length=30)
+    priority: str = Field(default="normal", max_length=20)
+    due_at: datetime
+    notes: str | None = Field(default=None, max_length=2000)
+    lead_id: int | None = None
+    deal_id: int | None = None
+    contact_id: int | None = None
+    assigned_to_id: int | None = None
+
+
+class FollowUpReminderUpdateRequest(FollowUpReminderCreateRequest):
+    status: str = Field(default="pending", max_length=20)
+
+
+class FollowUpReminderResponse(BaseModel):
+    id: int
+    company_id: int
+    lead_id: int | None
+    deal_id: int | None
+    contact_id: int | None
+    entity_label: str | None = None
+    entity_path: str | None = None
+    reminder_type: str
+    reminder_type_label: str
+    title: str
+    notes: str | None
+    status: str
+    priority: str
+    due_at: datetime
+    completed_at: datetime | None
+    assigned_to_id: int | None
+    assigned_to_name: str | None = None
+    created_by_id: int | None
+    created_by_name: str | None = None
+    is_overdue: bool = False
+    is_due_today: bool = False
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
+class FollowUpReminderListResponse(BaseModel):
+    items: list[FollowUpReminderResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class FollowUpReminderStatsResponse(BaseModel):
+    total_pending: int
+    due_today: int
+    overdue: int
+    upcoming: int
+    note_follow_ups_pending: int
+
+
+class UnifiedFollowUpItem(BaseModel):
+    source: str
+    id: int
+    title: str
+    subtitle: str | None = None
+    entity_path: str | None = None
+    reminder_type: str
+    priority: str
+    due_at: datetime | None
+    assigned_to_name: str | None = None
+    is_overdue: bool = False
+    is_due_today: bool = False
+
+
+class UnifiedFollowUpQueueResponse(BaseModel):
+    items: list[UnifiedFollowUpItem]
+    total: int
+
+
+class PaymentAgingBucket(BaseModel):
+    label: str
+    count: int
+    amount: float
+
+
+class PaymentSummaryResponse(BaseModel):
+    total_received: float
+    total_outstanding: float
+    invoice_count_outstanding: int
+    invoice_count_overdue: int
+    payment_count: int
+    aging_buckets: list[PaymentAgingBucket]
+
+
+class PaymentRecordItem(BaseModel):
+    id: int
+    invoice_id: int
+    invoice_number: str | None
+    invoice_title: str
+    client_name: str | None
+    client_org: str | None
+    amount: float
+    payment_date: datetime
+    payment_method: str
+    reference: str | None
+    note: str | None
+    recorded_by_name: str | None = None
+
+
+class PaymentListResponse(BaseModel):
+    items: list[PaymentRecordItem]
+    total: int
+    page: int
+    limit: int
+
+
+class InvoiceOutstandingItem(BaseModel):
+    id: int
+    invoice_number: str | None
+    title: str
+    client_name: str | None
+    client_org: str | None
+    status: str
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    issue_date: datetime | None
+    due_date: datetime | None
+    is_overdue: bool
+    age_days: int | None = None
+
+
+class InvoiceOutstandingListResponse(BaseModel):
+    items: list[InvoiceOutstandingItem]
+    total: int
+    page: int
+    limit: int
+
+
+class DashboardKpiResponse(BaseModel):
+    pipeline_value: float = 0
+    open_deals: int = 0
+    pending_quotes: int = 0
+    overdue_invoices: int = 0
+    total_outstanding: float = 0
+    follow_ups_due_today: int = 0
+    follow_ups_overdue: int = 0
+
+
 # Expenses
 
 
@@ -2040,3 +2187,117 @@ class WarehouseOptionResponse(BaseModel):
     value: str
     label: str
 
+# --- System Configuration ---
+
+
+class SystemConfigResponse(BaseModel):
+    id: int
+    company_name: str
+    default_currency: str
+    date_format: str
+    timezone: str
+    support_email: str
+    maintenance_mode: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+class SystemConfigUpdate(BaseModel):
+    company_name: str = Field(min_length=2, max_length=200)
+    default_currency: str = Field(min_length=1, max_length=3)
+    date_format: str = Field(min_length=1, max_length=20)
+    timezone: str = Field(min_length=1, max_length=80)
+    support_email: EmailStr
+    maintenance_mode: bool = False
+
+
+# --- Numbering Configuration ---
+
+
+class NumberingConfigBaseFields(BaseModel):
+    entity_name: str = Field(min_length=2, max_length=50)
+    prefix: str = Field(min_length=1, max_length=20)
+    starting_number: int = Field(default=1, ge=1)
+    current_number: int = Field(default=0, ge=0)
+    suffix: str | None = Field(default=None, max_length=20)
+    is_active: bool = True
+
+
+class NumberingConfigCreateRequest(NumberingConfigBaseFields):
+    pass
+
+
+class NumberingConfigUpdateRequest(BaseModel):
+    prefix: str | None = Field(default=None, min_length=1, max_length=20)
+    starting_number: int | None = Field(default=None, ge=1)
+    current_number: int | None = Field(default=None, ge=0)
+    suffix: str | None = Field(default=None, max_length=20)
+    is_active: bool | None = None
+
+
+class NumberingConfigResponse(BaseModel):
+    id: int
+    entity_name: str
+    prefix: str
+    starting_number: int
+    current_number: int
+    suffix: str | None
+    is_active: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+# --- Email Templates ---
+
+
+class EmailTemplateCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    subject: str = Field(min_length=2, max_length=255)
+    body: str = Field(min_length=1)
+    description: str | None = Field(default=None, max_length=2000)
+    is_active: bool = True
+
+
+class EmailTemplateUpdate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    subject: str = Field(min_length=2, max_length=255)
+    body: str = Field(min_length=1)
+    description: str | None = Field(default=None, max_length=2000)
+    is_active: bool = True
+
+
+class EmailTemplateResponse(BaseModel):
+    id: int
+    name: str
+    subject: str
+    body: str
+    description: str | None
+    is_active: bool
+    created_at: datetime | None
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+class UploadedFileResponse(BaseModel):
+    id: int
+    company_id: int | None
+    original_filename: str
+    stored_filename: str
+    file_type: str
+    file_size: int
+    uploaded_by: StaffAssigneeResponse
+    related_module: str | None
+    related_record_id: int | None
+    created_at: datetime
+    file_url: str
+
+    class Config:
+        from_attributes = True

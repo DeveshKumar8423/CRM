@@ -1,70 +1,173 @@
-# Getting Started with Create React App
+# BlackPapers CRM — Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backend at `http://127.0.0.1:8000` (configured in `src/utils/api.js`).
 
-## Available Scripts
+**Parent repo:** see [../README.md](../README.md) for full setup, database seeds, and backend instructions.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Current build status
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| Level | Status | Frontend coverage |
+|-------|--------|-------------------|
+| **Level 1** | ~70% done | Auth, profile, contacts, products, company settings, user management, activity logs, dashboards |
+| **Level 2** | ~85% done | Leads, pipeline, quotations, orders, invoices, client notes, follow-ups, payments, sales reports |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Level 1 pages
 
-### `npm test`
+| Page | Route | Permission |
+|------|-------|------------|
+| Home / portal picker | `/` | Public |
+| Admin / Manager / Employee login | `/admin-login`, `/manager-login`, `/employee-login` | Public |
+| Forgot / reset password | `/forgot-password`, `/reset-password` | Public |
+| Role dashboards | `/admin-dashboard`, `/manager-dashboard`, `/employee-dashboard` | By role |
+| My Profile | `/profile` | All staff |
+| Contacts (list, detail, form) | `/contacts`, `/contacts/:id`, `/contacts/new` | `contacts.view` |
+| Products (list, detail, form) | `/products`, `/products/:id`, `/products/new` | `products.view` |
+| Company Settings | `/admin/company` | `company.view` |
+| User Management | `/admin/users` | `users.view` |
+| Activity Logs | `/admin/activity-logs` | `activity.view` |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Level 2 pages
 
-### `npm run build`
+| Page | Route | Permission |
+|------|-------|------------|
+| Leads (list, detail, form) | `/leads`, `/leads/:id`, `/leads/new` | `leads.view` |
+| Sales Pipeline (kanban) | `/pipeline` | `deals.view` |
+| Deals (list, detail, form) | `/deals`, `/deals/:id`, `/deals/new` | `deals.view` |
+| Follow-ups queue | `/follow-ups` | `reminders.view` |
+| Quotations | `/quotations`, `/quotations/:id`, approval queue, preview | `quotations.view` |
+| Sales Orders | `/sales-orders`, `/sales-orders/:id` | `sales_orders.view` |
+| Invoices | `/invoices`, `/invoices/:id`, review queue, preview | `invoices.view` |
+| Payments | `/payments` | `payments.view` |
+| Client Notes | `/client-notes`, `/client-notes/follow-ups` | `client_notes.view` |
+| Sales Reports | `/sales-reports` | `reports.view` |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Client-facing pages (no login)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Page | Route |
+|------|-------|
+| View quotation | `/quote/:token` |
+| View sales order | `/order/:token` |
+| View invoice | `/invoice/:token` |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Not built yet (frontend)
 
-### `npm run eject`
+- WhatsApp / email send from CRM UI
+- In-app notification centre
+- File upload / document manager
+- Advanced system settings UI
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Top navigation
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The header nav in `DashboardLayout` shows links based on the logged-in user’s permissions. The **current section is highlighted** with a blue active state so you always know which module you’re in.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Typical nav order: Profile → Leads → Pipeline → Follow-ups → Quotations → Orders → Invoices → Payments → Notes → Reports → Contacts → Products → Company Settings → User Management → Activity Logs
 
-## Learn More
+Detail pages keep the parent section active (e.g. `/deals/12` highlights **Pipeline**).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Key frontend folders
 
-### Code Splitting
+```
+crm_frontend/src/
+├── pages/              # Screen components (Leads, Pipeline, Payments, …)
+├── components/         # Shared UI (DashboardLayout, SalesKpis, RemindersPanel, …)
+├── utils/
+│   ├── api.js          # API base URL, login, apiFetch
+│   ├── permissions.js  # Permission checks for nav and routes
+│   └── salesReports.js # Report tabs, CSV export helpers
+├── App.js              # Routes and ProtectedRoute wrappers
+└── crm.css             # Global CRM styles
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## How to run
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Prerequisite:** backend must be running on port 8000 (see main README).
 
-### Making a Progressive Web App
+```powershell
+cd crm_frontend
+npm install
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Open **http://localhost:3000**
 
-### Advanced Configuration
+### Production build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```powershell
+npm run build
+```
 
-### Deployment
+Output goes to `build/`. Serve with any static host (nginx, Vercel, etc.) and point API calls to your production backend URL in `src/utils/api.js`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## Environment / API connection
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The frontend reads the API URL from `src/utils/api.js`:
+
+```js
+export const API_URL = "http://127.0.0.1:8000";
+```
+
+Change this when deploying to a live server. JWT token and permissions are stored in `localStorage` after login.
+
+---
+
+## Auth & permissions
+
+- `ProtectedRoute` in `App.js` checks role and required permission before rendering a page.
+- `hasPermission()` in `utils/permissions.js` controls which nav links appear.
+- After backend permission seeds change, users must **log out and log back in** to refresh their permission list.
+
+---
+
+## Dashboard widgets
+
+Staff dashboards (`AdminDashboard`, `ManagerDashboard`, `EmployeeDashboard`) include:
+
+- **SalesKpis** — pipeline value, open deals, pending quotes, overdue invoices, follow-ups due/overdue
+- **Contact stats** — active vs inactive client counts
+
+---
+
+## Sales flow links
+
+Detail pages link to the next step in the sales cycle:
+
+```
+Lead detail → create/view deal
+Deal detail → create quotation
+Quotation detail → create sales order
+Sales order detail → create invoice
+Invoice detail → payments / outstanding view
+```
+
+---
+
+## Scripts (Create React App)
+
+| Command | Purpose |
+|---------|---------|
+| `npm start` | Dev server on port 3000 |
+| `npm run build` | Production build |
+| `npm test` | Run tests (if configured) |
+
+---
+
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Blank page after login | Check browser console; ensure backend is running |
+| “Cannot reach the server” | Start backend: `uvicorn main:app --reload` |
+| Missing nav items (Follow-ups, Payments) | Re-run `seed_permissions.py`, then log out and back in |
+| CORS / network errors | Confirm `API_URL` matches backend host and port |
+
+For database setup, seeds, and demo data, see the [main README](../README.md).
