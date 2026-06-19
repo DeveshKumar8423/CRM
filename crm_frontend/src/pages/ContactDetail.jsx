@@ -22,6 +22,8 @@ function ContactDetail() {
   const canCreateQuote = hasPermission("quotations.create");
   const canCreateOrder = hasPermission("sales_orders.create");
   const canCreateInvoice = hasPermission("invoices.create");
+  const canCreateExpense = hasPermission("expenses.create");
+  const canCreatePO = hasPermission("purchase_orders.create");
 
   const [contact, setContact] = useState(null);
   const [activities, setActivities] = useState([]);
@@ -148,6 +150,16 @@ function ContactDetail() {
               {canCreateInvoice && (
                 <Link to={`/invoices/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
                   Create invoice
+                </Link>
+              )}
+              {canCreateExpense && (
+                <Link to={`/expenses/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create expense
+                </Link>
+              )}
+              {canCreatePO && (
+                <Link to={`/purchase-orders/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create purchase order
                 </Link>
               )}
               <button

@@ -33,6 +33,8 @@ function DealDetail() {
   const canEdit = hasPermission("deals.edit");
   const canCreateQuote = hasPermission("quotations.create");
   const canCreateOrder = hasPermission("sales_orders.create");
+  const canCreateExpense = hasPermission("expenses.create");
+  const canCreatePO = hasPermission("purchase_orders.create");
   const [deal, setDeal] = useState(null);
   const [stages, setStages] = useState([]);
   const [error, setError] = useState("");
@@ -105,6 +107,16 @@ function DealDetail() {
             {canCreateOrder && (
               <Link to={`/sales-orders/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
                 Create sales order
+              </Link>
+            )}
+            {canCreateExpense && (
+              <Link to={`/expenses/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create expense
+              </Link>
+            )}
+            {canCreatePO && (
+              <Link to={`/purchase-orders/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create purchase order
               </Link>
             )}
           </div>

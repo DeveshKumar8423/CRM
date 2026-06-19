@@ -22,6 +22,14 @@ function isNavActive(pathname, to) {
       return pathname === "/invoices" || pathname.startsWith("/invoices/");
     case "/payments":
       return pathname === "/payments";
+    case "/expenses":
+      return pathname === "/expenses" || pathname.startsWith("/expenses/");
+    case "/purchase-orders":
+      return pathname === "/purchase-orders" || pathname.startsWith("/purchase-orders/");
+    case "/inventory":
+      return pathname === "/inventory" || pathname.startsWith("/inventory/");
+    case "/warehouses":
+      return pathname === "/warehouses" || pathname.startsWith("/warehouses/");
     case "/client-notes":
       return (pathname === "/client-notes" || pathname.startsWith("/client-notes/")) && pathname !== "/client-notes/follow-ups";
     case "/sales-reports":
@@ -137,6 +145,26 @@ function DashboardLayout({ title, roleLabel, children }) {
             {hasPermission("payments.view") && (
               <Link to="/payments" className={navLinkClass(pathname, "/payments")}>
                 Payments
+              </Link>
+            )}
+            {hasPermission("expenses.view") && (
+              <Link to="/expenses" className={navLinkClass(pathname, "/expenses")}>
+                Expenses
+              </Link>
+            )}
+            {hasPermission("purchase_orders.view") && (
+              <Link to="/purchase-orders" className={navLinkClass(pathname, "/purchase-orders")}>
+                Purchase Orders
+              </Link>
+            )}
+            {hasPermission("inventory.view") && (
+              <Link to="/inventory" className={navLinkClass(pathname, "/inventory")}>
+                Inventory
+              </Link>
+            )}
+            {hasPermission("warehouses.view") && (
+              <Link to="/warehouses" className={navLinkClass(pathname, "/warehouses")}>
+                Warehouses
               </Link>
             )}
             {hasPermission("client_notes.view") && (
