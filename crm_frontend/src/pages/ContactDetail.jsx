@@ -6,6 +6,8 @@ import ClientNotesPanel from "../components/ClientNotesPanel";
 import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+import { canViewLedger, formatCurrency, formatDate } from "../utils/customerLedger";
+import { canViewVendorLedger } from "../utils/vendorLedger";
 
 
 const ACTIVITY_TYPES = [
@@ -34,15 +36,32 @@ function ContactDetail() {
   });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [ledgerSummary, setLedgerSummary] = useState(null);
+  const [vendorLedgerSummary, setVendorLedgerSummary] = useState(null);
 
   const loadAll = () => {
-    Promise.all([
+    const requests = [
       apiFetch(`/contacts/${id}`),
       apiFetch(`/contacts/${id}/activities`),
-    ])
-      .then(([c, a]) => {
-        setContact(c);
-        setActivities(a);
+    ];
+    if (canViewLedger(hasPermission)) {
+      requests.push(apiFetch(`/customer-ledger/contacts/${id}/summary`).catch(() => null));
+    }
+    if (canViewVendorLedger(hasPermission)) {
+      requests.push(apiFetch(`/vendor-ledger/contacts/${id}/summary`).catch(() => null));
+    }
+    Promise.all(requests)
+      .then((results) => {
+        setContact(results[0]);
+        setActivities(results[1]);
+        let idx = 2;
+        if (canViewLedger(hasPermission)) {
+          if (results[idx]) setLedgerSummary(results[idx]);
+          idx += 1;
+        }
+        if (canViewVendorLedger(hasPermission)) {
+          if (results[idx]) setVendorLedgerSummary(results[idx]);
+        }
       })
       .catch((err) => setError(err.message));
   };
@@ -152,6 +171,16 @@ function ContactDetail() {
                   Create invoice
                 </Link>
               )}
+              {canViewLedger(hasPermission) && contact.contact_type === "Customer" && (
+                <Link to={`/customer-ledger/${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Customer ledger
+                </Link>
+              )}
+              {canViewVendorLedger(hasPermission) && contact.contact_type === "Vendor" && (
+                <Link to={`/vendor-ledger/${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Vendor ledger
+                </Link>
+              )}
               {canCreateExpense && (
                 <Link to={`/expenses/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
                   Create expense
@@ -175,6 +204,48 @@ function ContactDetail() {
 
         {error && <p className="crm-error crm-mt">{error}</p>}
         {message && <p className="crm-success crm-mt">{message}</p>}
+
+        {ledgerSummary && contact.contact_type === "Customer" && (
+          <div className="crm-stats-grid crm-mt">
+            <div className="crm-stat-card crm-cl-outstanding">
+              <p className="crm-stat-label">Outstanding</p>
+              <p className="crm-stat-value">{formatCurrency(ledgerSummary.outstanding)}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Overdue</p>
+              <p className="crm-stat-value">{formatCurrency(ledgerSummary.overdue_outstanding)}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Open invoices</p>
+              <p className="crm-stat-value">{ledgerSummary.open_invoice_count}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Last payment</p>
+              <p className="crm-stat-value crm-stat-value-sm">{formatDate(ledgerSummary.last_payment_date)}</p>
+            </div>
+          </div>
+        )}
+
+        {vendorLedgerSummary && contact.contact_type === "Vendor" && (
+          <div className="crm-stats-grid crm-mt">
+            <div className="crm-stat-card crm-vl-outstanding">
+              <p className="crm-stat-label">Outstanding</p>
+              <p className="crm-stat-value">{formatCurrency(vendorLedgerSummary.outstanding)}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Overdue</p>
+              <p className="crm-stat-value">{formatCurrency(vendorLedgerSummary.overdue_outstanding)}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Open bills</p>
+              <p className="crm-stat-value">{vendorLedgerSummary.open_bill_count}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Last payment</p>
+              <p className="crm-stat-value crm-stat-value-sm">{formatDate(vendorLedgerSummary.last_payment_date)}</p>
+            </div>
+          </div>
+        )}
 
         <div className="crm-contact-meta crm-mt">
           <p>

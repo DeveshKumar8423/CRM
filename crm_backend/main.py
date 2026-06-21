@@ -20,6 +20,12 @@ from routers.client_notes_router import router as client_notes_router
 from routers.sales_reports_router import router as sales_reports_router
 from routers.expenses_router import router as expenses_router
 from routers.purchase_orders_router import router as purchase_orders_router
+from routers.vendor_bills_router import router as vendor_bills_router
+from routers.stock_movements_router import router as stock_movements_router
+from routers.tax_reports_router import router as tax_reports_router
+from routers.pl_reports_router import router as pl_reports_router
+from routers.customer_ledger_router import router as customer_ledger_router
+from routers.vendor_ledger_router import router as vendor_ledger_router
 from routers.inventory_router import router as inventory_router
 from routers.warehouses_router import router as warehouses_router
 from routers.reminders_router import router as reminders_router
@@ -61,6 +67,12 @@ app.include_router(client_notes_router)
 app.include_router(sales_reports_router)
 app.include_router(expenses_router)
 app.include_router(purchase_orders_router)
+app.include_router(vendor_bills_router)
+app.include_router(stock_movements_router)
+app.include_router(tax_reports_router)
+app.include_router(pl_reports_router)
+app.include_router(customer_ledger_router)
+app.include_router(vendor_ledger_router)
 app.include_router(inventory_router)
 app.include_router(warehouses_router)
 app.include_router(reminders_router)

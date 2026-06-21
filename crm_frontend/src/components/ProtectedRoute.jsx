@@ -9,7 +9,7 @@ const LOGIN_PATHS = {
   User: "/user-login",
 };
 
-function ProtectedRoute({ children, allowedRoles, requiredPermission }) {
+function ProtectedRoute({ children, allowedRoles, requiredPermission, requiredPermissions }) {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
@@ -19,7 +19,13 @@ function ProtectedRoute({ children, allowedRoles, requiredPermission }) {
     return <Navigate to={redirect} replace />;
   }
 
-  if (requiredPermission && !hasPermission(requiredPermission)) {
+  const permissionCodes = requiredPermissions?.length
+    ? requiredPermissions
+    : requiredPermission
+      ? [requiredPermission]
+      : [];
+
+  if (permissionCodes.length && !permissionCodes.some((code) => hasPermission(code))) {
     const dashboardPaths = {
       Admin: "/admin-dashboard",
       Manager: "/manager-dashboard",

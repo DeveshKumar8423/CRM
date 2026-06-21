@@ -20,9 +20,14 @@ function PurchaseOrderDetail() {
   const [message, setMessage] = useState("");
   const [receiptForm, setReceiptForm] = useState({ line_item_id: "", quantity: "", grn_reference: "" });
   const [billingForm, setBillingForm] = useState({ line_item_id: "", quantity: "", amount: "", bill_reference: "" });
+  const [linkedBills, setLinkedBills] = useState([]);
 
   const load = () => apiFetch(`/purchase-orders/${id}`).then(setPo).catch((err) => setError(err.message));
-  useEffect(() => { load(); }, [id]);
+  const loadBills = () => {
+    if (!hasPermission("vendor_bills.view")) return;
+    apiFetch(`/vendor-bills?purchase_order_id=${id}&limit=50`).then((data) => setLinkedBills(data.items || [])).catch(() => {});
+  };
+  useEffect(() => { load(); loadBills(); }, [id]);
 
   const run = async (path, body, msg) => {
     setError("");
@@ -89,6 +94,7 @@ function PurchaseOrderDetail() {
   const canSend = hasPermission("purchase_orders.send") && po.status === "approved";
   const canReceipt = hasPermission("purchase_orders.record_receipt") && ["sent_to_vendor", "partially_received", "fully_received", "partially_billed", "fully_billed"].includes(po.status);
   const canBilling = hasPermission("purchase_orders.record_billing") && ["partially_received", "fully_received", "partially_billed", "fully_billed"].includes(po.status);
+  const canCreateBill = hasPermission("vendor_bills.create") && ["partially_received", "fully_received", "partially_billed", "fully_billed"].includes(po.status);
   const canClose = hasPermission("purchase_orders.close") && ["fully_billed", "partially_billed", "fully_received"].includes(po.status);
   const canCancel = !["closed", "cancelled"].includes(po.status);
 
@@ -113,6 +119,11 @@ function PurchaseOrderDetail() {
             )}
             {canSend && (
               <button type="button" className="crm-btn crm-btn-sm crm-btn-inline" onClick={() => run(`/purchase-orders/${id}/send`, null, "Sent to vendor")}>Send to vendor</button>
+            )}
+            {canCreateBill && (
+              <Link to={`/vendor-bills/new?purchase_order_id=${id}&from_po=1`} className="crm-btn crm-btn-sm crm-btn-inline">
+                Create vendor bill
+              </Link>
             )}
             {canClose && (
               <button type="button" className="crm-btn crm-btn-sm crm-btn-outline" onClick={() => run(`/purchase-orders/${id}/close`, null, "PO closed")}>Close PO</button>
@@ -239,6 +250,30 @@ function PurchaseOrderDetail() {
                 <li key={r.id}>{r.line_description}: {r.quantity} · {r.recorded_by_name} · {formatDate(r.receipt_date)}{r.grn_reference ? ` · GRN ${r.grn_reference}` : ""}</li>
               ))}
             </ul>
+          </>
+        )}
+
+        {linkedBills.length > 0 && (
+          <>
+            <h3 className="crm-mt-lg">Linked vendor bills</h3>
+            <div className="crm-table-wrap">
+              <table className="crm-table">
+                <thead>
+                  <tr><th>Bill #</th><th>Supplier inv #</th><th className="crm-num">Total</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {linkedBills.map((b) => (
+                    <tr key={b.id}>
+                      <td>{b.bill_number || "Draft"}</td>
+                      <td>{b.supplier_invoice_number || "—"}</td>
+                      <td className="crm-num">{formatCurrency(b.grand_total, b.currency)}</td>
+                      <td>{b.status}</td>
+                      <td><Link to={`/vendor-bills/${b.id}`} className="crm-nav-link">View</Link></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 

@@ -112,7 +112,15 @@ function Payments() {
                         {p.invoice_number || p.invoice_title}
                       </Link>
                     </td>
-                    <td>{p.client_org || p.client_name || "—"}</td>
+                    <td>
+                      {p.contact_id ? (
+                        <Link to={`/customer-ledger/${p.contact_id}`} className="crm-nav-link">
+                          {p.client_org || p.client_name || "—"}
+                        </Link>
+                      ) : (
+                        p.client_org || p.client_name || "—"
+                      )}
+                    </td>
                     <td>{formatCurrency(p.amount)}</td>
                     <td>{p.payment_method}</td>
                     <td>{p.recorded_by_name || "—"}</td>
@@ -143,7 +151,15 @@ function Payments() {
                 {outstanding.items.map((inv) => (
                   <tr key={inv.id}>
                     <td>{inv.invoice_number || inv.title}</td>
-                    <td>{inv.client_org || inv.client_name || "—"}</td>
+                    <td>
+                      {inv.contact_id ? (
+                        <Link to={`/customer-ledger/${inv.contact_id}`} className="crm-nav-link">
+                          {inv.client_org || inv.client_name || "—"}
+                        </Link>
+                      ) : (
+                        inv.client_org || inv.client_name || "—"
+                      )}
+                    </td>
                     <td>{formatCurrency(inv.outstanding_amount)}</td>
                     <td>{inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "—"}</td>
                     <td>{inv.age_days != null ? `${inv.age_days}d` : "—"}</td>

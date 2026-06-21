@@ -67,6 +67,7 @@ class Company(Base):
     client_notes = relationship("ClientNote", back_populates="company")
     expenses = relationship("Expense", back_populates="company")
     purchase_orders = relationship("PurchaseOrder", back_populates="company")
+    vendor_bills = relationship("VendorBill", back_populates="company")
     stock_movements = relationship("StockMovement", back_populates="company")
     warehouse_locations = relationship("WarehouseLocation", back_populates="company")
     location_stocks = relationship("LocationStock", back_populates="company")
@@ -1053,6 +1054,11 @@ class PurchaseOrder(Base):
         cascade="all, delete-orphan",
         order_by="PurchaseOrderAttachment.created_at",
     )
+    vendor_bills = relationship(
+        "VendorBill",
+        back_populates="purchase_order",
+        order_by="VendorBill.created_at.desc()",
+    )
 
 
 class PurchaseOrderLineItem(Base):
@@ -1127,6 +1133,140 @@ class PurchaseOrderAttachment(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     purchase_order = relationship("PurchaseOrder", back_populates="attachments")
+    uploaded_by = relationship("User", foreign_keys=[uploaded_by_id])
+
+
+class VendorBill(Base):
+    __tablename__ = "vendor_bills"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    expense_id = Column(Integer, ForeignKey("expenses.id"), nullable=True)
+
+    bill_number = Column(String(40), nullable=True, index=True)
+    supplier_invoice_number = Column(String(100), nullable=True)
+    title = Column(String(200), nullable=False)
+    status = Column(String(30), nullable=False, default="draft", index=True)
+    currency = Column(String(3), nullable=False, default="INR")
+    bill_date = Column(DateTime(timezone=True), nullable=False)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    payment_terms = Column(String(40), nullable=True)
+
+    vendor_name = Column(String(200), nullable=False)
+    vendor_email = Column(String(255), nullable=True)
+    vendor_phone = Column(String(30), nullable=True)
+    vendor_gstin = Column(String(20), nullable=True)
+    vendor_address = Column(Text, nullable=True)
+
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    total_tax = Column(Numeric(14, 2), nullable=False, default=0)
+    round_off = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    amount_paid = Column(Numeric(14, 2), nullable=False, default=0)
+    outstanding_amount = Column(Numeric(14, 2), nullable=False, default=0)
+
+    internal_notes = Column(Text, nullable=True)
+    approval_notes = Column(Text, nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
+
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    last_payment_at = Column(DateTime(timezone=True), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="vendor_bills")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
+    approved_by = relationship("User", foreign_keys=[approved_by_id])
+    purchase_order = relationship("PurchaseOrder", back_populates="vendor_bills")
+    deal = relationship("Deal", foreign_keys=[deal_id])
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    expense = relationship("Expense", foreign_keys=[expense_id])
+    line_items = relationship(
+        "VendorBillLineItem",
+        back_populates="vendor_bill",
+        cascade="all, delete-orphan",
+        order_by="VendorBillLineItem.sort_order",
+    )
+    payments = relationship(
+        "VendorBillPayment",
+        back_populates="vendor_bill",
+        cascade="all, delete-orphan",
+        order_by="VendorBillPayment.payment_date.desc()",
+    )
+    attachments = relationship(
+        "VendorBillAttachment",
+        back_populates="vendor_bill",
+        cascade="all, delete-orphan",
+        order_by="VendorBillAttachment.created_at",
+    )
+
+
+class VendorBillLineItem(Base):
+    __tablename__ = "vendor_bill_line_items"
+
+    id = Column(Integer, primary_key=True)
+    vendor_bill_id = Column(Integer, ForeignKey("vendor_bills.id"), nullable=False)
+    purchase_order_line_item_id = Column(Integer, ForeignKey("purchase_order_line_items.id"), nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+    description = Column(String(500), nullable=False)
+    unit = Column(String(30), nullable=True, default="Unit")
+    quantity = Column(Numeric(12, 2), nullable=False)
+    unit_price = Column(Numeric(14, 2), nullable=False)
+    tax_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    line_total = Column(Numeric(14, 2), nullable=False, default=0)
+
+    vendor_bill = relationship("VendorBill", back_populates="line_items")
+    purchase_order_line_item = relationship("PurchaseOrderLineItem")
+
+
+class VendorBillPayment(Base):
+    __tablename__ = "vendor_bill_payments"
+
+    id = Column(Integer, primary_key=True)
+    vendor_bill_id = Column(Integer, ForeignKey("vendor_bills.id"), nullable=False)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount = Column(Numeric(14, 2), nullable=False)
+    payment_date = Column(DateTime(timezone=True), nullable=False)
+    payment_method = Column(String(30), nullable=False, default="bank_transfer")
+    reference = Column(String(100), nullable=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    vendor_bill = relationship("VendorBill", back_populates="payments")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+
+
+class VendorBillAttachment(Base):
+    __tablename__ = "vendor_bill_attachments"
+
+    id = Column(Integer, primary_key=True)
+    vendor_bill_id = Column(Integer, ForeignKey("vendor_bills.id"), nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    original_filename = Column(String(255), nullable=False)
+    stored_filename = Column(String(255), nullable=False)
+    content_type = Column(String(100), nullable=True)
+    file_size = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    vendor_bill = relationship("VendorBill", back_populates="attachments")
     uploaded_by = relationship("User", foreign_keys=[uploaded_by_id])
 
 
