@@ -1718,6 +1718,21 @@ a {
 .crm-expense-cancelled { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
 .crm-expense-missing_proof { background: rgba(234, 179, 8, 0.15); color: #eab308; }
 
+.crm-vb-draft { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.crm-vb-submitted { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.crm-vb-under_review { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.crm-vb-approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.crm-vb-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.crm-vb-partially_paid { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.crm-vb-paid { background: rgba(34, 197, 94, 0.2); color: #16a34a; }
+.crm-vb-overdue { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.crm-vb-cancelled { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.crm-vb-closed { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+
+.crm-sm-in { background: rgba(34, 197, 94, 0.2); color: #16a34a; }
+.crm-sm-out { background: rgba(249, 115, 22, 0.15); color: #ea580c; }
+.crm-sm-override { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+
 .crm-btn-link-style {
   background: none;
   border: none;
@@ -1796,3 +1811,59 @@ a {
 .crm-wh-stock-low_stock { background: rgba(234, 179, 8, 0.15); color: #eab308; }
 .crm-wh-stock-out_of_stock { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
 .crm-stat-value-sm { font-size: 1rem; line-height: 1.4; }
+
+/* GST / Tax Reports */
+.crm-tax-outward { background: rgba(20, 184, 166, 0.15); color: #0d9488; }
+.crm-tax-inward { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+.crm-tax-b2b { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+.crm-tax-b2c { background: rgba(148, 163, 184, 0.15); color: #64748b; }
+.crm-tax-missing-gstin { background: rgba(239, 68, 68, 0.12); color: #dc2626; margin-left: 0.35rem; }
+.crm-tax-credit-note { background: rgba(168, 85, 247, 0.15); color: #9333ea; margin-left: 0.35rem; }
+.crm-tax-informational { background: rgba(99, 102, 241, 0.15); color: #4f46e5; }
+.crm-tax-card-outward { border-left: 3px solid #14b8a6; }
+.crm-tax-card-inward { border-left: 3px solid #f59e0b; }
+.crm-tax-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.crm-tax-summary-section { padding: 1rem; border-radius: 8px; background: var(--crm-panel-bg, #f8fafc); }
+.crm-tax-summary-section h3 { margin-top: 0; }
+.crm-tax-net { border: 1px dashed rgba(99, 102, 241, 0.35); }
+.crm-tax-quality-list { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+.crm-tax-quality-list li { margin-bottom: 0.35rem; }
+.crm-tax-quick-links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.crm-pagination { display: flex; align-items: center; gap: 1rem; }
+.crm-mt-sm { margin-top: 0.35rem; }
+
+/* Customer Ledger */
+.crm-cl-invoice { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+.crm-cl-payment { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.crm-cl-credit { background: rgba(168, 85, 247, 0.15); color: #9333ea; }
+.crm-cl-debit { background: rgba(249, 115, 22, 0.15); color: #ea580c; }
+.crm-cl-writeoff { background: rgba(107, 114, 128, 0.15); color: #4b5563; }
+.crm-cl-overdue { background: rgba(239, 68, 68, 0.12); color: #dc2626; margin-left: 0.35rem; }
+.crm-cl-outstanding { border-left: 3px solid #f59e0b; }
+.crm-cl-credit-col { color: #16a34a; }
+
+.crm-vl-bill { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+.crm-vl-payment { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.crm-vl-overdue { background: rgba(239, 68, 68, 0.12); color: #dc2626; margin-left: 0.35rem; }
+.crm-vl-outstanding { border-left: 3px solid #f59e0b; }
+.crm-vl-credit-col { color: #16a34a; }
+
+.crm-pl-revenue { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+.crm-pl-credit { background: rgba(168, 85, 247, 0.15); color: #9333ea; }
+.crm-pl-cost { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+.crm-pl-expense { background: rgba(107, 114, 128, 0.15); color: #4b5563; }
+.crm-pl-linked { background: rgba(99, 102, 241, 0.12); color: #4f46e5; margin-left: 0.35rem; }
+.crm-pl-card-revenue { border-left: 3px solid #3b82f6; }
+.crm-pl-card-cost { border-left: 3px solid #f59e0b; }
+.crm-pl-card-gross { border-left: 3px solid #14b8a6; }
+.crm-pl-card-expense { border-left: 3px solid #64748b; }
+.crm-pl-card-net { border-left: 3px solid #22c55e; }
+.crm-pl-profit-value { color: #16a34a; }
+.crm-pl-loss-value { color: #dc2626; }
+.crm-pl-positive { color: #16a34a; }
+.crm-pl-negative { color: #dc2626; }
+.crm-pl-statement-total { background: rgba(248, 250, 252, 0.8); }
+.crm-pl-quality-list { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+.crm-pl-quality-list li { margin-bottom: 0.35rem; }
+.crm-stat-sub { font-size: 0.85rem; margin-top: 0.25rem; }
+.crm-checkbox-label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem; }

@@ -24,16 +24,28 @@ function isNavActive(pathname, to) {
       return pathname === "/payments";
     case "/expenses":
       return pathname === "/expenses" || pathname.startsWith("/expenses/");
+    case "/vendor-bills":
+      return pathname === "/vendor-bills" || pathname.startsWith("/vendor-bills/");
     case "/purchase-orders":
       return pathname === "/purchase-orders" || pathname.startsWith("/purchase-orders/");
     case "/inventory":
       return pathname === "/inventory" || pathname.startsWith("/inventory/");
+    case "/stock-movements":
+      return pathname === "/stock-movements" || pathname.startsWith("/stock-movements/");
     case "/warehouses":
       return pathname === "/warehouses" || pathname.startsWith("/warehouses/");
     case "/client-notes":
       return (pathname === "/client-notes" || pathname.startsWith("/client-notes/")) && pathname !== "/client-notes/follow-ups";
     case "/sales-reports":
       return pathname === "/sales-reports";
+    case "/tax-reports":
+      return pathname === "/tax-reports";
+    case "/pl-reports":
+      return pathname === "/pl-reports";
+    case "/customer-ledger":
+      return pathname === "/customer-ledger" || pathname.startsWith("/customer-ledger/");
+    case "/vendor-ledger":
+      return pathname === "/vendor-ledger" || pathname.startsWith("/vendor-ledger/");
     case "/documents":
       return pathname === "/documents" || pathname.startsWith("/documents/");
     case "/contacts":
@@ -157,9 +169,24 @@ function DashboardLayout({ title, roleLabel, children }) {
                 Purchase Orders
               </Link>
             )}
+            {hasPermission("vendor_bills.view") && (
+              <Link to="/vendor-bills" className={navLinkClass(pathname, "/vendor-bills")}>
+                Vendor Bills
+              </Link>
+            )}
+            {(hasPermission("vendor_ledger.view") || hasPermission("vendor_bills.view")) && (
+              <Link to="/vendor-ledger" className={navLinkClass(pathname, "/vendor-ledger")}>
+                Vendor Ledger
+              </Link>
+            )}
             {hasPermission("inventory.view") && (
               <Link to="/inventory" className={navLinkClass(pathname, "/inventory")}>
                 Inventory
+              </Link>
+            )}
+            {hasPermission("stock_movements.view") && (
+              <Link to="/stock-movements" className={navLinkClass(pathname, "/stock-movements")}>
+                Stock In / Out
               </Link>
             )}
             {hasPermission("warehouses.view") && (
@@ -179,7 +206,22 @@ function DashboardLayout({ title, roleLabel, children }) {
             )}
             {hasPermission("reports.view") && (
               <Link to="/sales-reports" className={navLinkClass(pathname, "/sales-reports")}>
-                Reports
+                Sales Reports
+              </Link>
+            )}
+            {(hasPermission("customer_ledger.view") || hasPermission("invoices.view") || hasPermission("payments.view")) && (
+              <Link to="/customer-ledger" className={navLinkClass(pathname, "/customer-ledger")}>
+                Customer Ledger
+              </Link>
+            )}
+            {(hasPermission("tax_reports.view") || hasPermission("reports.view_financial")) && (
+              <Link to="/tax-reports" className={navLinkClass(pathname, "/tax-reports")}>
+                GST / Tax Reports
+              </Link>
+            )}
+            {(hasPermission("pl_reports.view") || hasPermission("reports.view_financial")) && (
+              <Link to="/pl-reports" className={navLinkClass(pathname, "/pl-reports")}>
+                P&L Reports
               </Link>
             )}
             {hasPermission("contacts.view") && (

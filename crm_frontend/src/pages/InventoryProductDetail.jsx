@@ -56,6 +56,8 @@ function InventoryProductDetail() {
   const canEnable = hasPermission("inventory.enable_tracking") && !product.inventory_tracked;
   const canOpening = hasPermission("inventory.record_opening") && product.inventory_tracked && !product.opening_recorded;
   const canMove = hasPermission("inventory.record_purchase") && product.opening_recorded;
+  const canStockIn = hasPermission("stock_movements.record_in") && product.opening_recorded;
+  const canStockOut = hasPermission("stock_movements.record_out") && product.opening_recorded;
 
   return (
     <DashboardLayout title={product.name} roleLabel={role}>
@@ -69,8 +71,14 @@ function InventoryProductDetail() {
             {canOpening && (
               <Link to={`/inventory/opening-stock?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-outline">Set opening stock</Link>
             )}
-            {canMove && (
-              <Link to={`/inventory/record-movement?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-inline">Record movement</Link>
+            {canStockIn && (
+              <Link to={`/stock-movements/in?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-inline">Stock In</Link>
+            )}
+            {canStockOut && (
+              <Link to={`/stock-movements/out?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-outline">Stock Out</Link>
+            )}
+            {canMove && hasPermission("inventory.view") && (
+              <Link to={`/inventory/record-movement?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-outline">Advanced movement</Link>
             )}
             {hasPermission("warehouses.view_stock") && product.opening_recorded && (
               <Link to={`/warehouses/stock?product_id=${productId}`} className="crm-btn crm-btn-sm crm-btn-outline">By location</Link>

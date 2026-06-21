@@ -54,6 +54,9 @@ function InvoiceDetail() {
           <Link to="/invoices" className="crm-link crm-link-left">← All invoices</Link>
           <div className="crm-inline-actions">
             <Link to={`/invoices/${id}/preview`} className="crm-btn crm-btn-sm crm-btn-outline">Preview</Link>
+            {inv.contact_id && (hasPermission("customer_ledger.view") || hasPermission("invoices.view") || hasPermission("payments.view")) && (
+              <Link to={`/customer-ledger/${inv.contact_id}`} className="crm-btn crm-btn-sm crm-btn-outline">Customer ledger</Link>
+            )}
             {canEdit && <Link to={`/invoices/${id}/edit`} className="crm-btn crm-btn-sm crm-btn-outline">Edit</Link>}
             {canEdit && inv.status === "draft" && <button type="button" className="crm-btn crm-btn-sm" onClick={() => run(`/invoices/${id}/submit-review`, null, "Submitted for review")}>Submit for review</button>}
             {canReview && inv.status === "awaiting_review" && (

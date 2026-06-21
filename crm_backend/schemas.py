@@ -1525,6 +1525,7 @@ class PaymentRecordItem(BaseModel):
     invoice_title: str
     client_name: str | None
     client_org: str | None
+    contact_id: int | None = None
     amount: float
     payment_date: datetime
     payment_method: str
@@ -1546,6 +1547,7 @@ class InvoiceOutstandingItem(BaseModel):
     title: str
     client_name: str | None
     client_org: str | None
+    contact_id: int | None = None
     status: str
     grand_total: float
     amount_paid: float
@@ -2301,3 +2303,890 @@ class UploadedFileResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Vendor Bills
+
+
+class VendorBillLineItemFields(BaseModel):
+    purchase_order_line_item_id: int | None = None
+    sort_order: int = 0
+    description: str = Field(min_length=1, max_length=500)
+    quantity: float = Field(gt=0)
+    unit: str = Field(default="Unit", max_length=30)
+    unit_price: float = Field(ge=0)
+    tax_rate: float = Field(default=18, ge=0)
+
+
+class VendorBillLineItemResponse(BaseModel):
+    id: int
+    purchase_order_line_item_id: int | None = None
+    sort_order: int
+    description: str
+    unit: str | None = None
+    quantity: float
+    unit_price: float
+    tax_rate: float
+    line_subtotal: float
+    line_total: float
+    po_ordered_quantity: float | None = None
+    po_received_quantity: float | None = None
+    po_billed_quantity: float | None = None
+    po_pending_billing_quantity: float | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendorBillPaymentFields(BaseModel):
+    amount: float = Field(gt=0)
+    payment_date: datetime
+    payment_method: str = Field(default="bank_transfer", max_length=30)
+    reference: str | None = Field(default=None, max_length=100)
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class VendorBillPaymentResponse(BaseModel):
+    id: int
+    amount: float
+    payment_date: datetime
+    payment_method: str
+    reference: str | None = None
+    note: str | None = None
+    recorded_by_id: int
+    recorded_by_name: str | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendorBillCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    supplier_invoice_number: str | None = Field(default=None, max_length=100)
+    currency: str = Field(default="INR", max_length=3)
+    bill_date: datetime
+    due_date: datetime | None = None
+    payment_terms: str | None = Field(default=None, max_length=40)
+    purchase_order_id: int | None = None
+    vendor_name: str = Field(min_length=1, max_length=200)
+    vendor_email: str | None = Field(default=None, max_length=255)
+    vendor_phone: str | None = Field(default=None, max_length=30)
+    vendor_gstin: str | None = Field(default=None, max_length=20)
+    vendor_address: str | None = None
+    deal_id: int | None = None
+    contact_id: int | None = None
+    expense_id: int | None = None
+    round_off: float = Field(default=0)
+    internal_notes: str | None = Field(default=None, max_length=5000)
+    line_items: list[VendorBillLineItemFields] = Field(min_length=1)
+
+
+class VendorBillUpdateRequest(VendorBillCreateRequest):
+    pass
+
+
+class VendorBillReviewRequest(BaseModel):
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class VendorBillRejectRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+    comments: str | None = Field(default=None, max_length=2000)
+
+
+class VendorBillCancelRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class VendorBillAttachmentResponse(BaseModel):
+    id: int
+    original_filename: str
+    content_type: str | None = None
+    file_size: int
+    uploaded_by_name: str | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendorBillResponse(BaseModel):
+    id: int
+    bill_number: str | None = None
+    supplier_invoice_number: str | None = None
+    title: str
+    status: str
+    currency: str
+    bill_date: datetime
+    due_date: datetime | None = None
+    payment_terms: str | None = None
+    purchase_order_id: int | None = None
+    po_number: str | None = None
+    vendor_name: str
+    vendor_email: str | None = None
+    vendor_phone: str | None = None
+    vendor_gstin: str | None = None
+    vendor_address: str | None = None
+    deal_id: int | None = None
+    deal_title: str | None = None
+    contact_id: int | None = None
+    contact_name: str | None = None
+    expense_id: int | None = None
+    subtotal: float
+    total_tax: float
+    round_off: float
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    internal_notes: str | None = None
+    approval_notes: str | None = None
+    rejection_reason: str | None = None
+    cancellation_reason: str | None = None
+    created_by_id: int
+    created_by_name: str | None = None
+    reviewed_by_name: str | None = None
+    approved_by_name: str | None = None
+    submitted_at: datetime | None = None
+    reviewed_at: datetime | None = None
+    approved_at: datetime | None = None
+    cancelled_at: datetime | None = None
+    closed_at: datetime | None = None
+    last_payment_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+    line_items: list[VendorBillLineItemResponse] = Field(default_factory=list)
+    payments: list[VendorBillPaymentResponse] = Field(default_factory=list)
+    attachments: list[VendorBillAttachmentResponse] = Field(default_factory=list)
+    is_overdue: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendorBillListResponse(BaseModel):
+    items: list[VendorBillResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class VendorBillStatusOption(BaseModel):
+    value: str
+    label: str
+
+
+class VendorBillPaymentMethodOption(BaseModel):
+    value: str
+    label: str
+
+
+class VendorBillStatsResponse(BaseModel):
+    total_outstanding: float
+    overdue_amount: float
+    due_this_week_amount: float
+    pending_approval_count: int
+    pending_approval_amount: float
+    paid_this_month: float
+    by_vendor: list[dict] = Field(default_factory=list)
+    aging_buckets: list[dict] = Field(default_factory=list)
+
+
+# Stock In / Stock Out
+
+
+class StockMovementReasonOption(BaseModel):
+    value: str
+    label: str
+
+
+class StockMovementRecordRequest(BaseModel):
+    product_id: int
+    quantity: float = Field(gt=0)
+    reason: str = Field(min_length=1, max_length=100)
+    movement_date: datetime
+    reference_number: str | None = Field(default=None, max_length=100)
+    reference_type: str | None = Field(default=None, max_length=30)
+    reference_id: int | None = None
+    source_module: str | None = Field(default="stock_movements", max_length=30)
+    unit_valuation: float | None = Field(default=None, ge=0)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class StockMovementExtendedResponse(StockMovementResponse):
+    movement_number: str
+    reason_label: str | None = None
+
+
+class StockMovementExtendedListResponse(BaseModel):
+    items: list[StockMovementExtendedResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class StockMovementStatsResponse(BaseModel):
+    stock_in_today: float
+    stock_out_today: float
+    net_change_today: float
+    movement_count_today: int
+    top_out_product_name: str | None = None
+    top_out_product_qty: float = 0
+    recent_movements: list[StockMovementExtendedResponse] = Field(default_factory=list)
+
+
+class TaxReportPeriodOption(BaseModel):
+    key: str
+    label: str
+
+
+class TaxReportCompanyContext(BaseModel):
+    company_name: str
+    gstin: str | None = None
+    gstin_configured: bool = False
+
+
+class TaxReportRateRow(BaseModel):
+    rate: float
+    rate_label: str
+    taxable_value: float
+    tax_amount: float
+    document_count: int
+
+
+class TaxReportVendorSummaryRow(BaseModel):
+    vendor_name: str
+    bill_count: int
+    taxable_value: float
+    input_tax: float
+
+
+class TaxReportDataQuality(BaseModel):
+    outward_missing_gstin: int
+    inward_missing_gstin: int
+    excluded_outward_drafts: int
+    excluded_inward_drafts: int
+
+
+class TaxReportOutwardRegisterRow(BaseModel):
+    id: int
+    invoice_number: str | None = None
+    issue_date: datetime | None = None
+    customer_name: str | None = None
+    customer_gstin: str | None = None
+    taxable_value: float
+    tax_amount: float
+    grand_total: float
+    status: str
+    status_label: str
+    invoice_type: str
+    is_credit_note: bool = False
+    tax_rate_summary: str
+    missing_gstin: bool = False
+    parent_invoice_id: int | None = None
+
+
+class TaxReportInwardRegisterRow(BaseModel):
+    id: int
+    bill_number: str | None = None
+    supplier_invoice_number: str | None = None
+    bill_date: datetime
+    vendor_name: str
+    vendor_gstin: str | None = None
+    taxable_value: float
+    tax_amount: float
+    grand_total: float
+    status: str
+    status_label: str
+    purchase_order_id: int | None = None
+    po_number: str | None = None
+    tax_rate_summary: str
+    missing_gstin: bool = False
+
+
+class TaxReportOverviewResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: TaxReportCompanyContext
+    outward_taxable_value: float
+    outward_tax_collected: float
+    outward_document_count: int
+    inward_taxable_value: float
+    inward_input_tax: float
+    inward_document_count: int
+    missing_gstin_count: int
+    data_quality: TaxReportDataQuality
+
+
+class TaxReportSalesResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: TaxReportCompanyContext
+    taxable_value: float
+    tax_collected: float
+    gross_total: float
+    document_count: int
+    b2b_count: int
+    b2c_count: int
+    rate_breakdown: list[TaxReportRateRow] = Field(default_factory=list)
+    register: list[TaxReportOutwardRegisterRow] = Field(default_factory=list)
+    register_total: int = 0
+    register_page: int = 1
+    register_per_page: int = 50
+    data_quality: TaxReportDataQuality
+
+
+class TaxReportPurchaseResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: TaxReportCompanyContext
+    taxable_value: float
+    input_tax: float
+    gross_total: float
+    document_count: int
+    vendors_with_gstin: int
+    rate_breakdown: list[TaxReportRateRow] = Field(default_factory=list)
+    vendor_summary: list[TaxReportVendorSummaryRow] = Field(default_factory=list)
+    register: list[TaxReportInwardRegisterRow] = Field(default_factory=list)
+    register_total: int = 0
+    register_page: int = 1
+    register_per_page: int = 50
+    data_quality: TaxReportDataQuality
+
+
+class TaxReportSummaryResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: TaxReportCompanyContext
+    outward_taxable_value: float
+    outward_tax_collected: float
+    outward_document_count: int
+    inward_taxable_value: float
+    inward_input_tax: float
+    inward_document_count: int
+    informational_net_tax: float
+    rate_breakdown: list[TaxReportRateRow] = Field(default_factory=list)
+    data_quality: TaxReportDataQuality
+
+
+class TaxReportExportLogRequest(BaseModel):
+    report_type: str = Field(min_length=1, max_length=30)
+    period: str = Field(min_length=1, max_length=30)
+    period_label: str | None = None
+    row_count: int = 0
+
+
+class CustomerLedgerPeriodOption(BaseModel):
+    key: str
+    label: str
+
+
+class CustomerLedgerIndexKpis(BaseModel):
+    total_outstanding: float
+    overdue_outstanding: float
+    customers_with_balance: int
+    collected_this_month: float
+    unassigned_outstanding: float = 0
+
+
+class CustomerLedgerIndexRow(BaseModel):
+    contact_id: int
+    name: str
+    organization_name: str | None = None
+    gstin: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    currency: str = "INR"
+    total_billed: float
+    total_collected: float
+    outstanding: float
+    overdue_outstanding: float
+    last_activity_date: datetime | None = None
+    open_invoice_count: int
+
+
+class CustomerLedgerIndexResponse(BaseModel):
+    kpis: CustomerLedgerIndexKpis
+    items: list[CustomerLedgerIndexRow]
+    total: int
+    page: int
+    per_page: int
+
+
+class CustomerLedgerContactHeader(BaseModel):
+    contact_id: int
+    name: str
+    organization_name: str | None = None
+    gstin: str | None = None
+    pan: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    contact_type: str
+    billing_address: str | None = None
+    currency: str = "INR"
+    is_vendor: bool = False
+    missing_gstin: bool = False
+
+
+class CustomerLedgerEntryRow(BaseModel):
+    entry_key: str
+    entry_type: str
+    entry_type_label: str
+    effective_date: datetime
+    reference: str | None = None
+    description: str
+    debit_amount: float
+    credit_amount: float
+    running_balance: float
+    invoice_id: int | None = None
+    payment_id: int | None = None
+    status: str | None = None
+    status_label: str | None = None
+    is_overdue: bool = False
+    excluded_from_balance: bool = False
+
+
+class CustomerLedgerOpenInvoiceRow(BaseModel):
+    id: int
+    invoice_number: str | None = None
+    title: str
+    invoice_type: str
+    issue_date: datetime | None = None
+    due_date: datetime | None = None
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    status: str
+    status_label: str
+    is_overdue: bool = False
+
+
+class CustomerLedgerStatementSummary(BaseModel):
+    opening_balance: float
+    period_debits: float
+    period_credits: float
+    closing_balance: float
+    current_outstanding: float
+    overdue_outstanding: float
+
+
+class CustomerLedgerStatementResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime | None = None
+    date_to: datetime | None = None
+    contact: CustomerLedgerContactHeader
+    summary: CustomerLedgerStatementSummary
+    entries: list[CustomerLedgerEntryRow]
+    entries_total: int
+    entries_page: int
+    entries_per_page: int
+    open_invoices: list[CustomerLedgerOpenInvoiceRow]
+    aging_buckets: list[PaymentAgingBucket]
+
+
+class CustomerLedgerContactSummaryResponse(BaseModel):
+    contact_id: int
+    outstanding: float
+    overdue_outstanding: float
+    open_invoice_count: int
+    last_payment_date: datetime | None = None
+    total_collected: float
+
+
+class CustomerLedgerUnassignedGroup(BaseModel):
+    group_key: str
+    client_name: str | None = None
+    client_org: str | None = None
+    invoice_count: int
+    total_billed: float
+    outstanding: float
+
+
+class CustomerLedgerUnassignedInvoiceRow(BaseModel):
+    id: int
+    invoice_number: str | None = None
+    title: str
+    client_name: str | None = None
+    client_org: str | None = None
+    issue_date: datetime | None = None
+    due_date: datetime | None = None
+    grand_total: float
+    outstanding_amount: float
+    status: str
+    status_label: str
+    is_overdue: bool = False
+
+
+class CustomerLedgerUnassignedResponse(BaseModel):
+    total_outstanding: float
+    invoice_count: int
+    groups: list[CustomerLedgerUnassignedGroup]
+    invoices: list[CustomerLedgerUnassignedInvoiceRow]
+    total: int
+    page: int
+    per_page: int
+
+
+class CustomerLedgerExportLogRequest(BaseModel):
+    contact_id: int
+    period: str = Field(min_length=1, max_length=30)
+    period_label: str | None = None
+    row_count: int = 0
+
+
+class VendorLedgerPeriodOption(BaseModel):
+    key: str
+    label: str
+
+
+class VendorLedgerIndexKpis(BaseModel):
+    total_outstanding: float
+    overdue_outstanding: float
+    vendors_with_balance: int
+    paid_this_month: float
+    unassigned_outstanding: float = 0
+
+
+class VendorLedgerIndexRow(BaseModel):
+    contact_id: int
+    name: str
+    organization_name: str | None = None
+    gstin: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    currency: str = "INR"
+    total_billed: float
+    total_paid: float
+    outstanding: float
+    overdue_outstanding: float
+    last_activity_date: datetime | None = None
+    open_bill_count: int
+
+
+class VendorLedgerIndexResponse(BaseModel):
+    kpis: VendorLedgerIndexKpis
+    items: list[VendorLedgerIndexRow]
+    total: int
+    page: int
+    per_page: int
+
+
+class VendorLedgerContactHeader(BaseModel):
+    contact_id: int
+    name: str
+    organization_name: str | None = None
+    gstin: str | None = None
+    pan: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    contact_type: str
+    billing_address: str | None = None
+    currency: str = "INR"
+    is_customer: bool = False
+    missing_gstin: bool = False
+
+
+class VendorLedgerEntryRow(BaseModel):
+    entry_key: str
+    entry_type: str
+    entry_type_label: str
+    effective_date: datetime
+    reference: str | None = None
+    description: str
+    debit_amount: float
+    credit_amount: float
+    running_balance: float
+    bill_id: int | None = None
+    payment_id: int | None = None
+    po_number: str | None = None
+    status: str | None = None
+    status_label: str | None = None
+    is_overdue: bool = False
+
+
+class VendorLedgerOpenBillRow(BaseModel):
+    id: int
+    bill_number: str | None = None
+    supplier_invoice_number: str | None = None
+    title: str
+    bill_date: datetime
+    due_date: datetime | None = None
+    grand_total: float
+    amount_paid: float
+    outstanding_amount: float
+    status: str
+    status_label: str
+    purchase_order_id: int | None = None
+    po_number: str | None = None
+    is_overdue: bool = False
+
+
+class VendorLedgerStatementSummary(BaseModel):
+    opening_balance: float
+    period_debits: float
+    period_credits: float
+    closing_balance: float
+    current_outstanding: float
+    overdue_outstanding: float
+
+
+class VendorLedgerStatementResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime | None = None
+    date_to: datetime | None = None
+    contact: VendorLedgerContactHeader
+    summary: VendorLedgerStatementSummary
+    entries: list[VendorLedgerEntryRow]
+    entries_total: int
+    entries_page: int
+    entries_per_page: int
+    open_bills: list[VendorLedgerOpenBillRow]
+    aging_buckets: list[PaymentAgingBucket]
+
+
+class VendorLedgerContactSummaryResponse(BaseModel):
+    contact_id: int
+    outstanding: float
+    overdue_outstanding: float
+    open_bill_count: int
+    last_payment_date: datetime | None = None
+    total_paid: float
+
+
+class VendorLedgerUnassignedGroup(BaseModel):
+    group_key: str
+    vendor_name: str
+    bill_count: int
+    total_billed: float
+    outstanding: float
+
+
+class VendorLedgerUnassignedBillRow(BaseModel):
+    id: int
+    bill_number: str | None = None
+    supplier_invoice_number: str | None = None
+    title: str
+    vendor_name: str
+    bill_date: datetime
+    due_date: datetime | None = None
+    grand_total: float
+    outstanding_amount: float
+    status: str
+    status_label: str
+    is_overdue: bool = False
+
+
+class VendorLedgerUnassignedResponse(BaseModel):
+    total_outstanding: float
+    bill_count: int
+    groups: list[VendorLedgerUnassignedGroup]
+    bills: list[VendorLedgerUnassignedBillRow]
+    total: int
+    page: int
+    per_page: int
+
+
+class VendorLedgerExportLogRequest(BaseModel):
+    contact_id: int
+    period: str = Field(min_length=1, max_length=30)
+    period_label: str | None = None
+    row_count: int = 0
+
+
+class PLReportPeriodOption(BaseModel):
+    key: str
+    label: str
+
+
+class PLReportCompanyContext(BaseModel):
+    company_name: str
+    currency: str = "INR"
+
+
+class PLReportComparisonMetric(BaseModel):
+    key: str
+    label: str
+    current: float
+    previous: float
+    change_amount: float
+    change_pct: float | None = None
+
+
+class PLReportStatementLine(BaseModel):
+    key: str
+    label: str
+    current: float
+    previous: float
+    is_total: bool = False
+
+
+class PLReportTrendPoint(BaseModel):
+    period_label: str
+    net_revenue: float
+    gross_profit: float
+    net_profit: float
+
+
+class PLReportCategoryRow(BaseModel):
+    category: str
+    category_label: str
+    amount: float
+
+
+class PLReportDataQuality(BaseModel):
+    excluded_draft_invoices: int = 0
+    excluded_draft_bills: int = 0
+    excluded_draft_expenses: int = 0
+    deduplicated_expense_count: int = 0
+    deduplicated_expense_amount: float = 0
+    write_off_total: float = 0
+    mixed_currency: bool = False
+
+
+class PLReportSummaryResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    comparison_period_label: str
+    comparison_date_from: datetime
+    comparison_date_to: datetime
+    company: PLReportCompanyContext
+    gross_sales: float
+    credit_notes: float
+    net_revenue: float
+    purchases_costs: float
+    gross_profit: float
+    gross_margin_pct: float | None = None
+    operating_expenses: float
+    net_profit: float
+    net_margin_pct: float | None = None
+    previous_gross_sales: float
+    previous_credit_notes: float
+    previous_net_revenue: float
+    previous_purchases_costs: float
+    previous_gross_profit: float
+    previous_operating_expenses: float
+    previous_net_profit: float
+    comparisons: list[PLReportComparisonMetric]
+    statement: list[PLReportStatementLine]
+    expense_categories: list[PLReportCategoryRow] = Field(default_factory=list)
+    trend: list[PLReportTrendPoint] = Field(default_factory=list)
+    data_quality: PLReportDataQuality
+
+
+class PLReportRevenueRegisterRow(BaseModel):
+    id: int
+    invoice_number: str | None = None
+    issue_date: datetime
+    client_name: str | None = None
+    invoice_type: str
+    invoice_type_label: str
+    subtotal: float
+    total_tax: float
+    grand_total: float
+    status: str
+    status_label: str
+    is_credit_note: bool = False
+
+
+class PLReportRevenueResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: PLReportCompanyContext
+    gross_sales: float
+    credit_notes: float
+    net_revenue: float
+    register: list[PLReportRevenueRegisterRow] = Field(default_factory=list)
+    register_total: int = 0
+    register_page: int = 1
+    register_per_page: int = 50
+    data_quality: PLReportDataQuality
+
+
+class PLReportCostRegisterRow(BaseModel):
+    id: int
+    bill_number: str | None = None
+    supplier_invoice_number: str | None = None
+    bill_date: datetime
+    vendor_name: str
+    subtotal: float
+    total_tax: float
+    grand_total: float
+    status: str
+    status_label: str
+    purchase_order_id: int | None = None
+    po_number: str | None = None
+    expense_id: int | None = None
+    expense_linked: bool = False
+
+
+class PLReportCostsResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: PLReportCompanyContext
+    purchases_costs: float
+    register: list[PLReportCostRegisterRow] = Field(default_factory=list)
+    register_total: int = 0
+    register_page: int = 1
+    register_per_page: int = 50
+    data_quality: PLReportDataQuality
+
+
+class PLReportExpenseRegisterRow(BaseModel):
+    id: int
+    expense_number: str | None = None
+    expense_date: datetime
+    category: str
+    category_label: str
+    title: str
+    vendor_name: str
+    amount: float
+    status: str
+    status_label: str
+    submitter_name: str | None = None
+    included_in_pl: bool = True
+    exclusion_reason: str | None = None
+
+
+class PLReportExcludedExpenseRow(BaseModel):
+    id: int
+    expense_number: str | None = None
+    expense_date: datetime
+    title: str
+    vendor_name: str
+    amount: float
+    exclusion_reason: str
+
+
+class PLReportExpensesResponse(BaseModel):
+    period: str
+    period_label: str
+    date_from: datetime
+    date_to: datetime
+    company: PLReportCompanyContext
+    operating_expenses: float
+    expense_categories: list[PLReportCategoryRow] = Field(default_factory=list)
+    register: list[PLReportExpenseRegisterRow] = Field(default_factory=list)
+    excluded_duplicates: list[PLReportExcludedExpenseRow] = Field(default_factory=list)
+    register_total: int = 0
+    register_page: int = 1
+    register_per_page: int = 50
+    data_quality: PLReportDataQuality
+
+
+class PLReportExportLogRequest(BaseModel):
+    report_type: str = Field(min_length=1, max_length=30)
+    period: str = Field(min_length=1, max_length=30)
+    period_label: str | None = None
+    row_count: int = 0

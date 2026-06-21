@@ -48,10 +48,23 @@ import ClientInvoiceView from "./pages/ClientInvoiceView";
 import ClientNotes from "./pages/ClientNotes";
 import ClientNotesFollowUpQueue from "./pages/ClientNotesFollowUpQueue";
 import SalesReports from "./pages/SalesReports";
+import TaxReports from "./pages/TaxReports";
+import PLReports from "./pages/PLReports";
+import CustomerLedger from "./pages/CustomerLedger";
+import CustomerLedgerStatement from "./pages/CustomerLedgerStatement";
+import CustomerLedgerUnassigned from "./pages/CustomerLedgerUnassigned";
+import VendorLedger from "./pages/VendorLedger";
+import VendorLedgerStatement from "./pages/VendorLedgerStatement";
+import VendorLedgerUnassigned from "./pages/VendorLedgerUnassigned";
 import Expenses from "./pages/Expenses";
 import ExpenseForm from "./pages/ExpenseForm";
 import ExpenseDetail from "./pages/ExpenseDetail";
 import ExpenseApprovalQueue from "./pages/ExpenseApprovalQueue";
+import VendorBills from "./pages/VendorBills";
+import VendorBillForm from "./pages/VendorBillForm";
+import VendorBillDetail from "./pages/VendorBillDetail";
+import VendorBillApprovalQueue from "./pages/VendorBillApprovalQueue";
+import VendorBillPayablesSummary from "./pages/VendorBillPayablesSummary";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import PurchaseOrderForm from "./pages/PurchaseOrderForm";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
@@ -62,6 +75,10 @@ import InventoryRecordMovement from "./pages/InventoryRecordMovement";
 import InventoryOpeningStock from "./pages/InventoryOpeningStock";
 import InventoryMovements from "./pages/InventoryMovements";
 import InventoryLowStock from "./pages/InventoryLowStock";
+import StockMovements from "./pages/StockMovements";
+import { StockMovementRecordIn, StockMovementRecordOut } from "./pages/StockMovementForm";
+import StockMovementDetail from "./pages/StockMovementDetail";
+import StockMovementSummary from "./pages/StockMovementSummary";
 import Warehouses from "./pages/Warehouses";
 import WarehouseLocationDetail from "./pages/WarehouseLocationDetail";
 import WarehouseStockByLocation from "./pages/WarehouseStockByLocation";
@@ -584,6 +601,94 @@ function App() {
           }
         />
         <Route
+          path="/tax-reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["tax_reports.view", "reports.view_financial"]}
+            >
+              <TaxReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pl-reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["pl_reports.view", "reports.view_financial"]}
+            >
+              <PLReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer-ledger/unassigned"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["customer_ledger.view", "invoices.view", "payments.view"]}
+            >
+              <CustomerLedgerUnassigned />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer-ledger/:contactId"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["customer_ledger.view", "invoices.view", "payments.view"]}
+            >
+              <CustomerLedgerStatement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer-ledger"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["customer_ledger.view", "invoices.view", "payments.view"]}
+            >
+              <CustomerLedger />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-ledger/unassigned"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["vendor_ledger.view", "vendor_bills.view"]}
+            >
+              <VendorLedgerUnassigned />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-ledger/:contactId"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["vendor_ledger.view", "vendor_bills.view"]}
+            >
+              <VendorLedgerStatement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-ledger"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["vendor_ledger.view", "vendor_bills.view"]}
+            >
+              <VendorLedger />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/sales-reports"
           element={
             <ProtectedRoute
@@ -646,6 +751,72 @@ function App() {
               requiredPermission="expenses.view"
             >
               <ExpenseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.view"
+            >
+              <VendorBills />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills/payables-summary"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.view"
+            >
+              <VendorBillPayablesSummary />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills/approval-queue"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.approve"
+            >
+              <VendorBillApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.create"
+            >
+              <VendorBillForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.edit_own"
+            >
+              <VendorBillForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-bills/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="vendor_bills.view"
+            >
+              <VendorBillDetail />
             </ProtectedRoute>
           }
         />
@@ -749,6 +920,46 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="warehouses.view">
               <WarehouseLocationDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock-movements"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="stock_movements.view">
+              <StockMovements />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock-movements/summary"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="stock_movements.view">
+              <StockMovementSummary />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock-movements/in"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="stock_movements.record_in">
+              <StockMovementRecordIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock-movements/out"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="stock_movements.record_out">
+              <StockMovementRecordOut />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock-movements/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="stock_movements.view">
+              <StockMovementDetail />
             </ProtectedRoute>
           }
         />
