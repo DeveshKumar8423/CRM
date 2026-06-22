@@ -2296,13 +2296,41 @@ class UploadedFileResponse(BaseModel):
     file_type: str
     file_size: int
     uploaded_by: StaffAssigneeResponse
+    category: str | None = None
+    category_label: str | None = None
     related_module: str | None
+    related_module_label: str | None = None
     related_record_id: int | None
     created_at: datetime
     file_url: str
 
     class Config:
         from_attributes = True
+
+
+class FileOption(BaseModel):
+    value: str
+    label: str
+
+
+class FileMetaResponse(BaseModel):
+    categories: list[FileOption]
+    record_modules: list[FileOption]
+    allowed_extensions: list[str]
+    max_file_size_mb: int
+
+
+class FileStatsResponse(BaseModel):
+    total_count: int
+    total_bytes: int
+    by_category: list[dict]
+
+
+class FileListResponse(BaseModel):
+    items: list[UploadedFileResponse]
+    total: int
+    page: int
+    limit: int
 
 
 # Vendor Bills
@@ -3190,3 +3218,316 @@ class PLReportExportLogRequest(BaseModel):
     period: str = Field(min_length=1, max_length=30)
     period_label: str | None = None
     row_count: int = 0
+
+
+class ProjectOption(BaseModel):
+    value: str
+    label: str
+
+
+class ProjectMetaResponse(BaseModel):
+    statuses: list[ProjectOption]
+    stages: list[ProjectOption]
+    task_statuses: list[ProjectOption]
+    priorities: list[ProjectOption]
+    project_types: list[ProjectOption]
+
+
+class ProjectCreateRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+    project_type: str = "client"
+    status: str = "draft"
+    priority: str = "normal"
+    contact_id: int | None = None
+    deal_id: int | None = None
+    sales_order_id: int | None = None
+    project_manager_id: int
+    start_date: datetime | None = None
+    deadline: datetime | None = None
+    project_number: str | None = Field(default=None, max_length=40)
+
+
+class ProjectUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
+    project_type: str | None = None
+    priority: str | None = None
+    contact_id: int | None = None
+    deal_id: int | None = None
+    sales_order_id: int | None = None
+    project_manager_id: int | None = None
+    start_date: datetime | None = None
+    deadline: datetime | None = None
+    project_number: str | None = Field(default=None, max_length=40)
+
+
+class ProjectStatusChangeRequest(BaseModel):
+    status: str = Field(min_length=1, max_length=20)
+    reason: str | None = None
+
+
+class ProjectMemberAddRequest(BaseModel):
+    user_id: int
+    role: str = "member"
+
+
+class ProjectTaskCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+    stage_key: str = "kickoff"
+    assigned_to_id: int | None = None
+    status: str = "todo"
+    priority: str = "normal"
+    due_date: datetime | None = None
+    sort_order: int = 0
+    blocked_reason: str | None = None
+
+
+class ProjectTaskUpdateRequest(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
+    stage_key: str | None = None
+    assigned_to_id: int | None = None
+    status: str | None = None
+    priority: str | None = None
+    due_date: datetime | None = None
+    sort_order: int | None = None
+    blocked_reason: str | None = None
+
+
+class ProjectExportLogRequest(BaseModel):
+    project_id: int
+    row_count: int = 0
+
+
+class ProjectMemberResponse(BaseModel):
+    id: int
+    user_id: int
+    user_name: str | None = None
+    user_email: str | None = None
+    role: str
+    role_label: str
+    added_at: datetime | None = None
+
+
+class ProjectTaskResponse(BaseModel):
+    id: int
+    project_id: int
+    stage_key: str
+    stage_label: str
+    title: str
+    description: str | None = None
+    assigned_to_id: int | None = None
+    assigned_to_name: str | None = None
+    status: str
+    status_label: str
+    priority: str
+    priority_label: str
+    due_date: datetime | None = None
+    completed_at: datetime | None = None
+    sort_order: int
+    blocked_reason: str | None = None
+    is_overdue: bool = False
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ProjectStageSummary(BaseModel):
+    stage_key: str
+    stage_label: str
+    total_tasks: int = 0
+    done_tasks: int = 0
+    overdue_tasks: int = 0
+
+
+class ProjectListRow(BaseModel):
+    id: int
+    project_number: str | None = None
+    name: str
+    project_type: str
+    status: str
+    status_label: str
+    priority: str
+    priority_label: str
+    contact_id: int | None = None
+    contact_name: str | None = None
+    project_manager_id: int
+    project_manager_name: str | None = None
+    deadline: datetime | None = None
+    progress_percent: float = 0.0
+    stage_summary: str | None = None
+    open_task_count: int = 0
+    overdue_task_count: int = 0
+    is_overdue: bool = False
+    updated_at: datetime | None = None
+
+
+class ProjectIndexKpis(BaseModel):
+    active_projects: int = 0
+    overdue_projects: int = 0
+    my_open_tasks: int = 0
+    completed_this_month: int = 0
+
+
+class ProjectListResponse(BaseModel):
+    items: list[ProjectListRow]
+    total: int
+    page: int
+    limit: int
+    kpis: ProjectIndexKpis
+
+
+class ProjectDetailResponse(BaseModel):
+    id: int
+    project_number: str | None = None
+    name: str
+    description: str | None = None
+    project_type: str
+    project_type_label: str
+    status: str
+    status_label: str
+    priority: str
+    priority_label: str
+    contact_id: int | None = None
+    contact_name: str | None = None
+    deal_id: int | None = None
+    deal_title: str | None = None
+    sales_order_id: int | None = None
+    sales_order_number: str | None = None
+    project_manager_id: int
+    project_manager_name: str | None = None
+    created_by_id: int | None = None
+    start_date: datetime | None = None
+    deadline: datetime | None = None
+    completed_at: datetime | None = None
+    progress_percent: float = 0.0
+    total_tasks: int = 0
+    done_tasks: int = 0
+    open_task_count: int = 0
+    overdue_task_count: int = 0
+    blocked_task_count: int = 0
+    unassigned_task_count: int = 0
+    is_overdue: bool = False
+    is_locked: bool = False
+    stage_summaries: list[ProjectStageSummary] = Field(default_factory=list)
+    tasks: list[ProjectTaskResponse] = Field(default_factory=list)
+    members: list[ProjectMemberResponse] = Field(default_factory=list)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ProjectMyTaskRow(BaseModel):
+    id: int
+    title: str
+    status: str
+    status_label: str
+    priority: str
+    priority_label: str
+    due_date: datetime | None = None
+    is_overdue: bool = False
+    stage_key: str
+    stage_label: str
+    project_id: int
+    project_name: str
+    project_number: str | None = None
+    client_name: str | None = None
+    project_deadline: datetime | None = None
+
+
+class ProjectMyTasksResponse(BaseModel):
+    items: list[ProjectMyTaskRow]
+    total: int
+
+
+class ProjectContactSummaryResponse(BaseModel):
+    contact_id: int
+    active_project_count: int = 0
+    nearest_deadline: datetime | None = None
+    projects: list[ProjectListRow] = Field(default_factory=list)
+
+
+class LeaveOption(BaseModel):
+    value: str
+    label: str
+
+
+class LeaveMetaResponse(BaseModel):
+    leave_types: list[LeaveOption]
+    statuses: list[LeaveOption]
+    half_day_periods: list[LeaveOption]
+
+
+class LeaveCreateRequest(BaseModel):
+    leave_type: str
+    start_date: datetime
+    end_date: datetime
+    reason: str = Field(min_length=1)
+    is_half_day: bool = False
+    half_day_period: str | None = None
+    submit: bool = False
+
+
+class LeaveUpdateRequest(BaseModel):
+    leave_type: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    reason: str | None = Field(default=None, min_length=1)
+    is_half_day: bool | None = None
+    half_day_period: str | None = None
+
+
+class LeaveReviewRequest(BaseModel):
+    reviewer_note: str | None = None
+
+
+class LeaveRejectRequest(BaseModel):
+    reviewer_note: str = Field(min_length=3)
+
+
+class LeaveCancelRequest(BaseModel):
+    reason: str | None = None
+
+
+class LeaveExportLogRequest(BaseModel):
+    row_count: int = 0
+
+
+class LeaveResponse(BaseModel):
+    id: int
+    leave_number: str | None = None
+    employee_id: int
+    employee_name: str | None = None
+    leave_type: str
+    leave_type_label: str
+    start_date: datetime
+    end_date: datetime
+    total_days: float
+    is_half_day: bool
+    half_day_period: str | None = None
+    half_day_period_label: str | None = None
+    reason: str
+    status: str
+    status_label: str
+    submitted_at: datetime | None = None
+    reviewed_by_id: int | None = None
+    reviewed_by_name: str | None = None
+    reviewed_at: datetime | None = None
+    reviewer_note: str | None = None
+    overlap_warning: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class LeaveListResponse(BaseModel):
+    items: list[LeaveResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class LeaveStatsResponse(BaseModel):
+    pending_count: int = 0
+    approved_days_this_month: float = 0.0
+    my_pending_count: int = 0
+    team_on_leave_count: int = 0

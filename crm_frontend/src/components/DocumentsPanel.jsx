@@ -4,22 +4,29 @@ import axios from "axios";
 
 import { API_URL, apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
+import {
+  PANEL_DEFAULT_CATEGORY,
+  downloadFile,
+  formatBytes,
+  getFileIcon,
+} from "../utils/documents";
 
-function formatBytes(bytes, decimals = 2) {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-}
-
-function getFileIcon(type) {
-  if (type.startsWith("image/")) return "🖼️";
-  if (type.includes("pdf")) return "📄";
-  if (type.includes("sheet") || type.includes("excel") || type.includes("csv")) return "📊";
-  if (type.includes("word") || type.includes("officedocument")) return "📝";
-  return "📁";
+function resolveContext(props) {
+  const map = [
+    ["leads", props.leadId],
+    ["deals", props.dealId],
+    ["contacts", props.contactId],
+    ["invoices", props.invoiceId],
+    ["quotations", props.quotationId],
+    ["sales_orders", props.salesOrderId],
+    ["expenses", props.expenseId],
+    ["vendor_bills", props.vendorBillId],
+    ["projects", props.projectId],
+  ];
+  for (const [module, id] of map) {
+    if (id) return { relatedModule: module, relatedRecordId: Number(id) };
+  }
+  return { relatedModule: null, relatedRecordId: null };
 }
 
 function DocumentsPanel({
@@ -29,9 +36,17 @@ function DocumentsPanel({
   invoiceId,
   quotationId,
   salesOrderId,
-  compact = false,
+  expenseId,
+  vendorBillId,
+  projectId,
+  category: categoryProp,
   title = "Documents & Attachments",
 }) {
+  const { relatedModule, relatedRecordId } = resolveContext({
+    leadId, dealId, contactId, invoiceId, quotationId, salesOrderId, expenseId, vendorBillId, projectId,
+  });
+  const uploadCategory = categoryProp || PANEL_DEFAULT_CATEGORY[relatedModule] || "documents";
+
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -44,82 +59,27 @@ function DocumentsPanel({
 
   const canUpload = hasPermission("files.upload");
   const canDelete = hasPermission("files.delete");
-
-  let relatedModule = null;
-  let relatedRecordId = null;
-
-  if (leadId) {
-    relatedModule = "leads";
-    relatedRecordId = leadId;
-  } else if (dealId) {
-    relatedModule = "deals";
-    relatedRecordId = dealId;
-  } else if (contactId) {
-    relatedModule = "contacts";
-    relatedRecordId = contactId;
-  } else if (invoiceId) {
-    relatedModule = "invoices";
-    relatedRecordId = invoiceId;
-  } else if (quotationId) {
-    relatedModule = "quotations";
-    relatedRecordId = quotationId;
-  } else if (salesOrderId) {
-    relatedModule = "sales_orders";
-    relatedRecordId = salesOrderId;
-  }
+  const canView = hasPermission("files.view") || hasPermission("files.view_own");
 
   const loadFiles = () => {
     if (!relatedModule || !relatedRecordId) return;
     setLoading(true);
-    apiFetch(`/files?related_module=${relatedModule}&related_record_id=${relatedRecordId}`)
-      .then((data) => setFiles(data || []))
+    apiFetch(`/files?related_module=${relatedModule}&related_record_id=${relatedRecordId}&limit=100`)
+      .then((data) => setFiles(data.items || data || []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadFiles();
-  }, [leadId, dealId, contactId, invoiceId, quotationId, salesOrderId]);
+    if (canView) loadFiles();
+  }, [relatedModule, relatedRecordId, canView]);
 
-  const handleFileChange = (e) => {
-    const filesArray = Array.from(e.target.files);
+  if (!canView) return null;
+
+  const setFilesFromInput = (filesArray) => {
     setSelectedFiles(filesArray);
-
-    const previewUrls = filesArray.map((file) => {
-      if (file.type.startsWith("image/")) {
-        return URL.createObjectURL(file);
-      }
-      return null;
-    });
-    setPreviews(previewUrls);
+    setPreviews(filesArray.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null)));
     setError("");
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const filesArray = Array.from(e.dataTransfer.files);
-      setSelectedFiles(filesArray);
-
-      const previewUrls = filesArray.map((file) => {
-        if (file.type.startsWith("image/")) {
-          return URL.createObjectURL(file);
-        }
-        return null;
-      });
-      setPreviews(previewUrls);
-      setError("");
-    }
   };
 
   const handleUpload = async (e) => {
@@ -131,31 +91,18 @@ function DocumentsPanel({
     setUploadProgress(0);
 
     const formData = new FormData();
-    selectedFiles.forEach((file) => {
-      formData.append("files", file);
-    });
-    if (relatedModule) {
-      formData.append("related_module", relatedModule);
-    }
-    if (relatedRecordId) {
-      formData.append("related_record_id", relatedRecordId);
-    }
+    selectedFiles.forEach((file) => formData.append("files", file));
+    formData.append("category", uploadCategory);
+    formData.append("related_module", relatedModule);
+    formData.append("related_record_id", String(relatedRecordId));
 
     const token = localStorage.getItem("token");
 
     try {
       await axios.post(`${API_URL}/files/upload`, formData, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
-        },
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        onUploadProgress: (ev) => setUploadProgress(Math.round((ev.loaded * 100) / ev.total)),
       });
-
       setMessage("Files uploaded successfully.");
       setSelectedFiles([]);
       setPreviews([]);
@@ -163,118 +110,13 @@ function DocumentsPanel({
       loadFiles();
     } catch (err) {
       setUploadProgress(null);
-      const errMsg =
-        err.response?.data?.detail || "Upload failed. Please check file types and sizes.";
+      const errMsg = err.response?.data?.detail || "Upload failed.";
       setError(typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg));
-    }
-  };
-
-  const handleDownload = async (file) => {
-    try {
-      const response = await fetch(`${API_URL}/files/${file.id}/download`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Download failed or permission denied.");
-      }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", file.original_filename);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleDelete = async (fileId) => {
-    if (!window.confirm("Are you sure you want to permanently delete this file?")) return;
-    setError("");
-    setMessage("");
-    try {
-      await apiFetch(`/files/${fileId}`, {
-        method: "DELETE",
-      });
-      setMessage("File deleted successfully.");
-      loadFiles();
-    } catch (err) {
-      setError(err.message);
     }
   };
 
   return (
     <section className="crm-documents-panel crm-mt-lg">
-      <style>{`
-        .crm-dropzone {
-          border: 2px dashed var(--crm-border);
-          border-radius: 12px;
-          padding: 30px 20px;
-          text-align: center;
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.02);
-          transition: all 0.2s ease;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-        .crm-dropzone.active {
-          border-color: var(--crm-accent);
-          background: rgba(59, 130, 246, 0.05);
-        }
-        .crm-dropzone-icon {
-          font-size: 2rem;
-        }
-        .crm-previews-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          margin-top: 15px;
-        }
-        .crm-preview-card {
-          position: relative;
-          width: 80px;
-          height: 80px;
-          border-radius: 8px;
-          border: 1px solid var(--crm-border);
-          overflow: hidden;
-          background: var(--crm-bg);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .crm-preview-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .crm-preview-fallback {
-          font-size: 1.5rem;
-        }
-        .crm-progress-bar-container {
-          width: 100%;
-          height: 8px;
-          background: var(--crm-border);
-          border-radius: 4px;
-          overflow: hidden;
-          margin-top: 15px;
-        }
-        .crm-progress-bar-fill {
-          height: 100%;
-          background: var(--crm-accent);
-          transition: width 0.2s ease;
-        }
-        .crm-doc-icon {
-          margin-right: 8px;
-          font-size: 1.1rem;
-        }
-      `}</style>
-
       <div className="crm-detail-header">
         <h3>{title}</h3>
         <Link to={`/documents?module=${relatedModule}&record_id=${relatedRecordId}`} className="crm-link">
@@ -289,114 +131,69 @@ function DocumentsPanel({
         <form onSubmit={handleUpload} className="crm-mt">
           <div
             className={`crm-dropzone ${isDragOver ? "active" : ""}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              if (e.dataTransfer.files?.length) setFilesFromInput(Array.from(e.dataTransfer.files));
+            }}
             onClick={() => fileInputRef.current?.click()}
           >
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              multiple
-              onChange={handleFileChange}
-            />
+            <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={(e) => setFilesFromInput(Array.from(e.target.files || []))} />
             <span className="crm-dropzone-icon">📁</span>
-            <p><strong>Drag & drop files here</strong> or click to browse</p>
-            <span className="crm-muted" style={{ fontSize: "0.85rem" }}>
-              PDF, Word, Excel, CSV, TXT, Images (Max 10MB)
-            </span>
+            <p><strong>Drag & drop files</strong> or click to browse</p>
+            <span className="crm-muted crm-text-sm">PDF, Word, Excel, CSV, TXT, images (max 10 MB)</span>
           </div>
 
           {selectedFiles.length > 0 && (
             <div className="crm-mt">
-              <p>Selected {selectedFiles.length} file(s):</p>
               <div className="crm-previews-container">
                 {selectedFiles.map((file, idx) => (
                   <div key={idx} className="crm-preview-card" title={file.name}>
-                    {previews[idx] ? (
-                      <img src={previews[idx]} alt="Preview" className="crm-preview-img" />
-                    ) : (
-                      <span className="crm-preview-fallback">{getFileIcon(file.type)}</span>
-                    )}
+                    {previews[idx] ? <img src={previews[idx]} alt="" className="crm-preview-img" /> : <span className="crm-preview-fallback">{getFileIcon(file.type)}</span>}
                   </div>
                 ))}
               </div>
-              
               {uploadProgress !== null && (
-                <div className="crm-mt">
-                  <p>Uploading... {uploadProgress}%</p>
-                  <div className="crm-progress-bar-container">
-                    <div className="crm-progress-bar-fill" style={{ width: `${uploadProgress}%` }}></div>
-                  </div>
+                <div className="crm-progress-bar-container crm-mt">
+                  <div className="crm-progress-bar-fill" style={{ width: `${uploadProgress}%` }} />
                 </div>
               )}
-
               <div className="crm-inline-actions crm-mt">
-                <button type="submit" className="crm-btn crm-btn-sm" disabled={uploadProgress !== null}>
-                  Upload File(s)
-                </button>
-                <button
-                  type="button"
-                  className="crm-btn crm-btn-sm crm-btn-outline"
-                  onClick={() => {
-                    setSelectedFiles([]);
-                    setPreviews([]);
-                  }}
-                  disabled={uploadProgress !== null}
-                >
-                  Clear
-                </button>
+                <button type="submit" className="crm-btn crm-btn-sm" disabled={uploadProgress !== null}>Upload</button>
+                <button type="button" className="crm-btn crm-btn-sm crm-btn-outline" onClick={() => { setSelectedFiles([]); setPreviews([]); }} disabled={uploadProgress !== null}>Clear</button>
               </div>
             </div>
           )}
         </form>
       )}
 
-      {loading && <p className="crm-muted crm-mt">Loading attachments...</p>}
-
-      {!loading && files.length === 0 && (
-        <p className="crm-muted crm-mt">No documents attached to this record yet.</p>
-      )}
+      {loading && <p className="crm-muted crm-mt">Loading attachments…</p>}
+      {!loading && files.length === 0 && <p className="crm-muted crm-mt">No documents attached yet.</p>}
 
       {!loading && files.length > 0 && (
         <div className="crm-table-wrap crm-mt">
           <table className="crm-table">
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Size</th>
-                <th>Uploaded By</th>
-                <th style={{ textAlign: "right" }}>Actions</th>
-              </tr>
+              <tr><th>Name</th><th>Category</th><th>Size</th><th>Uploaded by</th><th /></tr>
             </thead>
             <tbody>
               {files.map((file) => (
                 <tr key={file.id}>
-                  <td>
-                    <span className="crm-doc-icon">{getFileIcon(file.file_type)}</span>
-                    {file.original_filename}
-                  </td>
+                  <td><span className="crm-doc-icon">{getFileIcon(file.file_type)}</span>{file.original_filename}</td>
+                  <td><span className="crm-doc-category-badge">{file.category_label || "—"}</span></td>
                   <td>{formatBytes(file.file_size)}</td>
-                  <td>{file.uploaded_by?.name || "System"}</td>
-                  <td style={{ textAlign: "right" }}>
-                    <div className="crm-table-actions" style={{ justifyContent: "flex-end" }}>
-                      <button
-                        type="button"
-                        className="crm-btn crm-btn-sm crm-btn-outline"
-                        onClick={() => handleDownload(file)}
-                      >
-                        Download
-                      </button>
+                  <td>{file.uploaded_by?.name || "—"}</td>
+                  <td>
+                    <div className="crm-table-actions">
+                      <button type="button" className="crm-btn crm-btn-sm crm-btn-outline" onClick={() => downloadFile(file, API_URL, localStorage.getItem("token"))}>Download</button>
                       {canDelete && (
-                        <button
-                          type="button"
-                          className="crm-btn crm-btn-sm crm-btn-outline"
-                          style={{ borderColor: "var(--crm-danger)", color: "var(--crm-danger)" }}
-                          onClick={() => handleDelete(file.id)}
-                        >
-                          Delete
-                        </button>
+                        <button type="button" className="crm-btn crm-btn-sm crm-btn-outline crm-btn-danger-outline" onClick={async () => {
+                          if (!window.confirm("Delete this file?")) return;
+                          await apiFetch(`/files/${file.id}`, { method: "DELETE" });
+                          loadFiles();
+                        }}>Delete</button>
                       )}
                     </div>
                   </td>

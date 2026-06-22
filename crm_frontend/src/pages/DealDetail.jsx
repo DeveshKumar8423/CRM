@@ -35,7 +35,10 @@ function DealDetail() {
   const canCreateOrder = hasPermission("sales_orders.create");
   const canCreateExpense = hasPermission("expenses.create");
   const canCreatePO = hasPermission("purchase_orders.create");
+  const canCreateProject = hasPermission("projects.create");
+  const canViewProjects = hasPermission("projects.view");
   const [deal, setDeal] = useState(null);
+  const [linkedProjects, setLinkedProjects] = useState([]);
   const [stages, setStages] = useState([]);
   const [error, setError] = useState("");
 
@@ -47,6 +50,13 @@ function DealDetail() {
     loadDeal();
     apiFetch("/deals/stages").then(setStages).catch(() => {});
   }, [id]);
+
+  useEffect(() => {
+    if (!canViewProjects || !id) return;
+    apiFetch(`/projects?deal_id=${id}&limit=20`)
+      .then((data) => setLinkedProjects(data.items || []))
+      .catch(() => setLinkedProjects([]));
+  }, [id, canViewProjects]);
 
   const handleStageChange = async (stage) => {
     if (stage === "lost") {
@@ -119,8 +129,28 @@ function DealDetail() {
                 Create purchase order
               </Link>
             )}
+            {canCreateProject && ["won", "proposal", "meeting"].includes(deal.stage) && (
+              <Link to={`/projects/new?deal_id=${id}${deal.contact_id ? `&contact_id=${deal.contact_id}` : ""}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                Create project
+              </Link>
+            )}
           </div>
         </div>
+
+        {linkedProjects.length > 0 && (
+          <div className="crm-mt">
+            <h3>Linked projects</h3>
+            <ul className="crm-linked-list">
+              {linkedProjects.map((p) => (
+                <li key={p.id}>
+                  <Link to={`/projects/${p.id}`} className="crm-nav-link">{p.name}</Link>
+                  {p.project_number && <span className="crm-muted"> · {p.project_number}</span>}
+                  <span className="crm-muted"> · {p.progress_percent}%</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {error && <p className="crm-error crm-mt">{error}</p>}
 

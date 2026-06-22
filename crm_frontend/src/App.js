@@ -50,6 +50,15 @@ import ClientNotesFollowUpQueue from "./pages/ClientNotesFollowUpQueue";
 import SalesReports from "./pages/SalesReports";
 import TaxReports from "./pages/TaxReports";
 import PLReports from "./pages/PLReports";
+import Projects from "./pages/Projects";
+import ProjectForm from "./pages/ProjectForm";
+import ProjectDetail from "./pages/ProjectDetail";
+import ProjectMyTasks from "./pages/ProjectMyTasks";
+import Leaves from "./pages/Leaves";
+import LeaveForm from "./pages/LeaveForm";
+import LeaveDetail from "./pages/LeaveDetail";
+import LeaveApprovalQueue from "./pages/LeaveApprovalQueue";
+import TeamLeave from "./pages/TeamLeave";
 import CustomerLedger from "./pages/CustomerLedger";
 import CustomerLedgerStatement from "./pages/CustomerLedgerStatement";
 import CustomerLedgerUnassigned from "./pages/CustomerLedgerUnassigned";
@@ -700,6 +709,109 @@ function App() {
           }
         />
         <Route
+          path="/projects/my-tasks"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="projects.view"
+            >
+              <ProjectMyTasks />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/new"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="projects.create"
+            >
+              <ProjectForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/:id/edit"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="projects.edit"
+            >
+              <ProjectForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="projects.view"
+            >
+              <ProjectDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermission="projects.view"
+            >
+              <Projects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/approval-queue"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.approve">
+              <LeaveApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/team"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.view_all">
+              <TeamLeave />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.create">
+              <LeaveForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.edit_own">
+              <LeaveForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.view">
+              <LeaveDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="leaves.view">
+              <Leaves />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/expenses"
           element={
             <ProtectedRoute
@@ -1036,7 +1148,10 @@ function App() {
         <Route
           path="/documents"
           element={
-            <ProtectedRoute allowedRoles={STAFF_ROLES}>
+            <ProtectedRoute
+              allowedRoles={STAFF_ROLES}
+              requiredPermissions={["files.view", "files.view_own"]}
+            >
               <Documents />
             </ProtectedRoute>
           }

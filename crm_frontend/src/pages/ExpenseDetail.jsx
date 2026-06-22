@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch, API_URL, getAuthHeaders } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 import {
@@ -145,6 +146,10 @@ function ExpenseDetail() {
           {exp.paid_at && <p><strong>Paid:</strong> {formatDate(exp.paid_at)} by {exp.paid_by_name}</p>}
         </div>
       </div>
+
+      {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+        <DocumentsPanel expenseId={Number(id)} />
+      )}
     </DashboardLayout>
   );
 }

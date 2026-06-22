@@ -8,6 +8,7 @@ import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 import { canViewLedger, formatCurrency, formatDate } from "../utils/customerLedger";
 import { canViewVendorLedger } from "../utils/vendorLedger";
+import { canViewProjects, formatDate as formatProjectDate } from "../utils/projects";
 
 
 const ACTIVITY_TYPES = [
@@ -26,6 +27,8 @@ function ContactDetail() {
   const canCreateInvoice = hasPermission("invoices.create");
   const canCreateExpense = hasPermission("expenses.create");
   const canCreatePO = hasPermission("purchase_orders.create");
+  const canCreateProject = hasPermission("projects.create");
+  const canViewProjectList = canViewProjects(hasPermission);
 
   const [contact, setContact] = useState(null);
   const [activities, setActivities] = useState([]);
@@ -38,6 +41,7 @@ function ContactDetail() {
   const [message, setMessage] = useState("");
   const [ledgerSummary, setLedgerSummary] = useState(null);
   const [vendorLedgerSummary, setVendorLedgerSummary] = useState(null);
+  const [projectSummary, setProjectSummary] = useState(null);
 
   const loadAll = () => {
     const requests = [
@@ -50,6 +54,9 @@ function ContactDetail() {
     if (canViewVendorLedger(hasPermission)) {
       requests.push(apiFetch(`/vendor-ledger/contacts/${id}/summary`).catch(() => null));
     }
+    if (canViewProjectList) {
+      requests.push(apiFetch(`/projects/contacts/${id}/summary`).catch(() => null));
+    }
     Promise.all(requests)
       .then((results) => {
         setContact(results[0]);
@@ -61,6 +68,10 @@ function ContactDetail() {
         }
         if (canViewVendorLedger(hasPermission)) {
           if (results[idx]) setVendorLedgerSummary(results[idx]);
+          idx += 1;
+        }
+        if (canViewProjectList) {
+          if (results[idx]) setProjectSummary(results[idx]);
         }
       })
       .catch((err) => setError(err.message));
@@ -191,6 +202,16 @@ function ContactDetail() {
                   Create purchase order
                 </Link>
               )}
+              {canCreateProject && (
+                <Link to={`/projects/new?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  Create project
+                </Link>
+              )}
+              {canViewProjectList && (
+                <Link to={`/projects?contact_id=${id}`} className="crm-btn crm-btn-sm crm-btn-outline">
+                  View projects
+                </Link>
+              )}
               <button
                 type="button"
                 className="crm-btn crm-btn-sm"
@@ -204,6 +225,19 @@ function ContactDetail() {
 
         {error && <p className="crm-error crm-mt">{error}</p>}
         {message && <p className="crm-success crm-mt">{message}</p>}
+
+        {projectSummary && projectSummary.active_project_count > 0 && (
+          <div className="crm-stats-grid crm-mt">
+            <div className="crm-stat-card crm-proj-card-active">
+              <p className="crm-stat-label">Active projects</p>
+              <p className="crm-stat-value">{projectSummary.active_project_count}</p>
+            </div>
+            <div className="crm-stat-card">
+              <p className="crm-stat-label">Nearest deadline</p>
+              <p className="crm-stat-value crm-stat-value-sm">{formatProjectDate(projectSummary.nearest_deadline)}</p>
+            </div>
+          </div>
+        )}
 
         {ledgerSummary && contact.contact_type === "Customer" && (
           <div className="crm-stats-grid crm-mt">
