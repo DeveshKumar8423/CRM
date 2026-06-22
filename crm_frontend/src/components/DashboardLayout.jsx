@@ -18,6 +18,10 @@ function isNavActive(pathname, to) {
       return pathname === "/quotations" || pathname.startsWith("/quotations/");
     case "/sales-orders":
       return pathname === "/sales-orders" || pathname.startsWith("/sales-orders/");
+    case "/projects":
+      return pathname === "/projects" || pathname.startsWith("/projects/");
+    case "/leaves":
+      return pathname === "/leaves" || pathname.startsWith("/leaves/");
     case "/invoices":
       return pathname === "/invoices" || pathname.startsWith("/invoices/");
     case "/payments":
@@ -139,6 +143,11 @@ function DashboardLayout({ title, roleLabel, children }) {
                 Follow-ups
               </Link>
             )}
+            {hasPermission("leaves.view") && (
+              <Link to="/leaves" className={navLinkClass(pathname, "/leaves")}>
+                Leave
+              </Link>
+            )}
             {hasPermission("quotations.view") && (
               <Link to="/quotations" className={navLinkClass(pathname, "/quotations")}>
                 Quotations
@@ -147,6 +156,11 @@ function DashboardLayout({ title, roleLabel, children }) {
             {hasPermission("sales_orders.view") && (
               <Link to="/sales-orders" className={navLinkClass(pathname, "/sales-orders")}>
                 Orders
+              </Link>
+            )}
+            {hasPermission("projects.view") && (
+              <Link to="/projects" className={navLinkClass(pathname, "/projects")}>
+                Projects
               </Link>
             )}
             {hasPermission("invoices.view") && (

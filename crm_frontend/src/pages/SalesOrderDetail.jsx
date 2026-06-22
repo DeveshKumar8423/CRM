@@ -25,6 +25,10 @@ function SalesOrderDetail() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [sendEmail, setSendEmail] = useState("");
+  const [linkedProjects, setLinkedProjects] = useState([]);
+
+  const canCreateProject = hasPermission("projects.create");
+  const canViewProjects = hasPermission("projects.view");
 
   const loadOrder = () => {
     apiFetch(`/sales-orders/${id}`).then(setOrder).catch((err) => setError(err.message));
@@ -34,6 +38,13 @@ function SalesOrderDetail() {
   useEffect(() => {
     loadOrder();
   }, [id]);
+
+  useEffect(() => {
+    if (!canViewProjects || !id) return;
+    apiFetch(`/projects?sales_order_id=${id}&limit=20`)
+      .then((data) => setLinkedProjects(data.items || []))
+      .catch(() => setLinkedProjects([]));
+  }, [id, canViewProjects]);
 
   useEffect(() => {
     if (order?.client_email) setSendEmail(order.client_email);
@@ -77,6 +88,8 @@ function SalesOrderDetail() {
   const canInvoice = hasPermission("invoices.generate_from_order") && [
     "confirmed", "in_preparation", "in_execution", "partially_delivered", "delivered", "in_billing", "completed",
   ].includes(order.status);
+
+  const confirmedPlus = !["draft", "awaiting_confirmation", "cancelled"].includes(order.status);
 
   const tabs = [
     { key: "overview", label: "Overview" },
@@ -143,8 +156,31 @@ function SalesOrderDetail() {
             {canCancel && (
               <button type="button" className="crm-btn crm-btn-sm crm-btn-outline" onClick={() => askReason("Cancel order", (reason) => runAction(`/sales-orders/${id}/cancel`, { reason }, "Order cancelled"))}>Cancel</button>
             )}
+            {canCreateProject && confirmedPlus && (
+              <Link
+                to={`/projects/new?sales_order_id=${id}${order.contact_id ? `&contact_id=${order.contact_id}` : ""}${order.deal_id ? `&deal_id=${order.deal_id}` : ""}`}
+                className="crm-btn crm-btn-sm crm-btn-outline"
+              >
+                Create project
+              </Link>
+            )}
           </div>
         </div>
+
+        {linkedProjects.length > 0 && (
+          <div className="crm-mt">
+            <h3>Linked projects</h3>
+            <ul className="crm-linked-list">
+              {linkedProjects.map((p) => (
+                <li key={p.id}>
+                  <Link to={`/projects/${p.id}`} className="crm-nav-link">{p.name}</Link>
+                  {p.project_number && <span className="crm-muted"> · {p.project_number}</span>}
+                  <span className="crm-muted"> · {p.progress_percent}% delivery progress</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {message && <p className="crm-success crm-mt">{message}</p>}
         {error && <p className="crm-error crm-mt">{error}</p>}

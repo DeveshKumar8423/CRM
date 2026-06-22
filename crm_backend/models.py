@@ -73,6 +73,8 @@ class Company(Base):
     location_stocks = relationship("LocationStock", back_populates="company")
     location_stock_movements = relationship("LocationStockMovement", back_populates="company")
     follow_up_reminders = relationship("FollowUpReminder", back_populates="company")
+    projects = relationship("Project", back_populates="company")
+    leave_requests = relationship("LeaveRequest", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
 
 
@@ -1365,6 +1367,119 @@ class SystemConfiguration(Base):
     )
 
 
+class Project(Base):
+    __tablename__ = "projects"
+    __table_args__ = (UniqueConstraint("company_id", "project_number", name="uq_projects_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    project_number = Column(String(40), nullable=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    project_type = Column(String(20), nullable=False, default="client")
+    status = Column(String(20), nullable=False, default="draft")
+    priority = Column(String(20), nullable=False, default="normal")
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True, index=True)
+    deal_id = Column(Integer, ForeignKey("deals.id"), nullable=True)
+    sales_order_id = Column(Integer, ForeignKey("sales_orders.id"), nullable=True)
+    project_manager_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    start_date = Column(DateTime(timezone=True), nullable=True)
+    deadline = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="projects")
+    contact = relationship("Contact")
+    deal = relationship("Deal")
+    sales_order = relationship("SalesOrder")
+    project_manager = relationship("User", foreign_keys=[project_manager_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")
+    tasks = relationship("ProjectTask", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectMember(Base):
+    __tablename__ = "project_members"
+    __table_args__ = (UniqueConstraint("project_id", "user_id", name="uq_project_members_project_user"),)
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(String(20), nullable=False, default="member")
+    added_at = Column(DateTime(timezone=True), server_default=func.now())
+    added_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    project = relationship("Project", back_populates="members")
+    user = relationship("User", foreign_keys=[user_id])
+    added_by = relationship("User", foreign_keys=[added_by_id])
+
+
+class ProjectTask(Base):
+    __tablename__ = "project_tasks"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    stage_key = Column(String(30), nullable=False, default="kickoff")
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="todo")
+    priority = Column(String(20), nullable=False, default="normal")
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+    blocked_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    project = relationship("Project", back_populates="tasks")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class LeaveRequest(Base):
+    __tablename__ = "leave_requests"
+    __table_args__ = (UniqueConstraint("company_id", "leave_number", name="uq_leave_requests_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    leave_number = Column(String(40), nullable=True)
+    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    leave_type = Column(String(30), nullable=False)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    end_date = Column(DateTime(timezone=True), nullable=False)
+    total_days = Column(Numeric(5, 1), nullable=False, default=1)
+    is_half_day = Column(Boolean, nullable=False, default=False)
+    half_day_period = Column(String(20), nullable=True)
+    reason = Column(Text, nullable=False)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    reviewer_note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="leave_requests")
+    employee = relationship("User", foreign_keys=[employee_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
+
+
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
@@ -1392,6 +1507,7 @@ class UploadedFile(Base):
     uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     related_module = Column(String(50), nullable=True, index=True)
     related_record_id = Column(Integer, nullable=True, index=True)
+    category = Column(String(50), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     company = relationship("Company")

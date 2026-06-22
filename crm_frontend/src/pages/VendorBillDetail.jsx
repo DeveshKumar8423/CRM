@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch, API_URL, getAuthHeaders } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 import {
@@ -258,8 +259,8 @@ function VendorBillDetail() {
           </div>
         )}
 
-        <h3 className="crm-mt-lg">Attachments</h3>
-        {bill.attachments.length === 0 && <p className="crm-muted">No attachments.</p>}
+        <h3 className="crm-mt-lg">Bill attachments</h3>
+        {bill.attachments.length === 0 && <p className="crm-muted">No legacy bill attachments.</p>}
         <ul className="crm-timeline">
           {bill.attachments.map((a) => (
             <li key={a.id}>
@@ -269,6 +270,10 @@ function VendorBillDetail() {
             </li>
           ))}
         </ul>
+
+        {(hasPermission("files.view") || hasPermission("files.view_own")) && (
+          <DocumentsPanel vendorBillId={Number(id)} />
+        )}
       </div>
     </DashboardLayout>
   );
