@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { apiFetch } from "../utils/api";
 
-const CONTACT_TYPES = ["Customer", "Vendor", "Partner", "Other"];
+const CONTACT_TYPES = ["Customer", "Vendor", "Partner", "Stakeholder", "Other"];
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",

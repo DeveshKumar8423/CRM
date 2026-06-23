@@ -3,24 +3,27 @@ from __future__ import annotations
 """Seed BlackPapers company and link all staff users."""
 
 from database import SessionLocal
-from models import Company, User
+from models import Company, SystemConfiguration, User
 from config import STAFF_ROLES
 
+# MCA master data — BLACKPAPERS SARTHIES PRIVATE LIMITED (as on RoC-Delhi)
 BLACKPAPERS_COMPANY = {
-    "legal_name": "Tributaries Unicorn LLP",
+    "legal_name": "BLACKPAPERS SARTHIES PRIVATE LIMITED",
     "display_name": "BlackPapers",
     "email": "connect@blackpapers.in",
-    "phone": "+91 82998 24396",
+    "phone": "+91 8423224663 / 8299824396",
     "website": "https://www.blackpapers.in/",
     "description": (
-        "Hybrid Legal-Tech Marketplace for Startups & MSME to manage their "
-        "Compliances, Taxation, Legal, Accounting & Financial Needs."
+        "Private company limited by shares (non-govt), incorporated 19-Oct-2023. "
+        "CIN: U70200DL2023PTC421680 · RoC-Delhi · Registration No. 421680 · "
+        "Authorised & paid-up capital ₹1,00,000. "
+        "Hybrid legal-tech marketplace for startups and MSME compliance, taxation, legal, and accounting."
     ),
-    "address_line1": "To be updated",
+    "address_line1": "Office-404, C-25 Bartwals, Guru Nanak Pura, Laxmi Nagar",
     "address_line2": None,
-    "city": "To be updated",
-    "state": "To be updated",
-    "pincode": None,
+    "city": "Delhi",
+    "state": "Delhi",
+    "pincode": "110092",
     "country": "India",
     "gstin": None,
     "pan": None,
@@ -41,7 +44,17 @@ def seed():
             db.refresh(company)
             print(f"Created company: {company.display_name}")
         else:
-            print(f"Company already exists: {company.display_name}")
+            for key, value in BLACKPAPERS_COMPANY.items():
+                setattr(company, key, value)
+            db.commit()
+            print(f"Updated company: {company.legal_name}")
+
+        config = db.query(SystemConfiguration).first()
+        if config:
+            config.company_name = BLACKPAPERS_COMPANY["display_name"]
+            config.support_email = BLACKPAPERS_COMPANY["email"]
+            db.commit()
+            print("Synced system configuration company name and support email.")
 
         staff = db.query(User).filter(User.role.in_(STAFF_ROLES)).all()
         linked = 0

@@ -7,8 +7,10 @@ import { hasPermission } from "../utils/permissions";
 import {
   STATUS_LABELS,
   exportCsv,
+  exportFilename,
   formatCurrency,
   formatDate,
+  standardHeaderRows,
   statusBadgeClass,
 } from "../utils/purchaseOrders";
 
@@ -39,12 +41,19 @@ function PurchaseOrders() {
 
   useEffect(() => { load(1); }, [status, fulfillment, mine]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!hasPermission("purchase_orders.export")) return;
+    const params = new URLSearchParams({ page: "1", limit: "500" });
+    if (status) params.set("status", status);
+    if (fulfillment) params.set("fulfillment", fulfillment);
+    if (mine) params.set("mine", "true");
+    if (search.trim()) params.set("search", search.trim());
+    const exportData = await apiFetch(`/purchase-orders?${params}`);
+    const items = exportData.items || [];
     exportCsv(
-      `purchase-orders-${new Date().toISOString().slice(0, 10)}.csv`,
-      ["PO #", "Title", "Vendor", "Ordered", "Received %", "Billed %", "Pending Receipt", "Pending Billing", "Status", "Delivery"],
-      data.items.map((po) => [
+      exportFilename("purchase-orders", status || "all"),
+      ["PO #", "Title", "Vendor", "Ordered (INR)", "Received %", "Billed %", "Pending Receipt (INR)", "Pending Billing (INR)", "Status", "PO Date", "Expected Delivery"],
+      items.map((po) => [
         po.po_number || "Draft",
         po.title,
         po.vendor_name,
@@ -54,8 +63,10 @@ function PurchaseOrders() {
         po.pending_receipt_value,
         po.pending_billing_value,
         STATUS_LABELS[po.status],
+        formatDate(po.po_date),
         formatDate(po.expected_delivery_date),
       ]),
+      standardHeaderRows("Purchase Order Register", [`Records: ${items.length}`]),
     );
   };
 

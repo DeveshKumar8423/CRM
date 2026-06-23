@@ -12,6 +12,7 @@ def seed():
         default_configs = [
             {"entity_name": "CONTACT", "prefix": "CNT", "starting_number": 1, "current_number": 0},
             {"entity_name": "LEAD", "prefix": "LEAD", "starting_number": 1, "current_number": 0},
+            {"entity_name": "QUOTATION", "prefix": "QUO", "starting_number": 1, "current_number": 0},
             {"entity_name": "INVOICE", "prefix": "INV", "starting_number": 1000, "current_number": 1000},
             {"entity_name": "PAYMENT", "prefix": "PAY", "starting_number": 1, "current_number": 0},
             {"entity_name": "TASK", "prefix": "TASK", "starting_number": 1, "current_number": 0},

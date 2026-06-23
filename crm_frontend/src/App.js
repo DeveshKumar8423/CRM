@@ -1,13 +1,17 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
 import AdminLogin from "./pages/AdminLogin";
 import ManagerLogin from "./pages/ManagerLogin";
 import EmployeeLogin from "./pages/EmployeeLogin";
+import SalesLogin from "./pages/SalesLogin";
+import AccountantLogin from "./pages/AccountantLogin";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
+import SalesDashboard from "./pages/SalesDashboard";
+import AccountantDashboard from "./pages/AccountantDashboard";
 import UserLogin from "./pages/UserLogin";
 import UserSignup from "./pages/UserSignup";
 import UserDashboard from "./pages/UserDashboard";
@@ -55,6 +59,19 @@ import ProjectForm from "./pages/ProjectForm";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectMyTasks from "./pages/ProjectMyTasks";
 import Leaves from "./pages/Leaves";
+import Timesheets from "./pages/Timesheets";
+import TimesheetForm from "./pages/TimesheetForm";
+import TimesheetDetail from "./pages/TimesheetDetail";
+import TimesheetApprovalQueue from "./pages/TimesheetApprovalQueue";
+import Employees from "./pages/Employees";
+import EmployeeDetail from "./pages/EmployeeDetail";
+import Attendance from "./pages/Attendance";
+import Recruitment from "./pages/Recruitment";
+import RecruitmentJobDetail from "./pages/RecruitmentJobDetail";
+import Payroll from "./pages/Payroll";
+import PayslipDetail from "./pages/PayslipDetail";
+import ApprovalsHub from "./pages/ApprovalsHub";
+import InternalChat from "./pages/InternalChat";
 import LeaveForm from "./pages/LeaveForm";
 import LeaveDetail from "./pages/LeaveDetail";
 import LeaveApprovalQueue from "./pages/LeaveApprovalQueue";
@@ -104,10 +121,13 @@ import ResetPassword from "./pages/ResetPassword";
 import SystemConfiguration from "./pages/SystemConfiguration";
 import EmailTemplates from "./pages/EmailTemplates";
 import Documents from "./pages/Documents";
+import AdminBranding from "./pages/AdminBranding";
+import RolesMatrix from "./pages/RolesMatrix";
+import SendNotification from "./pages/SendNotification";
 
 
-const ALL_ROLES = ["Admin", "Manager", "Employee", "User"];
-const STAFF_ROLES = ["Admin", "Manager", "Employee"];
+const ALL_ROLES = ["Admin", "Manager", "Employee", "Sales", "Accountant", "User"];
+const STAFF_ROLES = ["Admin", "Manager", "Employee", "Sales", "Accountant"];
 
 function App() {
   return (
@@ -118,6 +138,8 @@ function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/manager-login" element={<ManagerLogin />} />
         <Route path="/employee-login" element={<EmployeeLogin />} />
+        <Route path="/sales-login" element={<SalesLogin />} />
+        <Route path="/accountant-login" element={<AccountantLogin />} />
         <Route path="/user-login" element={<UserLogin />} />
         <Route path="/user-signup" element={<UserSignup />} />
         <Route path="/quote/:token" element={<ClientQuoteView />} />
@@ -145,6 +167,22 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["Employee"]}>
               <EmployeeDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Sales"]}>
+              <SalesDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/accountant-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Accountant"]}>
+              <AccountantDashboard />
             </ProtectedRoute>
           }
         />
@@ -196,6 +234,34 @@ function App() {
               <AdminCompany />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/admin/branding"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]} requiredPermission="settings.edit">
+              <AdminBranding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/roles-matrix"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]} requiredPermission="roles.view">
+              <RolesMatrix />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/send-notification"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="notifications.send">
+              <SendNotification />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/send-notification"
+          element={<Navigate to="/send-notification" replace />}
         />
         <Route
           path="/admin/numbering-config"
@@ -760,6 +826,118 @@ function App() {
               requiredPermission="projects.view"
             >
               <Projects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timesheets/approval-queue"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="timesheets.approve">
+              <TimesheetApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timesheets/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="timesheets.create">
+              <TimesheetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timesheets/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="timesheets.edit_own">
+              <TimesheetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timesheets/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="timesheets.view">
+              <TimesheetDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timesheets"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="timesheets.view">
+              <Timesheets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/employees/:userId"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="employees.view">
+              <EmployeeDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/employees"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="employees.view">
+              <Employees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="attendance.view">
+              <Attendance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruitment/jobs/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="recruitment.view">
+              <RecruitmentJobDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruitment"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="recruitment.view">
+              <Recruitment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payroll/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="payroll.view">
+              <PayslipDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payroll"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="payroll.view">
+              <Payroll />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/approvals"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="approvals.view">
+              <ApprovalsHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="chat.view">
+              <InternalChat />
             </ProtectedRoute>
           }
         />

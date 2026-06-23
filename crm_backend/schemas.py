@@ -404,6 +404,14 @@ class SystemSettingResponse(BaseModel):
         from_attributes = True
 
 
+class SystemSettingUpdateRequest(BaseModel):
+    quote_prefix: str = Field(min_length=1, max_length=30)
+    invoice_prefix: str = Field(min_length=1, max_length=30)
+    quote_date_format: str = Field(min_length=1, max_length=20)
+    invoice_date_format: str = Field(min_length=1, max_length=20)
+    default_lead_source: str = Field(min_length=1, max_length=50)
+
+
 class LeadBaseFields(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     phone: str | None = Field(default=None, max_length=30)
@@ -716,6 +724,26 @@ class QuotationStatsResponse(BaseModel):
     expiring_soon: int
 
 
+class QuotationDefaultsResponse(BaseModel):
+    scope_notes: str
+    project_overview: str
+    deliverables: str
+    timeline_notes: str
+    payment_terms: str
+    investment_commission: str
+    investment_includes: str
+    payment_installments: str
+    bank_instructions: str
+    bank_payment_intro: str
+    how_to_get_started: str
+    why_choose_items: str
+    validity_clause: str
+    legal_footer: str
+    documents_checklist: str
+    prepared_by_label: str
+    document_subtitle: str
+
+
 class QuotationStatusOption(BaseModel):
     value: str
     label: str
@@ -764,6 +792,10 @@ class QuotationCompanyBranding(BaseModel):
     gstin: str | None
     pan: str | None
     logo_filename: str | None
+    tagline: str | None = None
+    cin: str | None = None
+    invoice_document_title: str | None = None
+    signatory_name: str | None = None
 
 
 class QuotationPublicResponse(BaseModel):
@@ -1084,6 +1116,7 @@ class InvoiceResponse(BaseModel):
     contact_name: str | None = None
     assigned_to_id: int | None
     assigned_to_name: str | None = None
+    assigned_to_email: str | None = None
     created_by_id: int | None
     created_by_name: str | None = None
     reviewed_by_id: int | None
@@ -1177,6 +1210,20 @@ class InvoicePublicResponse(BaseModel):
     invoice: InvoiceResponse
     company: QuotationCompanyBranding
     is_overdue: bool
+
+
+class InvoiceDefaultsResponse(BaseModel):
+    payment_terms: str
+    bank_instructions: str
+    billing_notes: str
+    document_title: str
+    company_display_name: str
+    tagline: str
+    cin: str
+    signatory_name: str
+    org_type: str
+    client_nature: str
+    terms_label: str
 
 
 # Client Notes
@@ -1573,6 +1620,59 @@ class DashboardKpiResponse(BaseModel):
     total_outstanding: float = 0
     follow_ups_due_today: int = 0
     follow_ups_overdue: int = 0
+    total_leads: int = 0
+    open_leads: int = 0
+    open_invoices: int = 0
+    total_invoices: int = 0
+    revenue_collected: float = 0
+    revenue_billed: float = 0
+    pending_payments: float = 0
+    tasks_due: int = 0
+    tasks_overdue: int = 0
+
+
+class NotificationResponse(BaseModel):
+    id: int
+    category: str
+    title: str
+    message: str
+    link_path: str | None = None
+    is_read: bool
+    created_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationListResponse(BaseModel):
+    items: list[NotificationResponse]
+    unread_count: int
+
+
+class NotificationUnreadCountResponse(BaseModel):
+    unread_count: int
+
+
+class NotificationSendRequest(BaseModel):
+    target_role: str = Field(
+        description="Staff role, User (portal accounts), or all_staff for every staff role",
+        min_length=1,
+        max_length=30,
+    )
+    title: str = Field(min_length=1, max_length=200)
+    message: str = Field(min_length=1, max_length=2000)
+    category: str = Field(default="announcement", max_length=30)
+    link_path: str | None = Field(default=None, max_length=255)
+
+
+class NotificationSendResponse(BaseModel):
+    recipient_count: int
+    target_role: str
+    message: str
+
+
+class NotificationRolesResponse(BaseModel):
+    roles: list[str]
 
 
 # Expenses
@@ -2200,6 +2300,8 @@ class SystemConfigResponse(BaseModel):
     timezone: str
     support_email: str
     maintenance_mode: bool
+    default_gst_rate: float = 18
+    tax_regime: str = "GST"
     created_at: datetime | None
     updated_at: datetime | None
 
@@ -2214,6 +2316,8 @@ class SystemConfigUpdate(BaseModel):
     timezone: str = Field(min_length=1, max_length=80)
     support_email: EmailStr
     maintenance_mode: bool = False
+    default_gst_rate: float = Field(default=18, ge=0, le=100)
+    tax_regime: str = Field(default="GST", max_length=30)
 
 
 # --- Numbering Configuration ---
@@ -3531,3 +3635,430 @@ class LeaveStatsResponse(BaseModel):
     approved_days_this_month: float = 0.0
     my_pending_count: int = 0
     team_on_leave_count: int = 0
+
+
+# ─── Timesheets ───────────────────────────────────────────────────────────────
+
+class TimesheetCreateRequest(BaseModel):
+    project_id: int | None = None
+    task_id: int | None = None
+    contact_id: int | None = None
+    work_date: datetime
+    hours: float
+    is_billable: bool = True
+    description: str
+    submit: bool = False
+
+
+class TimesheetUpdateRequest(BaseModel):
+    project_id: int | None = None
+    task_id: int | None = None
+    contact_id: int | None = None
+    work_date: datetime | None = None
+    hours: float | None = None
+    is_billable: bool | None = None
+    description: str | None = None
+
+
+class TimesheetReviewRequest(BaseModel):
+    reviewer_note: str | None = None
+
+
+class TimesheetRejectRequest(BaseModel):
+    reviewer_note: str
+
+
+class TimesheetExportLogRequest(BaseModel):
+    row_count: int = 0
+
+
+class TimesheetOption(BaseModel):
+    value: str
+    label: str
+
+
+class TimesheetMetaResponse(BaseModel):
+    statuses: list[TimesheetOption]
+
+
+class TimesheetResponse(BaseModel):
+    id: int
+    entry_number: str | None = None
+    employee_id: int
+    employee_name: str | None = None
+    project_id: int | None = None
+    project_name: str | None = None
+    project_number: str | None = None
+    task_id: int | None = None
+    task_title: str | None = None
+    contact_id: int | None = None
+    contact_name: str | None = None
+    work_date: datetime
+    hours: float
+    is_billable: bool
+    description: str
+    status: str
+    status_label: str
+    submitted_at: datetime | None = None
+    reviewed_by_id: int | None = None
+    reviewed_by_name: str | None = None
+    reviewed_at: datetime | None = None
+    reviewer_note: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class TimesheetListResponse(BaseModel):
+    items: list[TimesheetResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class TimesheetStatsResponse(BaseModel):
+    my_pending_count: int = 0
+    my_hours_this_week: float = 0.0
+    my_billable_hours_this_week: float = 0.0
+    pending_approval_count: int = 0
+    team_hours_this_week: float = 0.0
+
+
+# ─── Employees / HR ───────────────────────────────────────────────────────────
+
+class EmployeeOption(BaseModel):
+    value: str
+    label: str
+
+
+class EmployeeMetaResponse(BaseModel):
+    employment_types: list[EmployeeOption]
+    genders: list[EmployeeOption]
+
+
+class EmployeeProfileResponse(BaseModel):
+    id: int | None = None
+    user_id: int
+    employee_id: str | None = None
+    name: str
+    email: str
+    phone: str | None = None
+    role: str
+    status: str
+    designation: str | None = None
+    department: str | None = None
+    joining_date: datetime | None = None
+    date_of_birth: datetime | None = None
+    gender: str | None = None
+    gender_label: str | None = None
+    employment_type: str | None = None
+    employment_type_label: str | None = None
+    manager_id: int | None = None
+    manager_name: str | None = None
+    salary_monthly: float | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
+    address_line1: str | None = None
+    city: str | None = None
+    state: str | None = None
+    pincode: str | None = None
+    pan: str | None = None
+    bank_name: str | None = None
+    bank_account_last4: str | None = None
+    notes: str | None = None
+    last_login_at: datetime | None = None
+
+
+class EmployeeListResponse(BaseModel):
+    items: list[EmployeeProfileResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class EmployeeProfileUpdateRequest(BaseModel):
+    joining_date: datetime | None = None
+    date_of_birth: datetime | None = None
+    gender: str | None = None
+    employment_type: str | None = None
+    manager_id: int | None = None
+    salary_monthly: float | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
+    address_line1: str | None = None
+    city: str | None = None
+    state: str | None = None
+    pincode: str | None = None
+    pan: str | None = None
+    bank_name: str | None = None
+    bank_account_last4: str | None = None
+    notes: str | None = None
+    designation: str | None = None
+    department: str | None = None
+
+
+# ─── Attendance ───────────────────────────────────────────────────────────────
+
+class AttendanceMetaResponse(BaseModel):
+    statuses: list[EmployeeOption]
+
+
+class AttendanceResponse(BaseModel):
+    id: int
+    user_id: int
+    user_name: str | None = None
+    attendance_date: datetime
+    status: str
+    status_label: str
+    check_in_at: datetime | None = None
+    check_out_at: datetime | None = None
+    worked_hours: float | None = None
+    late_minutes: int = 0
+    notes: str | None = None
+
+
+class AttendanceListResponse(BaseModel):
+    items: list[AttendanceResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class AttendanceStatsResponse(BaseModel):
+    present_today: int = 0
+    absent_today: int = 0
+    late_today: int = 0
+    on_leave_today: int = 0
+    my_status_today: str | None = None
+
+
+class AttendanceTodayResponse(BaseModel):
+    attendance_date: datetime
+    has_record: bool = False
+    status: str | None = None
+    status_label: str | None = None
+    check_in_at: datetime | None = None
+    check_out_at: datetime | None = None
+    worked_hours: float | None = None
+    late_minutes: int = 0
+    can_check_in: bool = True
+    can_check_out: bool = False
+
+
+class AttendanceTeamTodayRow(BaseModel):
+    user_id: int
+    user_name: str
+    department: str | None = None
+    role: str | None = None
+    status: str | None = None
+    status_label: str
+    check_in_at: datetime | None = None
+    check_out_at: datetime | None = None
+    worked_hours: float | None = None
+    late_minutes: int = 0
+
+
+class AttendanceTeamTodayResponse(BaseModel):
+    attendance_date: datetime
+    items: list[AttendanceTeamTodayRow]
+    total_staff: int = 0
+    checked_in_count: int = 0
+    checked_out_count: int = 0
+
+
+class AttendanceRecordRequest(BaseModel):
+    user_id: int
+    attendance_date: datetime
+    status: str
+    check_in_at: datetime | None = None
+    check_out_at: datetime | None = None
+    notes: str | None = None
+
+
+class AttendanceCheckInRequest(BaseModel):
+    notes: str | None = None
+
+
+# ─── Recruitment ──────────────────────────────────────────────────────────────
+
+class RecruitmentMetaResponse(BaseModel):
+    job_statuses: list[EmployeeOption]
+    applicant_statuses: list[EmployeeOption]
+
+
+class JobApplicantResponse(BaseModel):
+    id: int
+    job_opening_id: int
+    name: str
+    email: str
+    phone: str | None = None
+    status: str
+    status_label: str
+    interview_round: int
+    experience_years: float | None = None
+    current_company: str | None = None
+    resume_summary: str | None = None
+    interviewer_note: str | None = None
+    applied_at: datetime | None = None
+
+
+class JobOpeningResponse(BaseModel):
+    id: int
+    job_code: str | None = None
+    title: str
+    department: str | None = None
+    description: str | None = None
+    status: str
+    status_label: str
+    openings_count: int
+    salary_min: float | None = None
+    salary_max: float | None = None
+    posted_at: datetime | None = None
+    applicant_count: int = 0
+    notes: str | None = None
+
+
+class JobOpeningDetailResponse(JobOpeningResponse):
+    applicants: list[JobApplicantResponse] = []
+
+
+class JobOpeningListResponse(BaseModel):
+    items: list[JobOpeningResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class JobOpeningCreateRequest(BaseModel):
+    title: str
+    department: str | None = None
+    description: str | None = None
+    status: str = "open"
+    openings_count: int = 1
+    salary_min: float | None = None
+    salary_max: float | None = None
+    notes: str | None = None
+
+
+class JobOpeningUpdateRequest(BaseModel):
+    title: str | None = None
+    department: str | None = None
+    description: str | None = None
+    status: str | None = None
+    openings_count: int | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    notes: str | None = None
+
+
+class JobApplicantCreateRequest(BaseModel):
+    name: str
+    email: str
+    phone: str | None = None
+    experience_years: float | None = None
+    current_company: str | None = None
+    resume_summary: str | None = None
+
+
+class JobApplicantUpdateRequest(BaseModel):
+    status: str | None = None
+    interview_round: int | None = None
+    interviewer_note: str | None = None
+    resume_summary: str | None = None
+
+
+# ─── Payroll ──────────────────────────────────────────────────────────────────
+
+class PayrollMetaResponse(BaseModel):
+    statuses: list[EmployeeOption]
+
+
+class PayslipResponse(BaseModel):
+    id: int
+    payslip_number: str | None = None
+    employee_id: int
+    employee_name: str | None = None
+    period_month: int
+    period_year: int
+    period_label: str
+    basic_salary: float
+    hra: float
+    allowances: float
+    gross_salary: float
+    pf_deduction: float
+    tds_deduction: float
+    other_deductions: float
+    reimbursements: float
+    net_salary: float
+    status: str
+    status_label: str
+    payment_date: datetime | None = None
+    notes: str | None = None
+
+
+class PayslipListResponse(BaseModel):
+    items: list[PayslipResponse]
+    total: int
+    page: int
+    limit: int
+
+
+class PayrollStatsResponse(BaseModel):
+    generated_this_month: int = 0
+    paid_this_month: int = 0
+    total_net_this_month: float = 0.0
+    my_latest_net: float | None = None
+
+
+class PayslipGenerateRequest(BaseModel):
+    employee_id: int
+    period_month: int
+    period_year: int
+    reimbursements: float = 0.0
+    other_deductions: float = 0.0
+    notes: str | None = None
+
+
+# ─── Approvals hub ────────────────────────────────────────────────────────────
+
+class ApprovalQueueItem(BaseModel):
+    module: str
+    label: str
+    count: int
+    path: str
+
+
+class ApprovalsSummaryResponse(BaseModel):
+    total_pending: int
+    queues: list[ApprovalQueueItem]
+
+
+# ─── Chat ─────────────────────────────────────────────────────────────────────
+
+class ChatMetaResponse(BaseModel):
+    channels: list[EmployeeOption]
+
+
+class ChatMessageResponse(BaseModel):
+    id: int
+    sender_id: int
+    sender_name: str | None = None
+    channel: str
+    channel_label: str
+    recipient_id: int | None = None
+    recipient_name: str | None = None
+    project_id: int | None = None
+    project_name: str | None = None
+    body: str
+    created_at: datetime | None = None
+
+
+class ChatMessageListResponse(BaseModel):
+    items: list[ChatMessageResponse]
+    total: int
+
+
+class ChatMessageCreateRequest(BaseModel):
+    channel: str = "general"
+    body: str
+    recipient_id: int | None = None
+    project_id: int | None = None

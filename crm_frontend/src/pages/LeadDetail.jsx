@@ -152,7 +152,6 @@ function LeadDetail() {
           <div className="crm-mt-lg">
             <ClientNotesPanel
               leadId={Number(id)}
-              contactId={lead.contact_id || undefined}
               contactName={lead.name}
               compact
             />

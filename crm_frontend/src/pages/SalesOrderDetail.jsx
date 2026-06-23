@@ -306,8 +306,6 @@ function SalesOrderDetail() {
         <div className="crm-panel crm-mt">
           <ClientNotesPanel
             salesOrderId={Number(id)}
-            quotationId={order.quotation_id || undefined}
-            contactId={order.contact_id || undefined}
             contactName={order.client_name || order.client_org}
             compact
           />

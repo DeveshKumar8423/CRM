@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { API_URL, apiFetch, clearSession, getAuthHeaders } from "../utils/api";
 import { getPermissions, hasPermission, setPermissions } from "../utils/permissions";
+import NotificationBell from "./NotificationBell";
 
 function isNavActive(pathname, to) {
   switch (to) {
@@ -20,6 +21,20 @@ function isNavActive(pathname, to) {
       return pathname === "/sales-orders" || pathname.startsWith("/sales-orders/");
     case "/projects":
       return pathname === "/projects" || pathname.startsWith("/projects/");
+    case "/timesheets":
+      return pathname === "/timesheets" || pathname.startsWith("/timesheets/");
+    case "/employees":
+      return pathname === "/employees" || pathname.startsWith("/employees/");
+    case "/attendance":
+      return pathname === "/attendance";
+    case "/recruitment":
+      return pathname === "/recruitment" || pathname.startsWith("/recruitment/");
+    case "/payroll":
+      return pathname === "/payroll" || pathname.startsWith("/payroll/");
+    case "/approvals":
+      return pathname === "/approvals";
+    case "/chat":
+      return pathname === "/chat";
     case "/leaves":
       return pathname === "/leaves" || pathname.startsWith("/leaves/");
     case "/invoices":
@@ -56,8 +71,12 @@ function isNavActive(pathname, to) {
       return pathname === "/contacts" || pathname.startsWith("/contacts/");
     case "/products":
       return pathname === "/products" || pathname.startsWith("/products/");
-    case "/admin/company":
-      return pathname === "/admin/company";
+    case "/admin/branding":
+      return pathname === "/admin/branding";
+    case "/send-notification":
+      return pathname === "/send-notification";
+    case "/admin/roles-matrix":
+      return pathname === "/admin/roles-matrix";
     case "/admin/users":
       return pathname === "/admin/users";
     case "/admin/numbering-config":
@@ -143,6 +162,11 @@ function DashboardLayout({ title, roleLabel, children }) {
                 Follow-ups
               </Link>
             )}
+            {hasPermission("timesheets.view") && (
+              <Link to="/timesheets" className={navLinkClass(pathname, "/timesheets")}>
+                Timesheets
+              </Link>
+            )}
             {hasPermission("leaves.view") && (
               <Link to="/leaves" className={navLinkClass(pathname, "/leaves")}>
                 Leave
@@ -161,6 +185,41 @@ function DashboardLayout({ title, roleLabel, children }) {
             {hasPermission("projects.view") && (
               <Link to="/projects" className={navLinkClass(pathname, "/projects")}>
                 Projects
+              </Link>
+            )}
+            {hasPermission("employees.view_all") && (
+              <Link to="/employees" className={navLinkClass(pathname, "/employees")}>
+                Employees
+              </Link>
+            )}
+            {hasPermission("attendance.view") && (
+              <Link to="/attendance" className={navLinkClass(pathname, "/attendance")}>
+                {hasPermission("attendance.view_all") ? "Team Attendance" : "My Attendance"}
+              </Link>
+            )}
+            {hasPermission("recruitment.view") && (
+              <Link to="/recruitment" className={navLinkClass(pathname, "/recruitment")}>
+                Recruitment
+              </Link>
+            )}
+            {hasPermission("payroll.view") && (
+              <Link to="/payroll" className={navLinkClass(pathname, "/payroll")}>
+                {hasPermission("payroll.view_all") ? "Payroll" : "My Payslips"}
+              </Link>
+            )}
+            {hasPermission("approvals.view") && (
+              <Link to="/approvals" className={navLinkClass(pathname, "/approvals")}>
+                Approvals
+              </Link>
+            )}
+            {hasPermission("chat.view") && (
+              <Link to="/chat" className={navLinkClass(pathname, "/chat")}>
+                Chat
+              </Link>
+            )}
+            {hasPermission("notifications.send") && (
+              <Link to="/send-notification" className={navLinkClass(pathname, "/send-notification")}>
+                Send alert
               </Link>
             )}
             {hasPermission("invoices.view") && (
@@ -253,6 +312,16 @@ function DashboardLayout({ title, roleLabel, children }) {
                 Company
               </Link>
             )}
+            {hasPermission("settings.edit") && (
+              <Link to="/admin/branding" className={navLinkClass(pathname, "/admin/branding")}>
+                Branding
+              </Link>
+            )}
+            {hasPermission("roles.view") && (
+              <Link to="/admin/roles-matrix" className={navLinkClass(pathname, "/admin/roles-matrix")}>
+                Roles
+              </Link>
+            )}
             {hasPermission("users.view") && (
               <Link to="/admin/users" className={navLinkClass(pathname, "/admin/users")}>
                 Users
@@ -268,13 +337,18 @@ function DashboardLayout({ title, roleLabel, children }) {
                 Activity Logs
               </Link>
             )}
-            <Link to="/admin/system-config" className={navLinkClass(pathname, "/admin/system-config")}>
-              System Config
-            </Link>
-            <Link to="/admin/email-templates" className={navLinkClass(pathname, "/admin/email-templates")}>
-              Email Templates
-            </Link>
+            {hasPermission("company.view") && (
+              <Link to="/admin/system-config" className={navLinkClass(pathname, "/admin/system-config")}>
+                System Config
+              </Link>
+            )}
+            {hasPermission("company.view") && (
+              <Link to="/admin/email-templates" className={navLinkClass(pathname, "/admin/email-templates")}>
+                Email Templates
+              </Link>
+            )}
           </nav>
+          <NotificationBell />
           <button
             type="button"
             className="crm-btn crm-btn-outline crm-btn-sm crm-nav-logout"

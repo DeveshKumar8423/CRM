@@ -228,3 +228,24 @@ def update_product(
     )
 
     return _product_response(product)
+
+
+@router.delete("/{product_id}", status_code=204)
+def delete_product(
+    product_id: int,
+    request: Request,
+    user: User = Depends(require_permission("products.delete")),
+    db: Session = Depends(get_db),
+):
+    company = _get_company(db)
+    product = _get_product(db, product_id, company.id)
+    product.status = "inactive"
+    db.commit()
+    log_activity(
+        db,
+        "product_deleted",
+        user_id=user.id,
+        email=user.email,
+        details=f"Archived product {product.name}",
+        ip_address=get_client_ip(request),
+    )

@@ -20,8 +20,10 @@ JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-STAFF_ROLES = {"Admin", "Manager", "Employee"}
+STAFF_ROLES = {"Admin", "Manager", "Employee", "Sales", "Accountant"}
 ALL_ROLES = STAFF_ROLES | {"User"}
+# Roles staff may broadcast to (User can receive but not send)
+NOTIFICATION_RECIPIENT_ROLES = ALL_ROLES
 
 UPLOAD_DIR = os.getenv(
     "UPLOAD_DIR",

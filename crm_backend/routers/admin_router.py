@@ -53,10 +53,14 @@ def get_roles_matrix(
 
 @router.get("/users", response_model=list[UserProfileResponse])
 def list_users(
+    role: str | None = Query(None),
     _: User = Depends(require_permission("users.view")),
     db: Session = Depends(get_db),
 ):
-    return db.query(User).order_by(User.id).all()
+    query = db.query(User).order_by(User.id)
+    if role:
+        query = query.filter(User.role == role)
+    return query.all()
 
 
 @router.post("/users", response_model=UserProfileResponse)
@@ -69,7 +73,7 @@ def create_staff_user(
     if data.role not in STAFF_ROLES:
         raise HTTPException(
             status_code=400,
-            detail="Staff role must be Admin, Manager, or Employee",
+            detail="Staff role must be Admin, Manager, Employee, Sales, or Accountant",
         )
     if data.status not in {"active", "inactive"}:
         raise HTTPException(status_code=400, detail="Status must be active or inactive")
@@ -153,7 +157,7 @@ def update_user(
         if data.role not in STAFF_ROLES:
             raise HTTPException(
                 status_code=400,
-                detail="Staff role must be Admin, Manager, or Employee",
+                detail="Staff role must be Admin, Manager, Employee, Sales, or Accountant",
             )
         user.role = data.role
     if data.status is not None:
@@ -211,6 +215,33 @@ def reset_user_password(
     )
 
     return {"message": f"Password reset for {user.name}"}
+
+
+@router.delete("/users/{user_id}", status_code=204)
+def delete_staff_user(
+    user_id: int,
+    request: Request,
+    admin: User = Depends(require_permission("users.delete")),
+    db: Session = Depends(get_db),
+):
+    if user_id == admin.id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own account")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role == "User":
+        raise HTTPException(status_code=400, detail="Use portal user management for public User accounts")
+    email = user.email
+    user.status = "inactive"
+    db.commit()
+    log_activity(
+        db,
+        "user_deleted",
+        user_id=admin.id,
+        email=admin.email,
+        details=f"Deactivated staff user {email}",
+        ip_address=get_client_ip(request),
+    )
 
 
 @router.get("/activity-logs/actions", response_model=list[str])

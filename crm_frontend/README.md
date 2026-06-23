@@ -10,7 +10,7 @@ React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backen
 
 | Level | Status | Frontend coverage |
 |-------|--------|-------------------|
-| **Level 1** | ~70% done | Auth, profile, contacts, products, company settings, user management, activity logs, dashboards |
+| **Level 1** | **~100% done** | Auth, roles, contacts, products, dashboards, notifications, files, settings |
 | **Level 2** | ~85% done | Leads, pipeline, quotations, orders, invoices, client notes, follow-ups, payments, sales reports |
 
 ### Level 1 pages
@@ -18,15 +18,31 @@ React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backen
 | Page | Route | Permission |
 |------|-------|------------|
 | Home / portal picker | `/` | Public |
-| Admin / Manager / Employee login | `/admin-login`, `/manager-login`, `/employee-login` | Public |
+| Admin / Manager / Employee / Sales / Accountant login | `/admin-login`, `/manager-login`, `/employee-login`, `/sales-login`, `/accountant-login` | Public |
 | Forgot / reset password | `/forgot-password`, `/reset-password` | Public |
-| Role dashboards | `/admin-dashboard`, `/manager-dashboard`, `/employee-dashboard` | By role |
+| Role dashboards | `/admin-dashboard`, `/manager-dashboard`, `/employee-dashboard`, `/sales-dashboard`, `/accountant-dashboard` | By role |
 | My Profile | `/profile` | All staff |
 | Contacts (list, detail, form) | `/contacts`, `/contacts/:id`, `/contacts/new` | `contacts.view` |
 | Products (list, detail, form) | `/products`, `/products/:id`, `/products/new` | `products.view` |
 | Company Settings | `/admin/company` | `company.view` |
 | User Management | `/admin/users` | `users.view` |
 | Activity Logs | `/admin/activity-logs` | `activity.view` |
+| Document Branding | `/admin/branding` | `settings.edit` |
+| Roles matrix | `/admin/roles-matrix` | `roles.view` |
+| Send staff alert | `/send-notification` | `notifications.send` (staff only; can target User role) |
+| Notifications (bell) | Header | `notifications.view` (staff + portal User) |
+| Documents | `/documents` | `files.view` / `files.view_own` |
+| System config / numbering / email templates | `/admin/system-config`, etc. | Admin |
+
+### Not built yet (frontend)
+
+- WhatsApp / email send from CRM UI (templates exist; outbound delivery needs SMTP/WhatsApp API)
+- Live push notification delivery (in-app centre + **Admin → Send alert** by role works; email/SMS/cron is production setup)
+
+### Previously listed as not built — now available
+
+- File upload / document manager (`/documents`, record panels)
+- System settings UI (`/admin/system-config`, numbering, email templates, branding)
 
 ### Level 2 pages
 
@@ -50,13 +66,6 @@ React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backen
 | View quotation | `/quote/:token` |
 | View sales order | `/order/:token` |
 | View invoice | `/invoice/:token` |
-
-### Not built yet (frontend)
-
-- WhatsApp / email send from CRM UI
-- In-app notification centre
-- File upload / document manager
-- Advanced system settings UI
 
 ---
 

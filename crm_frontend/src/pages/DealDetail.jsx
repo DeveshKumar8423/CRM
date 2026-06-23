@@ -226,7 +226,6 @@ function DealDetail() {
           <div className="crm-mt-lg">
             <ClientNotesPanel
               dealId={Number(id)}
-              contactId={deal.contact_id || undefined}
               contactName={deal.contact_name || deal.title}
               compact
             />

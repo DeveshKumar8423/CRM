@@ -9,8 +9,10 @@ import {
   PAYMENT_MODE_LABELS,
   STATUS_LABELS,
   exportCsv,
+  exportFilename,
   formatCurrency,
   formatDate,
+  standardHeaderRows,
   statusBadgeClass,
 } from "../utils/expenses";
 
@@ -39,21 +41,31 @@ function Expenses() {
 
   useEffect(() => { load(1); }, [status, mine]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!hasPermission("expenses.export")) return;
+    const params = new URLSearchParams({ page: "1", limit: "500" });
+    if (status) params.set("status", status);
+    if (mine) params.set("mine", "true");
+    if (search.trim()) params.set("search", search.trim());
+    const exportData = await apiFetch(`/expenses?${params}`);
+    const items = exportData.items || [];
     exportCsv(
-      `expenses-${new Date().toISOString().slice(0, 10)}.csv`,
-      ["Number", "Title", "Category", "Vendor", "Amount", "Status", "Date", "Payment Mode"],
-      data.items.map((e) => [
+      exportFilename("expenses", status || "all"),
+      ["Number", "Title", "Category", "Vendor", "Amount (INR)", "Tax (INR)", "Total (INR)", "Status", "Date", "Payment Mode", "Submitted By"],
+      items.map((e) => [
         e.expense_number || "Draft",
         e.title,
         CATEGORY_LABELS[e.category] || e.category,
         e.vendor_name,
+        e.amount,
+        e.tax_amount,
         e.total_amount,
         STATUS_LABELS[e.status],
         formatDate(e.expense_date),
         PAYMENT_MODE_LABELS[e.payment_mode] || e.payment_mode,
+        e.submitted_by_name || "",
       ]),
+      standardHeaderRows("Expense Register", [`Records: ${items.length}`, status ? `Filter: ${STATUS_LABELS[status] || status}` : "Filter: All"]),
     );
   };
 

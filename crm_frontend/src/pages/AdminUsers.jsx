@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { apiFetch } from "../utils/api";
 
-const STAFF_ROLES = ["Admin", "Manager", "Employee"];
+const STAFF_ROLES = ["Admin", "Manager", "Employee", "Sales", "Accountant"];
 
 const emptyForm = {
   name: "",
@@ -19,7 +19,9 @@ const emptyForm = {
 };
 
 function AdminUsers() {
+  const [tab, setTab] = useState("staff");
   const [users, setUsers] = useState([]);
+  const [portalUsers, setPortalUsers] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [resetUserId, setResetUserId] = useState(null);
   const [resetPassword, setResetPassword] = useState("");
@@ -29,6 +31,7 @@ function AdminUsers() {
   const loadData = async () => {
     const userList = await apiFetch("/admin/users");
     setUsers(userList.filter((u) => u.role !== "User"));
+    setPortalUsers(userList.filter((u) => u.role === "User"));
   };
 
   useEffect(() => {
@@ -103,6 +106,12 @@ function AdminUsers() {
         {error && <p className="crm-error crm-mt">{error}</p>}
         {message && <p className="crm-success crm-mt">{message}</p>}
 
+        <div className="crm-tabs crm-mt">
+          <button type="button" className={tab === "staff" ? "crm-tab crm-tab-active" : "crm-tab"} onClick={() => setTab("staff")}>Staff</button>
+          <button type="button" className={tab === "portal" ? "crm-tab crm-tab-active" : "crm-tab"} onClick={() => setTab("portal")}>Portal signups ({portalUsers.length})</button>
+        </div>
+
+        {tab === "staff" && (
         <form onSubmit={handleCreate} className="crm-form crm-mt">
           <h3>Add staff member</h3>
           <div className="crm-form-grid">
@@ -184,7 +193,9 @@ function AdminUsers() {
             Create staff user
           </button>
         </form>
+        )}
 
+        {tab === "staff" && (
         <div className="crm-table-wrap crm-mt-lg">
           <h3>Staff users</h3>
           <table className="crm-table">
@@ -196,6 +207,7 @@ function AdminUsers() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Last login</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -218,6 +230,7 @@ function AdminUsers() {
                       {user.status}
                     </span>
                   </td>
+                  <td>{user.last_login_at ? new Date(user.last_login_at).toLocaleString("en-IN") : "—"}</td>
                   <td className="crm-table-actions">
                     <button
                       type="button"
@@ -239,6 +252,31 @@ function AdminUsers() {
             </tbody>
           </table>
         </div>
+        )}
+
+        {tab === "portal" && (
+          <div className="crm-table-wrap crm-mt-lg">
+            <h3>Public portal users</h3>
+            <p className="crm-muted crm-text-sm">Users who signed up via /user-signup (read-only list).</p>
+            <table className="crm-table crm-mt-sm">
+              <thead>
+                <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th><th>Last login</th></tr>
+              </thead>
+              <tbody>
+                {portalUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.status}</td>
+                    <td>{user.last_login_at ? new Date(user.last_login_at).toLocaleString("en-IN") : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {portalUsers.length === 0 && <p className="crm-muted crm-mt">No portal signups yet.</p>}
+          </div>
+        )}
 
         {resetUserId && (
           <form onSubmit={handleResetPassword} className="crm-form crm-mt">

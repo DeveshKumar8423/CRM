@@ -87,14 +87,4 @@ export function computeBillTotals(lineItems, roundOff = 0) {
   return { subtotal, totalTax, roundOff: ro, grandTotal: subtotal + totalTax + ro };
 }
 
-export function exportCsv(filename, headers, rows) {
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const csv = [headers.map(escape).join(","), ...rows.map((r) => r.map(escape).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+export { exportCsv, exportFilename, standardHeaderRows } from "./exportCsv";

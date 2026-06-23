@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import ClientNotesPanel from "../components/ClientNotesPanel";
+import BankDetailsList from "../components/BankDetailsList";
 import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
@@ -105,7 +105,12 @@ function InvoiceDetail() {
             {inv.quotation_number && <p><strong>Quote:</strong> <Link to={`/quotations/${inv.quotation_id}`} className="crm-nav-link">{inv.quotation_number}</Link></p>}
             <p><strong>Paid:</strong> {formatCurrency(inv.amount_paid, inv.currency)}</p>
             {inv.payment_terms && <p><strong>Terms:</strong> {inv.payment_terms}</p>}
-            {inv.bank_instructions && <p><strong>Bank:</strong> {inv.bank_instructions}</p>}
+            {inv.bank_instructions && (
+              <>
+                <p><strong>Bank</strong></p>
+                <BankDetailsList text={inv.bank_instructions} className="crm-bank-details-overview" />
+              </>
+            )}
           </div>
         )}
 
@@ -159,19 +164,6 @@ function InvoiceDetail() {
           </div>
         )}
       </div>
-
-      {hasPermission("client_notes.view") && (
-        <div className="crm-panel crm-mt">
-          <ClientNotesPanel
-            invoiceId={Number(id)}
-            salesOrderId={inv.sales_order_id || undefined}
-            quotationId={inv.quotation_id || undefined}
-            contactId={inv.contact_id || undefined}
-            contactName={inv.client_name || inv.client_org}
-            compact
-          />
-        </div>
-      )}
 
       {(hasPermission("files.view") || hasPermission("files.view_own")) && (
         <div className="crm-panel crm-mt">

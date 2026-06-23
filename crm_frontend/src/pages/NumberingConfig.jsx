@@ -125,7 +125,7 @@ function NumberingConfig() {
   };
 
   const handleDelete = async (config) => {
-    if (!confirm(`Are you sure you want to delete configuration for ${config.entity_name}?`)) {
+    if (!window.confirm(`Are you sure you want to delete configuration for ${config.entity_name}?`)) {
       return;
     }
     setMessage("");

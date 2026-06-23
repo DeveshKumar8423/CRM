@@ -8,6 +8,8 @@ const DASHBOARD_PATHS = {
   Admin: "/admin-dashboard",
   Manager: "/manager-dashboard",
   Employee: "/employee-dashboard",
+  Sales: "/sales-dashboard",
+  Accountant: "/accountant-dashboard",
   User: "/user-dashboard",
 };
 

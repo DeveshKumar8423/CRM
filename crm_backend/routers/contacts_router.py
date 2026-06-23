@@ -25,7 +25,7 @@ from schemas import (
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
-CONTACT_TYPES = {"Customer", "Vendor", "Partner", "Other"}
+CONTACT_TYPES = {"Customer", "Vendor", "Partner", "Stakeholder", "Other"}
 ACTIVITY_TYPES = {"note", "call", "email", "meeting"}
 
 GSTIN_PATTERN = re.compile(
@@ -456,4 +456,25 @@ def add_activity(
         author_id=activity.author_id,
         author_name=user.name,
         created_at=activity.created_at,
+    )
+
+
+@router.delete("/{contact_id}", status_code=204)
+def delete_contact(
+    contact_id: int,
+    request: Request,
+    user: User = Depends(require_permission("contacts.delete")),
+    db: Session = Depends(get_db),
+):
+    company = _get_company(db)
+    contact = _get_contact(db, contact_id, company.id)
+    contact.status = "inactive"
+    db.commit()
+    log_activity(
+        db,
+        "contact_deleted",
+        user_id=user.id,
+        email=user.email,
+        details=f"Archived contact {contact.name}",
+        ip_address=get_client_ip(request),
     )

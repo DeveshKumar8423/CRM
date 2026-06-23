@@ -16,8 +16,10 @@ DEFAULTS = {
     "default_currency": "INR",
     "date_format": "DD/MM/YYYY",
     "timezone": "Asia/Kolkata",
-    "support_email": "support@blackpapers.in",
+    "support_email": "connect@blackpapers.in",
     "maintenance_mode": False,
+    "default_gst_rate": 18,
+    "tax_regime": "GST",
 }
 
 
@@ -57,6 +59,8 @@ def update_system_config(
     config.timezone = data.timezone
     config.support_email = str(data.support_email).lower()
     config.maintenance_mode = data.maintenance_mode
+    config.default_gst_rate = data.default_gst_rate
+    config.tax_regime = data.tax_regime.strip()
 
     db.commit()
     db.refresh(config)

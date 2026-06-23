@@ -16,9 +16,21 @@ function Home() {
     },
     {
       title: "Employee",
-      description: "Update leads, tasks, and daily activity.",
+      description: "HR self-service: attendance, leave, timesheets.",
       path: "/employee-login",
       className: "crm-portal-employee",
+    },
+    {
+      title: "Sales",
+      description: "Leads, pipeline, quotations, and client follow-ups.",
+      path: "/sales-login",
+      className: "crm-portal-sales",
+    },
+    {
+      title: "Accountant",
+      description: "Invoices, payments, tax reports, and ledgers.",
+      path: "/accountant-login",
+      className: "crm-portal-accountant",
     },
     {
       title: "User",

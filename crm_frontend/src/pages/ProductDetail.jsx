@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
+import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 import { formatCurrency, STATUS_LABELS, statusBadgeClass } from "../utils/inventory";
@@ -80,6 +81,7 @@ function ProductDetail() {
             <pre className="crm-pre">{product.description}</pre>
           </div>
         )}
+        <DocumentsPanel productId={parseInt(id, 10)} category="products" title="Product images & files" />
       </div>
     </DashboardLayout>
   );

@@ -38,20 +38,7 @@ export function buildReportParams(period, ownerId, dateFrom, dateTo) {
   return params;
 }
 
-export function exportCsv(filename, headers, rows) {
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lines = [];
-  if (headers?.length) {
-    lines.push(headers.map(escape).join(","));
-  }
-  lines.push(...rows.map((r) => (Array.isArray(r) ? r : [r]).map(escape).join(",")));
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
+export { exportCsv, exportFilename, standardHeaderRows } from "./exportCsv";
 
 export function badgeClass(badge) {
   const map = {

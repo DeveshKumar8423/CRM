@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import ClientNotesPanel from "../components/ClientNotesPanel";
 import DocumentsPanel from "../components/DocumentsPanel";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
@@ -323,7 +322,7 @@ function QuotationDetail() {
             {quote.timeline_notes && <p><strong>Timeline:</strong> {quote.timeline_notes}</p>}
             {quote.payment_terms && <p><strong>Payment terms:</strong> {quote.payment_terms}</p>}
             {quote.validity_clause && <p><strong>Validity:</strong> {quote.validity_clause}</p>}
-            {quote.cancellation_clause && <p><strong>Cancellation:</strong> {quote.cancellation_clause}</p>}
+            {quote.cancellation_clause && <p><strong>Documents required:</strong> {quote.cancellation_clause}</p>}
             {quote.legal_footer && <p className="crm-muted">{quote.legal_footer}</p>}
           </div>
         )}
@@ -363,21 +362,9 @@ function QuotationDetail() {
         )}
       </div>
 
-      {hasPermission("client_notes.view") && (
-        <div className="crm-panel crm-mt">
-          <ClientNotesPanel
-            quotationId={Number(id)}
-            dealId={quote.deal_id || undefined}
-            contactId={quote.contact_id || undefined}
-            contactName={quote.client_name || quote.client_org}
-            compact
-          />
-        </div>
-      )}
-
       {(hasPermission("files.view") || hasPermission("files.view_own")) && (
         <div className="crm-panel crm-mt">
-          <DocumentsPanel quotationId={Number(id)} />
+          <DocumentsPanel quotationId={Number(id)} title="Quote attachments" />
         </div>
       )}
     </DashboardLayout>

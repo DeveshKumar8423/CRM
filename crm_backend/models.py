@@ -75,6 +75,12 @@ class Company(Base):
     follow_up_reminders = relationship("FollowUpReminder", back_populates="company")
     projects = relationship("Project", back_populates="company")
     leave_requests = relationship("LeaveRequest", back_populates="company")
+    timesheet_entries = relationship("TimesheetEntry", back_populates="company")
+    employee_profiles = relationship("EmployeeProfile", back_populates="company")
+    attendance_records = relationship("AttendanceRecord", back_populates="company")
+    job_openings = relationship("JobOpening", back_populates="company")
+    payslips = relationship("Payslip", back_populates="company")
+    chat_messages = relationship("ChatMessage", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
 
 
@@ -1357,8 +1363,10 @@ class SystemConfiguration(Base):
     default_currency = Column(String(3), nullable=False, default="INR")
     date_format = Column(String(20), nullable=False, default="DD/MM/YYYY")
     timezone = Column(String(80), nullable=False, default="Asia/Kolkata")
-    support_email = Column(String(255), nullable=False, default="support@blackpapers.in")
+    support_email = Column(String(255), nullable=False, default="connect@blackpapers.in")
     maintenance_mode = Column(Boolean, nullable=False, default=False)
+    default_gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    tax_regime = Column(String(30), nullable=False, default="GST")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
@@ -1480,6 +1488,210 @@ class LeaveRequest(Base):
     reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
 
 
+class TimesheetEntry(Base):
+    __tablename__ = "timesheet_entries"
+    __table_args__ = (UniqueConstraint("company_id", "entry_number", name="uq_timesheet_entries_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    entry_number = Column(String(40), nullable=True)
+    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True, index=True)
+    task_id = Column(Integer, ForeignKey("project_tasks.id"), nullable=True, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True, index=True)
+    work_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    hours = Column(Numeric(5, 2), nullable=False)
+    is_billable = Column(Boolean, nullable=False, default=True)
+    description = Column(Text, nullable=False)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    submitted_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    reviewer_note = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="timesheet_entries")
+    employee = relationship("User", foreign_keys=[employee_id])
+    project = relationship("Project")
+    task = relationship("ProjectTask")
+    contact = relationship("Contact")
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
+
+
+class EmployeeProfile(Base):
+    __tablename__ = "employee_profiles"
+    __table_args__ = (UniqueConstraint("company_id", "user_id", name="uq_employee_profiles_company_user"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    joining_date = Column(DateTime(timezone=True), nullable=True)
+    date_of_birth = Column(DateTime(timezone=True), nullable=True)
+    gender = Column(String(20), nullable=True)
+    employment_type = Column(String(30), nullable=False, default="full_time")
+    manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    salary_monthly = Column(Numeric(12, 2), nullable=True)
+    emergency_contact_name = Column(String(120), nullable=True)
+    emergency_contact_phone = Column(String(30), nullable=True)
+    address_line1 = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(100), nullable=True)
+    pincode = Column(String(10), nullable=True)
+    pan = Column(String(10), nullable=True)
+    bank_name = Column(String(120), nullable=True)
+    bank_account_last4 = Column(String(4), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="employee_profiles")
+    user = relationship("User", foreign_keys=[user_id])
+    manager = relationship("User", foreign_keys=[manager_id])
+
+
+class AttendanceRecord(Base):
+    __tablename__ = "attendance_records"
+    __table_args__ = (UniqueConstraint("company_id", "user_id", "attendance_date", name="uq_attendance_company_user_date"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    attendance_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="present")
+    check_in_at = Column(DateTime(timezone=True), nullable=True)
+    check_out_at = Column(DateTime(timezone=True), nullable=True)
+    worked_hours = Column(Numeric(4, 2), nullable=True)
+    late_minutes = Column(Integer, nullable=False, default=0)
+    notes = Column(Text, nullable=True)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="attendance_records")
+    user = relationship("User", foreign_keys=[user_id])
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+
+
+class JobOpening(Base):
+    __tablename__ = "job_openings"
+    __table_args__ = (UniqueConstraint("company_id", "job_code", name="uq_job_openings_company_code"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    job_code = Column(String(40), nullable=True)
+    title = Column(String(200), nullable=False)
+    department = Column(String(120), nullable=True)
+    description = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, default="open", index=True)
+    openings_count = Column(Integer, nullable=False, default=1)
+    salary_min = Column(Numeric(12, 2), nullable=True)
+    salary_max = Column(Numeric(12, 2), nullable=True)
+    posted_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="job_openings")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    applicants = relationship("JobApplicant", back_populates="job_opening", cascade="all, delete-orphan")
+
+
+class JobApplicant(Base):
+    __tablename__ = "job_applicants"
+
+    id = Column(Integer, primary_key=True)
+    job_opening_id = Column(Integer, ForeignKey("job_openings.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    email = Column(String(255), nullable=False)
+    phone = Column(String(30), nullable=True)
+    status = Column(String(30), nullable=False, default="applied", index=True)
+    interview_round = Column(Integer, nullable=False, default=0)
+    experience_years = Column(Numeric(4, 1), nullable=True)
+    current_company = Column(String(200), nullable=True)
+    resume_summary = Column(Text, nullable=True)
+    interviewer_note = Column(Text, nullable=True)
+    applied_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    job_opening = relationship("JobOpening", back_populates="applicants")
+
+
+class Payslip(Base):
+    __tablename__ = "payslips"
+    __table_args__ = (UniqueConstraint("company_id", "payslip_number", name="uq_payslips_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    payslip_number = Column(String(40), nullable=True)
+    period_month = Column(Integer, nullable=False)
+    period_year = Column(Integer, nullable=False)
+    basic_salary = Column(Numeric(12, 2), nullable=False, default=0)
+    hra = Column(Numeric(12, 2), nullable=False, default=0)
+    allowances = Column(Numeric(12, 2), nullable=False, default=0)
+    gross_salary = Column(Numeric(12, 2), nullable=False, default=0)
+    pf_deduction = Column(Numeric(12, 2), nullable=False, default=0)
+    tds_deduction = Column(Numeric(12, 2), nullable=False, default=0)
+    other_deductions = Column(Numeric(12, 2), nullable=False, default=0)
+    reimbursements = Column(Numeric(12, 2), nullable=False, default=0)
+    net_salary = Column(Numeric(12, 2), nullable=False, default=0)
+    status = Column(String(20), nullable=False, default="generated", index=True)
+    payment_date = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+    generated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="payslips")
+    employee = relationship("User", foreign_keys=[employee_id])
+    generated_by = relationship("User", foreign_keys=[generated_by_id])
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    channel = Column(String(30), nullable=False, default="general", index=True)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True, index=True)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    company = relationship("Company", back_populates="chat_messages")
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    project = relationship("Project")
+
+
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
@@ -1492,6 +1704,23 @@ class ActivityLog(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="activities")
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    category = Column(String(30), nullable=False)
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    link_path = Column(String(255), nullable=True)
+    is_read = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company")
+    user = relationship("User")
 
 
 class UploadedFile(Base):

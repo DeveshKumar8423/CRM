@@ -22,6 +22,7 @@ function resolveContext(props) {
     ["expenses", props.expenseId],
     ["vendor_bills", props.vendorBillId],
     ["projects", props.projectId],
+    ["products", props.productId],
   ];
   for (const [module, id] of map) {
     if (id) return { relatedModule: module, relatedRecordId: Number(id) };
@@ -39,11 +40,12 @@ function DocumentsPanel({
   expenseId,
   vendorBillId,
   projectId,
+  productId,
   category: categoryProp,
   title = "Documents & Attachments",
 }) {
   const { relatedModule, relatedRecordId } = resolveContext({
-    leadId, dealId, contactId, invoiceId, quotationId, salesOrderId, expenseId, vendorBillId, projectId,
+    leadId, dealId, contactId, invoiceId, quotationId, salesOrderId, expenseId, vendorBillId, projectId, productId,
   });
   const uploadCategory = categoryProp || PANEL_DEFAULT_CATEGORY[relatedModule] || "documents";
 

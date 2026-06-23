@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 
 from auth_utils import get_db, require_permission
 from deal_config import PIPELINE_STAGES
-from models import ClientNote, Company, Deal, FollowUpReminder, Invoice, Quotation, User
+from models import ClientNote, Company, Deal, FollowUpReminder, Invoice, Lead, Project, ProjectTask, Quotation, User
+from permissions import role_has_permission
+from projects_config import OPEN_TASK_STATUSES
 from schemas import DashboardKpiResponse
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -26,6 +28,7 @@ def dashboard_kpis(
     now = datetime.now(timezone.utc)
     start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = start_of_day + timedelta(days=1)
+    week_end = start_of_day + timedelta(days=7)
 
     pipeline_value = (
         db.query(func.coalesce(func.sum(Deal.expected_value), 0))
@@ -67,6 +70,55 @@ def dashboard_kpis(
         )
         .scalar()
     )
+    open_invoices = (
+        db.query(func.count(Invoice.id))
+        .filter(
+            Invoice.company_id == company.id,
+            Invoice.status.in_(outstanding_statuses),
+            Invoice.outstanding_amount > 0,
+        )
+        .scalar()
+    )
+    total_invoices = (
+        db.query(func.count(Invoice.id))
+        .filter(Invoice.company_id == company.id)
+        .scalar()
+    )
+    revenue_collected = (
+        db.query(func.coalesce(func.sum(Invoice.paid_amount), 0))
+        .filter(Invoice.company_id == company.id)
+        .scalar()
+    )
+    revenue_billed = (
+        db.query(func.coalesce(func.sum(Invoice.grand_total), 0))
+        .filter(Invoice.company_id == company.id, Invoice.status.notin_(["draft", "cancelled"]))
+        .scalar()
+    )
+
+    total_leads = db.query(func.count(Lead.id)).filter(Lead.company_id == company.id).scalar()
+    open_leads = (
+        db.query(func.count(Lead.id))
+        .filter(Lead.company_id == company.id, Lead.status.in_(["open", "hot", "follow_up", "cold", "qualified"]))
+        .scalar()
+    )
+
+    task_query = (
+        db.query(ProjectTask)
+        .join(Project, ProjectTask.project_id == Project.id)
+        .filter(Project.company_id == company.id, ProjectTask.status.in_(OPEN_TASK_STATUSES))
+    )
+    if not role_has_permission(db, user.role, "projects.view_all"):
+        task_query = task_query.filter(ProjectTask.assigned_to_id == user.id)
+
+    tasks_overdue = task_query.filter(
+        ProjectTask.due_date.isnot(None),
+        ProjectTask.due_date < now,
+    ).count()
+    tasks_due = task_query.filter(
+        ProjectTask.due_date.isnot(None),
+        ProjectTask.due_date >= start_of_day,
+        ProjectTask.due_date < week_end,
+    ).count()
 
     reminder_due = (
         db.query(func.count(FollowUpReminder.id))
@@ -111,12 +163,22 @@ def dashboard_kpis(
         .scalar()
     )
 
+    outstanding_float = float(total_outstanding or 0)
     return DashboardKpiResponse(
         pipeline_value=float(pipeline_value or 0),
         open_deals=open_deals or 0,
         pending_quotes=pending_quotes or 0,
         overdue_invoices=overdue_invoices or 0,
-        total_outstanding=float(total_outstanding or 0),
+        total_outstanding=outstanding_float,
         follow_ups_due_today=(reminder_due or 0) + (note_due_today or 0),
         follow_ups_overdue=(reminder_overdue or 0) + (note_overdue or 0),
+        total_leads=total_leads or 0,
+        open_leads=open_leads or 0,
+        open_invoices=open_invoices or 0,
+        total_invoices=total_invoices or 0,
+        revenue_collected=float(revenue_collected or 0),
+        revenue_billed=float(revenue_billed or 0),
+        pending_payments=outstanding_float,
+        tasks_due=tasks_due or 0,
+        tasks_overdue=tasks_overdue or 0,
     )

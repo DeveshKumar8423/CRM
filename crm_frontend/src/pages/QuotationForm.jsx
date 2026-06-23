@@ -10,6 +10,7 @@ import {
   emptyLineItem,
   formatCurrency,
 } from "../utils/quotations";
+import { productLineSummary } from "../utils/lineItemText";
 
 function QuotationForm() {
   const { id } = useParams();
@@ -35,13 +36,27 @@ function QuotationForm() {
     Promise.all([
       apiFetch("/quotations/assignees"),
       apiFetch("/products?limit=200"),
+      ...(isEdit ? [] : [apiFetch("/quotations/defaults")]),
     ])
-      .then(([staff, productData]) => {
+      .then((results) => {
+        const [staff, productData, defaults] = results;
         setAssignees(staff);
         setProducts(productData.items || []);
+        if (!isEdit && defaults) {
+          setForm((prev) => ({
+            ...prev,
+            scope_notes: defaults.scope_notes || "",
+            deliverables: defaults.deliverables || "",
+            timeline_notes: defaults.timeline_notes || "",
+            payment_terms: defaults.payment_terms || "",
+            validity_clause: defaults.validity_clause || "",
+            cancellation_clause: defaults.documents_checklist || "",
+            legal_footer: defaults.legal_footer || "",
+          }));
+        }
       })
       .catch(() => {});
-  }, []);
+  }, [isEdit]);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -137,7 +152,7 @@ function QuotationForm() {
           ...emptyLineItem(),
           product_id: String(product.id),
           item_name: product.name,
-          description: product.description || "",
+          description: productLineSummary(product),
           unit: product.unit || "Service",
           unit_price: String(product.offer_price || product.total_price || product.our_fees || 0),
           tax_rate: String(product.gst_rate || 18),
@@ -390,7 +405,7 @@ function QuotationForm() {
             <textarea className="crm-textarea" rows={2} value={form.payment_terms} onChange={(e) => handleChange("payment_terms", e.target.value)} />
             <label>Validity clause</label>
             <textarea className="crm-textarea" rows={2} value={form.validity_clause} onChange={(e) => handleChange("validity_clause", e.target.value)} />
-            <label>Cancellation / refund</label>
+            <label>Documents checklist</label>
             <textarea className="crm-textarea" rows={2} value={form.cancellation_clause} onChange={(e) => handleChange("cancellation_clause", e.target.value)} />
             <label>Legal footer</label>
             <textarea className="crm-textarea" rows={2} value={form.legal_footer} onChange={(e) => handleChange("legal_footer", e.target.value)} />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import DashboardLayout from "../components/DashboardLayout";
 import { apiFetch } from "../utils/api";
 import { hasPermission } from "../utils/permissions";
 
@@ -31,8 +32,46 @@ function SalesKpis() {
     <div className="crm-mt">
       {kpis && hasPermission("dashboard.view") && (
         <>
-          <h3 className="crm-section-title">Sales snapshot</h3>
+          <h3 className="crm-section-title">Business snapshot</h3>
           <div className="crm-stats-grid crm-mt-sm">
+            {hasPermission("leads.view") && (
+              <div className="crm-stat-card">
+                <p className="crm-stat-label">Leads</p>
+                <p className="crm-stat-value">{kpis.total_leads}</p>
+                <p className="crm-muted">{kpis.open_leads} open</p>
+                <Link to="/leads" className="crm-nav-link">View leads</Link>
+              </div>
+            )}
+            {hasPermission("invoices.view") && (
+              <>
+                <div className="crm-stat-card">
+                  <p className="crm-stat-label">Invoices</p>
+                  <p className="crm-stat-value">{kpis.open_invoices}</p>
+                  <p className="crm-muted">{kpis.overdue_invoices} overdue · {kpis.total_invoices} total</p>
+                  <Link to="/invoices" className="crm-nav-link">View invoices</Link>
+                </div>
+                <div className="crm-stat-card">
+                  <p className="crm-stat-label">Revenue collected</p>
+                  <p className="crm-stat-value">{formatCurrency(kpis.revenue_collected)}</p>
+                  <p className="crm-muted">Billed {formatCurrency(kpis.revenue_billed)}</p>
+                </div>
+              </>
+            )}
+            {hasPermission("payments.view") && (
+              <div className="crm-stat-card">
+                <p className="crm-stat-label">Pending payments</p>
+                <p className="crm-stat-value">{formatCurrency(kpis.pending_payments)}</p>
+                <Link to="/payments" className="crm-nav-link">Collections</Link>
+              </div>
+            )}
+            {hasPermission("projects.view") && (
+              <div className="crm-stat-card">
+                <p className="crm-stat-label">Tasks</p>
+                <p className="crm-stat-value">{kpis.tasks_due}</p>
+                <p className="crm-muted">{kpis.tasks_overdue} overdue this week</p>
+                <Link to="/projects/my-tasks" className="crm-nav-link">My tasks</Link>
+              </div>
+            )}
             {hasPermission("deals.view") && (
               <div className="crm-stat-card">
                 <p className="crm-stat-label">Pipeline value</p>
@@ -46,15 +85,6 @@ function SalesKpis() {
                 <p className="crm-stat-value">{kpis.pending_quotes}</p>
                 <Link to="/quotations" className="crm-nav-link">View quotations</Link>
               </div>
-            )}
-            {hasPermission("payments.view") && (
-              <>
-                <div className="crm-stat-card">
-                  <p className="crm-stat-label">Outstanding</p>
-                  <p className="crm-stat-value">{formatCurrency(kpis.total_outstanding)}</p>
-                  <p className="crm-muted">{kpis.overdue_invoices} overdue invoices</p>
-                </div>
-              </>
             )}
             {hasPermission("reminders.view") && (
               <div className="crm-stat-card">
@@ -78,15 +108,7 @@ function SalesKpis() {
             </div>
             <div className="crm-stat-card">
               <p className="crm-stat-label">Active</p>
-              <p className="crm-stat-value crm-stat-active">
-                {contactStats.active} <span>({contactStats.active_percent}%)</span>
-              </p>
-            </div>
-            <div className="crm-stat-card">
-              <p className="crm-stat-label">Inactive</p>
-              <p className="crm-stat-value crm-stat-inactive">
-                {contactStats.inactive} <span>({contactStats.inactive_percent}%)</span>
-              </p>
+              <p className="crm-stat-value">{contactStats.active}</p>
             </div>
           </div>
         </>

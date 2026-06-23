@@ -44,19 +44,7 @@ export function buildIndexParams({ search, outstandingOnly, overdueOnly, sort, p
   return params;
 }
 
-export function exportCsv(filename, headers, rows, headerRows = []) {
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lines = [];
-  headerRows.forEach((row) => lines.push(row.map(escape).join(",")));
-  if (headers?.length) lines.push(headers.map(escape).join(","));
-  lines.push(...rows.map((r) => (Array.isArray(r) ? r : [r]).map(escape).join(",")));
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
+export { exportCsv, standardHeaderRows } from "./exportCsv";
 
 export function entryBadgeClass(type) {
   const map = {

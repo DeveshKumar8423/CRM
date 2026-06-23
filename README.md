@@ -1,6 +1,6 @@
 # BlackPapers CRM
 
-A full-stack CRM for **BlackPapers** (Tributaries Unicorn LLP), built as an Odoo-style SaaS foundation for compliance, legal, and business services (India-first).
+A full-stack CRM for **BlackPapers** (BLACKPAPERS SARTHIES PRIVATE LIMITED), built as an Odoo-style SaaS foundation for compliance, legal, and business services (India-first).
 
 **Stack:** FastAPI + SQLAlchemy + PostgreSQL + Alembic (backend) · React (Create React App) frontend
 
@@ -61,6 +61,57 @@ Lead → Deal → Quotation → Sales Order → Invoice → Payments
 - Cross-links between lead, deal, quote, order, and invoice detail pages
 - Active section highlight in the top navigation
 - Unified follow-up queue (reminders + client note follow-ups)
+
+---
+
+## Level 3 — Accounting, Purchase & Inventory
+
+| # | Module | Status | Demo data |
+|---|--------|--------|-----------|
+| 1 | Expense Management | **Done** | `seed_demo_level3.py` |
+| 2 | Purchase Orders | **Done** | `seed_demo_level3.py` |
+| 3 | Vendor Bills | **Done** | `seed_demo_level3.py` |
+| 4 | Inventory Management | **Done** | `seed_demo_level3.py` |
+| 5 | Stock In / Stock Out | **Done** | `seed_demo_level3.py` |
+| 6 | Warehouse Management | **Done** | `seed_demo_level3.py` |
+| 7 | GST / Tax Reports | **Done** | Uses Level 2 invoices + Level 3 vendor bills |
+| 8 | Customer Ledger | **Done** | Uses Level 2 invoices/payments |
+| 9 | Vendor Ledger | **Done** | Uses Level 3 vendor bills |
+| 10 | P&L Reports | **Done** | Uses revenue + expenses + costs |
+
+Run after Level 2 demo data for best tax/ledger/P&L report results:
+
+```powershell
+python seed_demo_level3.py --reset
+```
+
+---
+
+## Level 4 — Operations, HR & Project Management
+
+| # | Module | Status | Demo data |
+|---|--------|--------|-----------|
+| 1 | Project Management | **Done** | `seed_demo_level4.py` |
+| 2 | Task Management | **Done** (inside Projects) | `seed_demo_level4.py` |
+| 3 | Timesheets | **Done** | `seed_demo_level4.py` |
+| 4 | Employee Database | **Partial** | Uses `users` + profile; full HR fields TBD |
+| 5 | Attendance | **Not started** | — |
+| 6 | Leave Management | **Done** | `seed_demo_level4.py` |
+| 7 | Recruitment | **Not started** | — |
+| 8 | Payroll | **Not started** | — |
+| 9 | Approvals | **Partial** | Per-module queues (expenses, leaves, timesheets, POs, etc.) |
+| 10 | Document Management | **Done** | `seed_demo_level4.py` |
+| 11 | Internal Chat | **Not started** | — |
+
+After migrations and Level 2 demo (recommended):
+
+```powershell
+alembic upgrade head
+python seed_permissions.py
+python seed_demo_level4.py --reset
+```
+
+Log out and log back in after `seed_permissions.py` so **Timesheets** appears in the nav.
 
 ---
 
@@ -198,12 +249,17 @@ python seed_leads.py
 | `seed_master_services.py` | Imports services from Excel |
 | `seed_leads.py` | Imports leads from `Lead_file.csv` |
 
-**Optional demo data (Level 2 testing):**
+**Optional demo data (Level 2 + Level 3 testing):**
 
 ```powershell
 python seed_demo_deals.py --reset
 python seed_demo_level2.py --reset
 python seed_demo_reminders.py --reset
+python seed_demo_level3.py --reset
+python seed_demo_level4.py --reset
+python seed_demo_sales_accountant.py --reset
+python seed_numbering_config.py
+python seed_email_templates.py
 ```
 
 **Optional dev test users** (skip if using the employee sheet):
@@ -263,6 +319,8 @@ npm start
 | Admin | `admin@crm.com` | `admin123` |
 | Manager | `manager@crm.com` | `manager123` |
 | Employee | `employee@crm.com` | `employee123` |
+| Sales | `sales@crm.com` | `sales123` |
+| Accountant | `accountant@crm.com` | `accountant123` |
 
 ### Login URLs
 
@@ -271,6 +329,9 @@ npm start
 | Admin | http://localhost:3000/admin-login |
 | Manager | http://localhost:3000/manager-login |
 | Employee | http://localhost:3000/employee-login |
+| Sales | http://localhost:3000/sales-login |
+| Accountant | http://localhost:3000/accountant-login |
+| User (public signup) | http://localhost:3000/user-login |
 
 ---
 

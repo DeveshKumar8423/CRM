@@ -9,8 +9,10 @@ const DEFAULTS = {
   default_currency: "INR",
   date_format: "DD/MM/YYYY",
   timezone: "Asia/Kolkata",
-  support_email: "support@blackpapers.in",
+  support_email: "connect@blackpapers.in",
   maintenance_mode: false,
+  default_gst_rate: 18,
+  tax_regime: "GST",
 };
 
 const DATE_FORMAT_OPTIONS = [
@@ -64,6 +66,8 @@ function SystemConfiguration() {
         timezone: data.timezone,
         support_email: data.support_email,
         maintenance_mode: data.maintenance_mode,
+        default_gst_rate: data.default_gst_rate ?? 18,
+        tax_regime: data.tax_regime || "GST",
       });
     } catch (err) {
       setError(err.message);
@@ -109,6 +113,8 @@ function SystemConfiguration() {
         timezone: data.timezone,
         support_email: data.support_email,
         maintenance_mode: data.maintenance_mode,
+        default_gst_rate: data.default_gst_rate ?? 18,
+        tax_regime: data.tax_regime || "GST",
       });
       setMessage("Configuration reset to defaults.");
     } catch (err) {
@@ -210,6 +216,30 @@ function SystemConfiguration() {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <p className="crm-section-title crm-mt">Tax defaults</p>
+            <div className="crm-form-grid">
+              <div>
+                <label>Tax regime</label>
+                <select value={form.tax_regime} onChange={(e) => field("tax_regime", e.target.value)} required>
+                  <option value="GST">GST (India)</option>
+                  <option value="VAT">VAT</option>
+                  <option value="None">None</option>
+                </select>
+              </div>
+              <div>
+                <label>Default GST rate (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={form.default_gst_rate}
+                  onChange={(e) => field("default_gst_rate", parseFloat(e.target.value) || 0)}
+                  required
+                />
               </div>
             </div>
 

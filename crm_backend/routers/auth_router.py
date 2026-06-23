@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from activity import log_activity
@@ -15,9 +15,11 @@ from auth_utils import (
     require_permission,
     verify_password,
 )
-from models import User
+from models import ActivityLog, Company, User
 from permissions import get_permissions_for_role
 from schemas import (
+    ActivityLogListResponse,
+    ActivityLogResponse,
     ChangePasswordRequest,
     LoginRequest,
     ProfileUpdateRequest,
@@ -49,6 +51,7 @@ def signup(data: SignupRequest, request: Request, db: Session = Depends(get_db))
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    company = db.query(Company).first()
     user = User(
         name=data.name.strip(),
         email=data.email.lower(),
@@ -56,6 +59,7 @@ def signup(data: SignupRequest, request: Request, db: Session = Depends(get_db))
         password=hash_password(data.password),
         role="User",
         status="active",
+        company_id=company.id if company else None,
     )
     db.add(user)
     db.commit()
@@ -152,6 +156,24 @@ def get_my_permissions(
 @router.get("/users/me", response_model=UserProfileResponse)
 def get_profile(user: User = Depends(require_permission("profile.view"))):
     return user
+
+
+@router.get("/users/me/activity", response_model=ActivityLogListResponse)
+def my_activity(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    query = db.query(ActivityLog).filter(ActivityLog.user_id == user.id)
+    total = query.count()
+    items = (
+        query.order_by(ActivityLog.created_at.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+    return ActivityLogListResponse(items=items, total=total, page=page, limit=limit)
 
 
 @router.put("/users/me", response_model=UserProfileResponse)

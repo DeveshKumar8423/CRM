@@ -11,16 +11,26 @@ from sqlalchemy.orm import Session, joinedload
 from activity import log_activity
 from auth_utils import get_client_ip, get_db, require_permission
 from config import FRONTEND_URL, STAFF_ROLES
+from company_branding import build_company_branding
 from invoice_config import (
     ALLOWED_TRANSITIONS,
+    COMPANY_CIN,
+    COMPANY_INVOICE_DISPLAY_NAME,
+    COMPANY_TAGLINE,
     CONVERTIBLE_ORDER_STATUSES,
     CONVERTIBLE_QUOTE_STATUSES,
     DEFAULT_BANK_INSTRUCTIONS,
+    DEFAULT_BILLING_NOTES,
+    DEFAULT_CLIENT_NATURE,
+    DEFAULT_ORG_TYPE,
     DEFAULT_PAYMENT_TERMS,
+    DEFAULT_SIGNATORY,
     EDITABLE_STATUSES,
     FINAL_STATUSES,
+    INVOICE_DOCUMENT_TITLE,
     INVOICE_STATUS_LABELS,
     INVOICE_STATUSES,
+    INVOICE_TERMS_LABEL,
     INVOICE_TYPES,
     REVIEW_THRESHOLD,
     SOURCE_TYPES,
@@ -38,8 +48,10 @@ from models import (
     SystemSetting,
     User,
 )
+from services.document_number_service import generate_invoice_number
 from schemas import (
     InvoiceCreateRequest,
+    InvoiceDefaultsResponse,
     InvoiceLineItemFields,
     InvoiceLineItemResponse,
     InvoiceListResponse,
@@ -165,10 +177,7 @@ def _compute_totals(items, hdr_amt, hdr_pct, round_off=0) -> dict:
 
 
 def _generate_number(db: Session, company: Company) -> str:
-    settings = db.query(SystemSetting).filter(SystemSetting.company_id == company.id).first()
-    prefix = settings.invoice_prefix if settings else "Inv-"
-    count = db.query(func.count(Invoice.id)).filter(Invoice.company_id == company.id, Invoice.invoice_number.isnot(None)).scalar()
-    return f"{prefix}{count + 1:05d}"
+    return generate_invoice_number(db, company)
 
 
 def _line_resp(li: InvoiceLineItem) -> InvoiceLineItemResponse:
@@ -201,6 +210,7 @@ def _inv_resp(inv: Invoice) -> InvoiceResponse:
         deal_id=inv.deal_id, deal_title=inv.deal.title if inv.deal else None,
         contact_id=inv.contact_id, contact_name=inv.contact.name if inv.contact else None,
         assigned_to_id=inv.assigned_to_id, assigned_to_name=inv.assigned_to.name if inv.assigned_to else None,
+        assigned_to_email=inv.assigned_to.email if inv.assigned_to else None,
         created_by_id=inv.created_by_id, created_by_name=inv.created_by.name if inv.created_by else None,
         reviewed_by_id=inv.reviewed_by_id, reviewed_by_name=inv.reviewed_by.name if inv.reviewed_by else None,
         issued_by_id=inv.issued_by_id, issued_by_name=inv.issued_by.name if inv.issued_by else None,
@@ -227,13 +237,7 @@ def _inv_resp(inv: Invoice) -> InvoiceResponse:
 
 
 def _branding(company: Company, settings: SystemSetting | None) -> QuotationCompanyBranding:
-    return QuotationCompanyBranding(
-        display_name=company.display_name, legal_name=company.legal_name, email=company.email,
-        phone=company.phone, website=company.website, address_line1=company.address_line1,
-        address_line2=company.address_line2, city=company.city, state=company.state,
-        pincode=company.pincode, country=company.country, gstin=company.gstin, pan=company.pan,
-        logo_filename=settings.logo_filename if settings else None,
-    )
+    return build_company_branding(company, settings, for_invoice=True)
 
 
 def _is_overdue(inv: Invoice) -> bool:
@@ -306,7 +310,7 @@ def _build_invoice(db, company, payload: InvoiceCreateRequest, user, *, source_t
         outstanding_amount=totals["grand_total"], amount_paid=Decimal("0"),
         payment_terms=payload.payment_terms or DEFAULT_PAYMENT_TERMS,
         bank_instructions=payload.bank_instructions or DEFAULT_BANK_INSTRUCTIONS,
-        billing_notes=payload.billing_notes, internal_notes=payload.internal_notes,
+        billing_notes=payload.billing_notes or DEFAULT_BILLING_NOTES, internal_notes=payload.internal_notes,
         requires_review=1 if needs_review else 0,
     )
     db.add(inv)
@@ -485,6 +489,23 @@ def from_quotation(quote_id: int, request: Request, user: User = Depends(require
     return _inv_resp(inv)
 
 
+@router.get("/defaults", response_model=InvoiceDefaultsResponse)
+def invoice_defaults(_: User = Depends(require_permission("invoices.view"))):
+    return InvoiceDefaultsResponse(
+        payment_terms=DEFAULT_PAYMENT_TERMS,
+        bank_instructions=DEFAULT_BANK_INSTRUCTIONS,
+        billing_notes=DEFAULT_BILLING_NOTES,
+        document_title=INVOICE_DOCUMENT_TITLE,
+        company_display_name=COMPANY_INVOICE_DISPLAY_NAME,
+        tagline=COMPANY_TAGLINE,
+        cin=COMPANY_CIN,
+        signatory_name=DEFAULT_SIGNATORY,
+        org_type=DEFAULT_ORG_TYPE,
+        client_nature=DEFAULT_CLIENT_NATURE,
+        terms_label=INVOICE_TERMS_LABEL,
+    )
+
+
 @router.get("/{invoice_id}", response_model=InvoiceResponse)
 def get_invoice(invoice_id: int, _: User = Depends(require_permission("invoices.view")), db: Session = Depends(get_db)):
     company = _get_company(db)
@@ -533,13 +554,27 @@ def update_invoice(invoice_id: int, payload: InvoiceUpdateRequest, request: Requ
 
 
 @router.delete("/{invoice_id}", status_code=204)
-def delete_invoice(invoice_id: int, user: User = Depends(require_permission("invoices.edit_draft")), db: Session = Depends(get_db)):
+def delete_invoice(
+    invoice_id: int,
+    request: Request,
+    user: User = Depends(require_permission("invoices.edit_draft")),
+    db: Session = Depends(get_db),
+):
     company = _get_company(db)
     inv = _get_invoice(db, invoice_id, company.id)
     if inv.status != "draft":
         raise HTTPException(status_code=400, detail="Only draft invoices can be deleted")
+    number = inv.invoice_number or str(inv.id)
     db.delete(inv)
     db.commit()
+    log_activity(
+        db,
+        "invoice_deleted",
+        user_id=user.id,
+        email=user.email,
+        details=f"Deleted draft invoice {number}",
+        ip_address=get_client_ip(request),
+    )
 
 
 @router.post("/{invoice_id}/submit-review", response_model=InvoiceResponse)

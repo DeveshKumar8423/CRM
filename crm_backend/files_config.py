@@ -25,6 +25,7 @@ RECORD_MODULE_KEYS: dict[str, str] = {
     "expenses": "Expense",
     "vendor_bills": "Vendor Bill",
     "projects": "Project",
+    "products": "Product",
 }
 
 PANEL_CATEGORY_DEFAULTS: dict[str, str] = {
@@ -37,6 +38,7 @@ PANEL_CATEGORY_DEFAULTS: dict[str, str] = {
     "expenses": "receipts",
     "vendor_bills": "receipts",
     "projects": "client_documents",
+    "products": "products",
 }
 
 CATEGORY_KEYS = frozenset(DOCUMENT_CATEGORIES.keys())

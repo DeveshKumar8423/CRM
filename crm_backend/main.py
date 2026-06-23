@@ -26,6 +26,13 @@ from routers.tax_reports_router import router as tax_reports_router
 from routers.pl_reports_router import router as pl_reports_router
 from routers.projects_router import router as projects_router
 from routers.leaves_router import router as leaves_router
+from routers.timesheets_router import router as timesheets_router
+from routers.employees_router import router as employees_router
+from routers.attendance_router import router as attendance_router
+from routers.recruitment_router import router as recruitment_router
+from routers.payroll_router import router as payroll_router
+from routers.approvals_router import router as approvals_router
+from routers.chat_router import router as chat_router
 from routers.customer_ledger_router import router as customer_ledger_router
 from routers.vendor_ledger_router import router as vendor_ledger_router
 from routers.inventory_router import router as inventory_router
@@ -38,6 +45,7 @@ from routers.numbering_config_router import router as numbering_config_router
 from routers.system_config_router import router as system_config_router
 from routers.email_templates_router import router as email_templates_router
 from routers.files_router import router as files_router
+from routers.notifications_router import router as notifications_router
 
 app = FastAPI(title="CRM API")
 
@@ -75,6 +83,13 @@ app.include_router(tax_reports_router)
 app.include_router(pl_reports_router)
 app.include_router(projects_router)
 app.include_router(leaves_router)
+app.include_router(timesheets_router)
+app.include_router(employees_router)
+app.include_router(attendance_router)
+app.include_router(recruitment_router)
+app.include_router(payroll_router)
+app.include_router(approvals_router)
+app.include_router(chat_router)
 app.include_router(customer_ledger_router)
 app.include_router(vendor_ledger_router)
 app.include_router(inventory_router)
@@ -87,3 +102,4 @@ app.include_router(numbering_config_router)
 app.include_router(system_config_router)
 app.include_router(email_templates_router)
 app.include_router(files_router)
+app.include_router(notifications_router)

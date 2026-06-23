@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from activity import log_activity
 from auth_utils import get_client_ip, get_db, require_permission
+from company_branding import build_company_branding
 from config import FRONTEND_URL, STAFF_ROLES
 from models import (
     Company,
@@ -24,9 +25,23 @@ from models import (
 )
 from quotation_config import (
     ALLOWED_TRANSITIONS,
+    COMPANY_QUOTE_DOCUMENT_LABEL,
+    COMPANY_QUOTE_PREPARED_BY,
+    DEFAULT_BANK_INSTRUCTIONS,
+    DEFAULT_BANK_PAYMENT_INTRO,
+    DEFAULT_DELIVERABLES,
+    DEFAULT_DOCUMENTS_CHECKLIST,
+    DEFAULT_HOW_TO_GET_STARTED,
+    DEFAULT_INVESTMENT_COMMISSION,
+    DEFAULT_INVESTMENT_INCLUDES,
     DEFAULT_LEGAL_FOOTER,
+    DEFAULT_PAYMENT_INSTALLMENTS,
     DEFAULT_PAYMENT_TERMS,
+    DEFAULT_PROJECT_OVERVIEW,
+    DEFAULT_SCOPE_NOTES,
+    DEFAULT_TIMELINE_NOTES,
     DEFAULT_VALIDITY_CLAUSE,
+    DEFAULT_WHY_CHOOSE_ITEMS,
     DISCOUNT_APPROVAL_THRESHOLD_PERCENT,
     EDITABLE_STATUSES,
     FINAL_STATUSES,
@@ -34,11 +49,13 @@ from quotation_config import (
     QUOTATION_STATUSES,
     VALUE_APPROVAL_THRESHOLD,
 )
+from services.document_number_service import generate_quote_number
 from schemas import (
     QuotationApprovalRequest,
     QuotationClientActionRequest,
     QuotationCompanyBranding,
     QuotationCreateRequest,
+    QuotationDefaultsResponse,
     QuotationLineItemFields,
     QuotationLineItemResponse,
     QuotationListResponse,
@@ -280,12 +297,7 @@ def _requires_approval(header_discount_percent: float, grand_total: float) -> bo
 
 
 def _generate_quote_number(db: Session, company: Company) -> str:
-    settings = (
-        db.query(SystemSetting).filter(SystemSetting.company_id == company.id).first()
-    )
-    prefix = settings.quote_prefix if settings else "Quote-"
-    count = db.query(func.count(Quotation.id)).filter(Quotation.company_id == company.id).scalar()
-    return f"{prefix}{count + 1:05d}"
+    return generate_quote_number(db, company)
 
 
 def _line_item_to_response(item: QuotationLineItem) -> QuotationLineItemResponse:
@@ -375,22 +387,7 @@ def _quotation_to_response(quote: Quotation) -> QuotationResponse:
 
 
 def _company_branding(company: Company, settings: SystemSetting | None) -> QuotationCompanyBranding:
-    return QuotationCompanyBranding(
-        display_name=company.display_name,
-        legal_name=company.legal_name,
-        email=company.email,
-        phone=company.phone,
-        website=company.website,
-        address_line1=company.address_line1,
-        address_line2=company.address_line2,
-        city=company.city,
-        state=company.state,
-        pincode=company.pincode,
-        country=company.country,
-        gstin=company.gstin,
-        pan=company.pan,
-        logo_filename=settings.logo_filename if settings else None,
-    )
+    return build_company_branding(company, settings, for_invoice=False)
 
 
 def _is_expired(quote: Quotation) -> bool:
@@ -623,6 +620,31 @@ def quotation_statuses(
         QuotationStatusOption(value=s, label=QUOTATION_STATUS_LABELS[s])
         for s in QUOTATION_STATUSES
     ]
+
+
+@router.get("/defaults", response_model=QuotationDefaultsResponse)
+def quotation_defaults(
+    _: User = Depends(require_permission("quotations.view")),
+):
+    return QuotationDefaultsResponse(
+        scope_notes=DEFAULT_SCOPE_NOTES,
+        project_overview=DEFAULT_PROJECT_OVERVIEW,
+        deliverables=DEFAULT_DELIVERABLES,
+        timeline_notes=DEFAULT_TIMELINE_NOTES,
+        payment_terms=DEFAULT_PAYMENT_TERMS,
+        investment_commission=DEFAULT_INVESTMENT_COMMISSION,
+        investment_includes=DEFAULT_INVESTMENT_INCLUDES,
+        payment_installments=DEFAULT_PAYMENT_INSTALLMENTS,
+        bank_instructions=DEFAULT_BANK_INSTRUCTIONS,
+        bank_payment_intro=DEFAULT_BANK_PAYMENT_INTRO,
+        how_to_get_started=DEFAULT_HOW_TO_GET_STARTED,
+        why_choose_items=DEFAULT_WHY_CHOOSE_ITEMS,
+        validity_clause=DEFAULT_VALIDITY_CLAUSE,
+        legal_footer=DEFAULT_LEGAL_FOOTER,
+        documents_checklist=DEFAULT_DOCUMENTS_CHECKLIST,
+        prepared_by_label=COMPANY_QUOTE_PREPARED_BY,
+        document_subtitle=COMPANY_QUOTE_DOCUMENT_LABEL,
+    )
 
 
 @router.get("/assignees", response_model=list[StaffAssigneeResponse])

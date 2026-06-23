@@ -23,9 +23,25 @@ function InvoiceForm() {
   const [loading, setLoading] = useState(isEdit);
 
   useEffect(() => {
-    Promise.all([apiFetch("/invoices/assignees"), apiFetch("/products?limit=200")])
-      .then(([staff, pd]) => { setAssignees(staff); setProducts(pd.items || []); }).catch(() => {});
-  }, []);
+    Promise.all([
+      apiFetch("/invoices/assignees"),
+      apiFetch("/products?limit=200"),
+      ...(isEdit ? [] : [apiFetch("/invoices/defaults")]),
+    ])
+      .then(([staff, pd, defaults]) => {
+        setAssignees(staff);
+        setProducts(pd.items || []);
+        if (!isEdit && defaults) {
+          setForm((prev) => ({
+            ...prev,
+            payment_terms: defaults.payment_terms || prev.payment_terms,
+            bank_instructions: defaults.bank_instructions || prev.bank_instructions,
+            billing_notes: defaults.billing_notes || prev.billing_notes,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [isEdit]);
 
   useEffect(() => {
     if (!isEdit) return;

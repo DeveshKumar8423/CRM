@@ -13,3 +13,5 @@ crm_backend/venv/
 crm_backend/__pycache__/
 crm_frontend/node_modules/
 crm_frontend/build/
+crm_backend/uploads/*
+!crm_backend/uploads/.gitkeep

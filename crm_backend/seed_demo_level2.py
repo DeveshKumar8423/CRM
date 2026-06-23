@@ -31,7 +31,15 @@ from models import (
     SystemSetting,
     User,
 )
-from quotation_config import DEFAULT_PAYMENT_TERMS, DEFAULT_VALIDITY_CLAUSE, DEFAULT_LEGAL_FOOTER
+from quotation_config import (
+    DEFAULT_DELIVERABLES,
+    DEFAULT_DOCUMENTS_CHECKLIST,
+    DEFAULT_LEGAL_FOOTER,
+    DEFAULT_PAYMENT_TERMS,
+    DEFAULT_SCOPE_NOTES,
+    DEFAULT_TIMELINE_NOTES,
+    DEFAULT_VALIDITY_CLAUSE,
+)
 
 DEMO_MARKER = "[demo-level2]"
 
@@ -138,6 +146,7 @@ def seed(*, reset: bool = False):
         manager = _user(db, "manager@crm.com")
         palak = _user(db, "bgc.blackpapers01@gmail.com")
         anita = _user(db, "bgc.blackpapers02@gmail.com")
+        sales = _user(db, "sales@crm.com")
         gunjan = _user(db, "exe.blackpapers01@gmail.com")
         mohini = _user(db, "exe.blackpapers02@gmail.com")
         isha = _user(db, "hr@blackpapers.in")
@@ -161,14 +170,38 @@ def seed(*, reset: bool = False):
         quote_specs = [
             {
                 "num": 1,
-                "title": "Startup compliance bundle — Akhilesh Kumar",
-                "status": "draft",
+                "quote_number": "Quote-14/03/2026-001_U01",
+                "title": "Startup India & Seed Funding — PixelPolish Productions Pvt Ltd",
+                "status": "sent",
                 "deal": deal_proposal,
                 "contact": None,
-                "assignee": gunjan,
-                "products": [(prod_12a, 1), (prod_accounting, 1)],
-                "client_name": "Akhilesh Kumar",
-                "client_org": None,
+                "assignee": sales or gunjan,
+                "client_name": "Mr. Abhishek",
+                "client_org": "PixelPolish Productions Private Limited",
+                "client_email": "abhishek@pixelpolish.demo",
+                "attention_to": "Mr. Abhishek",
+                "quote_date": datetime(2026, 3, 14, 12, 0, 0, tzinfo=timezone.utc),
+                "sent_at": now - timedelta(days=1),
+                "custom_lines": [
+                    {
+                        "item_name": "Startup India & Government Seed Funding consultancy",
+                        "description": (
+                            "Startup India Application, Organisational DSC, Seed Funding Application, "
+                            "Pitch Deck Creation, Detailed Financial Projections, Business Plan, "
+                            "Financial Information, and Sales Projection."
+                        ),
+                        "quantity": 1,
+                        "unit_price": 11016.95,
+                        "tax_rate": 18.0,
+                    }
+                ],
+                "scope_notes": DEFAULT_SCOPE_NOTES,
+                "deliverables": DEFAULT_DELIVERABLES,
+                "timeline_notes": DEFAULT_TIMELINE_NOTES,
+                "payment_terms": DEFAULT_PAYMENT_TERMS,
+                "validity_clause": DEFAULT_VALIDITY_CLAUSE,
+                "legal_footer": DEFAULT_LEGAL_FOOTER,
+                "cancellation_clause": DEFAULT_DOCUMENTS_CHECKLIST,
             },
             {
                 "num": 2,
@@ -177,10 +210,25 @@ def seed(*, reset: bool = False):
                 "deal": deal_meeting,
                 "contact": None,
                 "assignee": manager,
-                "products": [(prod_ngo, 1), (prod_12a, 1)],
                 "client_name": "MADHU SUDAN SHARMA",
                 "client_org": "MASTAANE SHYAM Foundation",
                 "requires_approval": 1,
+                "custom_lines": [
+                    {
+                        "item_name": "Annual Compliance of NGO (Section-8) (ROC & Income Tax)",
+                        "description": "Section-8 annual ROC and income tax compliance.",
+                        "quantity": 1,
+                        "unit_price": 15000,
+                        "tax_rate": 18.0,
+                    },
+                    {
+                        "item_name": "12A 80G Regular Registration",
+                        "description": "12A and 80G registration with Income Tax.",
+                        "quantity": 1,
+                        "unit_price": 14999,
+                        "tax_rate": 18.0,
+                    },
+                ],
             },
             {
                 "num": 3,
@@ -224,11 +272,21 @@ def seed(*, reset: bool = False):
         for spec in quote_specs:
             line_data = []
             items = []
-            for idx, (product, qty) in enumerate(spec["products"]):
-                price = float(product.total_price or product.our_fees or 10000)
-                calc = _line_totals(qty, price, float(product.gst_rate or 18))
-                line_data.append(calc)
-                items.append((product, qty, price, calc, idx))
+            if spec.get("custom_lines"):
+                for idx, line in enumerate(spec["custom_lines"]):
+                    calc = _line_totals(
+                        line["quantity"],
+                        line["unit_price"],
+                        line.get("tax_rate", 18.0),
+                    )
+                    line_data.append(calc)
+                    items.append((None, line, calc, idx))
+            else:
+                for idx, (product, qty) in enumerate(spec["products"]):
+                    price = float(product.total_price or product.our_fees or 10000)
+                    calc = _line_totals(qty, price, float(product.gst_rate or 18))
+                    line_data.append(calc)
+                    items.append((product, qty, price, calc, idx))
 
             totals = _sum_lines(line_data)
             quote = Quotation(
@@ -239,21 +297,26 @@ def seed(*, reset: bool = False):
                 assigned_to_id=spec["assignee"].id if spec["assignee"] else None,
                 created_by_id=creator.id,
                 approved_by_id=isha.id if spec["status"] in {"approved", "sent", "accepted"} else None,
-                quote_number=_quote_number(db, company.id, spec["num"]),
+                quote_number=spec.get("quote_number") or _quote_number(db, company.id, spec["num"]),
                 title=spec["title"],
                 status=spec["status"],
                 currency="INR",
-                quote_date=now - timedelta(days=14 - spec["num"]),
+                quote_date=spec.get("quote_date") or (now - timedelta(days=14 - spec["num"])),
                 valid_until=now + timedelta(days=30),
                 client_name=spec["client_name"],
                 client_org=spec.get("client_org"),
-                client_email="client@example.com",
+                attention_to=spec.get("attention_to"),
+                client_email=spec.get("client_email", "client@example.com"),
                 subtotal=totals["subtotal"],
                 total_tax=totals["total_tax"],
                 grand_total=totals["grand_total"],
-                payment_terms=DEFAULT_PAYMENT_TERMS,
-                validity_clause=DEFAULT_VALIDITY_CLAUSE,
-                legal_footer=DEFAULT_LEGAL_FOOTER,
+                scope_notes=spec.get("scope_notes"),
+                deliverables=spec.get("deliverables"),
+                timeline_notes=spec.get("timeline_notes"),
+                payment_terms=spec.get("payment_terms", DEFAULT_PAYMENT_TERMS),
+                validity_clause=spec.get("validity_clause", DEFAULT_VALIDITY_CLAUSE),
+                cancellation_clause=spec.get("cancellation_clause"),
+                legal_footer=spec.get("legal_footer", DEFAULT_LEGAL_FOOTER),
                 internal_notes=f"{DEMO_MARKER} Demo quotation for UI testing.",
                 requires_approval=spec.get("requires_approval", 0),
                 share_token=secrets.token_urlsafe(24) if spec["status"] in {"sent", "accepted"} else None,
@@ -265,22 +328,41 @@ def seed(*, reset: bool = False):
             db.add(quote)
             db.flush()
 
-            for product, qty, price, calc, idx in items:
-                db.add(
-                    QuotationLineItem(
-                        quotation_id=quote.id,
-                        product_id=product.id,
-                        sort_order=idx,
-                        item_name=product.name,
-                        description=product.description,
-                        quantity=qty,
-                        unit=product.unit or "Service",
-                        unit_price=price,
-                        tax_rate=float(product.gst_rate or 18),
-                        line_subtotal=calc["line_subtotal"],
-                        line_total=calc["line_total"],
+            for entry in items:
+                if spec.get("custom_lines"):
+                    _product, line, calc, idx = entry
+                    db.add(
+                        QuotationLineItem(
+                            quotation_id=quote.id,
+                            product_id=None,
+                            sort_order=idx,
+                            item_name=line["item_name"],
+                            description=line.get("description"),
+                            quantity=line["quantity"],
+                            unit=line.get("unit", "Service"),
+                            unit_price=line["unit_price"],
+                            tax_rate=line.get("tax_rate", 18.0),
+                            line_subtotal=calc["line_subtotal"],
+                            line_total=calc["line_total"],
+                        )
                     )
-                )
+                else:
+                    product, qty, price, calc, idx = entry
+                    db.add(
+                        QuotationLineItem(
+                            quotation_id=quote.id,
+                            product_id=product.id,
+                            sort_order=idx,
+                            item_name=product.name,
+                            description=None,
+                            quantity=qty,
+                            unit=product.unit or "Service",
+                            unit_price=price,
+                            tax_rate=float(product.gst_rate or 18),
+                            line_subtotal=calc["line_subtotal"],
+                            line_total=calc["line_total"],
+                        )
+                    )
             quotes.append(quote)
 
         db.flush()

@@ -7,8 +7,10 @@ import { hasPermission } from "../utils/permissions";
 import {
   STATUS_LABELS,
   exportCsv,
+  exportFilename,
   formatCurrency,
   formatDate,
+  standardHeaderRows,
   statusBadgeClass,
 } from "../utils/vendorBills";
 
@@ -39,22 +41,32 @@ function VendorBills() {
 
   useEffect(() => { load(1); }, [status, paymentStatus, mine]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!hasPermission("vendor_bills.export")) return;
+    const params = new URLSearchParams({ page: "1", limit: "500" });
+    if (status) params.set("status", status);
+    if (paymentStatus) params.set("payment_status", paymentStatus);
+    if (mine) params.set("mine", "true");
+    if (search.trim()) params.set("search", search.trim());
+    const exportData = await apiFetch(`/vendor-bills?${params}`);
+    const items = exportData.items || [];
     exportCsv(
-      `vendor-bills-${new Date().toISOString().slice(0, 10)}.csv`,
-      ["Bill #", "Supplier Inv #", "Vendor", "PO", "Bill Date", "Due Date", "Total", "Outstanding", "Status"],
-      data.items.map((b) => [
+      exportFilename("vendor-bills", status || "all"),
+      ["Bill #", "Supplier Inv #", "Vendor", "GSTIN", "PO #", "Bill Date", "Due Date", "Total (INR)", "Paid (INR)", "Outstanding (INR)", "Status"],
+      items.map((b) => [
         b.bill_number || "Draft",
         b.supplier_invoice_number || "",
         b.vendor_name,
+        b.vendor_gstin || "",
         b.po_number || "",
         formatDate(b.bill_date),
         formatDate(b.due_date),
         b.grand_total,
+        b.amount_paid,
         b.outstanding_amount,
         STATUS_LABELS[b.status],
       ]),
+      standardHeaderRows("Vendor Bill Register", [`Records: ${items.length}`]),
     );
   };
 

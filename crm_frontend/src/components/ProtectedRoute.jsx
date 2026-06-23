@@ -6,6 +6,8 @@ const LOGIN_PATHS = {
   Admin: "/admin-login",
   Manager: "/manager-login",
   Employee: "/employee-login",
+  Sales: "/sales-login",
+  Accountant: "/accountant-login",
   User: "/user-login",
 };
 
@@ -30,6 +32,8 @@ function ProtectedRoute({ children, allowedRoles, requiredPermission, requiredPe
       Admin: "/admin-dashboard",
       Manager: "/manager-dashboard",
       Employee: "/employee-dashboard",
+      Sales: "/sales-dashboard",
+      Accountant: "/accountant-dashboard",
       User: "/user-dashboard",
     };
     return <Navigate to={dashboardPaths[role] || "/"} replace />;

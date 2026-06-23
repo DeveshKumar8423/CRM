@@ -25,6 +25,17 @@ const ACTION_LABELS = {
   lead_created: "Lead created",
   lead_updated: "Lead updated",
   lead_converted: "Lead converted",
+  contact_deleted: "Contact deleted",
+  product_deleted: "Product deleted",
+  invoice_deleted: "Invoice deleted",
+  invoice_created: "Invoice created",
+  invoice_payment_recorded: "Payment recorded",
+  invoice_approved: "Invoice approved",
+  user_deleted: "User deactivated",
+  settings_updated: "Settings updated",
+  company_logo_updated: "Logo updated",
+  notifications_sent: "Notifications sent",
+  system_config_updated: "System config updated",
 };
 
 function formatAction(action) {
