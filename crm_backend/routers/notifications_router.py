@@ -197,7 +197,7 @@ def dismiss_notification(
     current_user: User = Depends(require_permission("notifications.view")),
     db: Session = Depends(get_db),
 ):
-    """Dismiss an alert — removes it from the user's inbox once opened."""
+    """Mark an alert as read."""
     company = _get_company(db)
     note = (
         db.query(Notification)
@@ -210,10 +210,10 @@ def dismiss_notification(
     )
     if not note:
         raise HTTPException(status_code=404, detail="Notification not found")
-    data = _serialize(note)
-    db.delete(note)
+    note.is_read = True
     db.commit()
-    return data
+    db.refresh(note)
+    return _serialize(note)
 
 
 @router.post("/read-all")
@@ -226,6 +226,6 @@ def dismiss_all_notifications(
         Notification.company_id == company.id,
         Notification.user_id == current_user.id,
         Notification.is_read.is_(False),
-    ).delete(synchronize_session=False)
+    ).update({Notification.is_read: True}, synchronize_session=False)
     db.commit()
     return {"success": True}

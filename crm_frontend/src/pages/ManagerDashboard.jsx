@@ -1,23 +1,16 @@
-import { Link } from "react-router-dom";
-
 import DashboardLayout from "../components/DashboardLayout";
-import SalesKpis from "../components/SalesKpis";
-import { hasPermission } from "../utils/permissions";
+import RoleHomePage from "../components/RoleHomePage";
 
 function ManagerDashboard() {
+  const name = localStorage.getItem("name");
+
   return (
-    <DashboardLayout title="Manager Dashboard" roleLabel="Manager">
-      <div className="crm-panel">
-        <h2>Welcome, Manager</h2>
-        <p>
-          Browse <Link to="/contacts">Contacts</Link> and{" "}
-          <Link to="/products">Products & Services</Link>.
-          {hasPermission("reports.view") && (
-            <> View <Link to="/sales-reports">Sales Reports</Link>.</>
-          )}
-        </p>
-        <SalesKpis />
-      </div>
+    <DashboardLayout title="Manager" roleLabel="Manager">
+      <RoleHomePage
+        greeting={name ? `Hi, ${name.split(" ")[0]}` : "Manager workspace"}
+        subtitle="Team performance, pipeline, contacts, and business reports."
+        launcherSubtitle="Modules for overseeing your team."
+      />
     </DashboardLayout>
   );
 }

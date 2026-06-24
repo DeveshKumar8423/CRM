@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import DashboardLayout from "../components/DashboardLayout";
-import SalesKpis from "../components/SalesKpis";
+import RoleHomePage from "../components/RoleHomePage";
 import { apiFetch } from "../utils/api";
 
 function AdminDashboard() {
@@ -16,9 +16,9 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <DashboardLayout title="Admin Dashboard" roleLabel="Admin">
+    <DashboardLayout title="Admin" roleLabel="Admin">
       {companyMissing && (
-        <div className="crm-alert crm-alert-warn">
+        <div className="crm-alert crm-alert-warn crm-role-home-alert">
           <p>
             <strong>Company setup required.</strong> Complete your business
             profile before adding more modules.
@@ -29,21 +29,11 @@ function AdminDashboard() {
         </div>
       )}
 
-      <div className="crm-panel">
-        <h2>Welcome, Admin</h2>
-        {companyName && (
-          <p>
-            Managing <strong>{companyName}</strong>
-          </p>
-        )}
-        <p>
-          Use <Link to="/contacts">Contacts</Link> for clients,{" "}
-          <Link to="/products">Products & Services</Link> for your service
-          catalogue, and <Link to="/admin/users">User Management</Link> for
-          staff.
-        </p>
-        <SalesKpis />
-      </div>
+      <RoleHomePage
+        greeting={companyName ? `Managing ${companyName}` : "Admin workspace"}
+        subtitle="Open any module below — CRM, billing, HR, inventory, and settings."
+        launcherSubtitle="Everything your team needs, organised by category."
+      />
     </DashboardLayout>
   );
 }
