@@ -3618,4 +3618,239 @@ a {
 .crm-pad-sm { padding: 0.75rem; }
 .crm-activity-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
 .crm-activity-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--crm-border); }
-@media (max-width: 640px) { .crm-doc-search-filters { flex-direction: column; max-width: 100%; } }
+
+/* Website Builder — public site */
+.crm-public-site { min-height: 100vh; background: #f8fafc; color: #0f172a; }
+.crm-website-preview-banner { background: #f59e0b; color: #111; text-align: center; padding: 0.5rem; font-weight: 600; }
+.crm-public-site-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.crm-public-site-brand { display: flex; align-items: center; gap: 0.75rem; }
+.crm-public-site-logo { height: 40px; width: auto; }
+.crm-public-site-nav { display: flex; gap: 1rem; }
+.crm-public-site-nav a { color: #2563eb; text-decoration: none; font-weight: 500; }
+.crm-public-site-footer { padding: 2rem 1.5rem; text-align: center; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 2rem; }
+.crm-website-hero { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: #fff; padding: 4rem 1.5rem; background-size: cover; background-position: center; }
+.crm-website-hero-inner { max-width: 720px; margin: 0 auto; }
+.crm-website-hero h1 { font-size: 2.25rem; margin: 0 0 0.75rem; }
+.crm-website-lead { font-size: 1.125rem; opacity: 0.9; margin-bottom: 1.25rem; }
+.crm-website-section { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+.crm-website-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.crm-website-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; }
+.crm-website-cta { background: #0f172a; color: #fff; text-align: center; padding: 2.5rem 1.5rem; }
+.crm-website-cta h2 { margin: 0 0 1rem; }
+.crm-website-faq-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; }
+.crm-website-spacer-sm { height: 1rem; }
+.crm-website-spacer-md { height: 2rem; }
+.crm-website-spacer-lg { height: 3rem; }
+.crm-website-editor-section { border: 1px solid var(--crm-border); border-radius: 10px; padding: 1rem; background: rgba(255,255,255,0.02); }
+.crm-website-template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.crm-website-template-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 1.25rem; border: 1px solid var(--crm-border); border-radius: 12px; background: var(--crm-panel-bg); cursor: pointer; text-align: left; color: inherit; }
+.crm-website-template-card:hover { border-color: var(--crm-accent); }
+.crm-website-form { max-width: 480px; }
+.crm-website-blog-list { display: grid; gap: 1rem; margin-top: 1rem; }
+.crm-website-blog-cover { width: 100%; max-height: 320px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; }
+.crm-website-price { font-weight: 700; color: #2563eb; }
+.crm-success { color: #16a34a; }
+
+/* eCommerce public shop */
+.crm-shop-content { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+.crm-shop-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #fff; }
+.crm-shop-title { margin: 0; font-size: 1.25rem; }
+.crm-shop-toolbar-actions { display: flex; gap: 0.5rem; }
+.crm-shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.crm-shop-card { display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; text-decoration: none; color: inherit; }
+.crm-shop-card:hover { border-color: #2563eb; }
+.crm-shop-card-image, .crm-shop-card-placeholder { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 0.75rem; background: #f1f5f9; }
+.crm-shop-price { font-weight: 700; color: #2563eb; }
+.crm-shop-compare { margin-left: 0.5rem; text-decoration: line-through; color: #94a3b8; font-weight: 400; font-size: 0.9em; }
+.crm-shop-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.crm-shop-categories { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.crm-shop-product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.crm-shop-product-image { width: 100%; border-radius: 12px; }
+.crm-shop-add-row { display: flex; gap: 0.75rem; align-items: center; }
+.crm-shop-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+.crm-shop-checkout .crm-form { max-width: 520px; }
+.crm-shop-auth .crm-form { max-width: 400px; }
+.crm-shop-confirmation { text-align: center; padding: 3rem 1.5rem; }
+@media (max-width: 768px) {
+  .crm-shop-product-detail { grid-template-columns: 1fr; }
+}
+
+/* POS terminal */
+.crm-pos-terminal { min-height: 100vh; background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; }
+.crm-pos-terminal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: #1e293b; }
+.crm-pos-terminal-header a { color: #94a3b8; }
+.crm-pos-terminal-body { display: grid; grid-template-columns: 1fr 340px; flex: 1; gap: 0; min-height: 0; }
+.crm-pos-products { padding: 1rem; overflow: auto; }
+.crm-pos-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.crm-pos-product-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; padding: 1rem; min-height: 72px; background: #1e293b; border: 1px solid #334155; border-radius: 10px; color: inherit; cursor: pointer; text-align: left; }
+.crm-pos-product-tile:hover:not(:disabled) { border-color: #3b82f6; }
+.crm-pos-product-tile:disabled { opacity: 0.5; cursor: not-allowed; }
+.crm-pos-product-name { font-weight: 600; font-size: 0.9rem; }
+.crm-pos-product-price { color: #38bdf8; font-size: 0.85rem; }
+.crm-pos-categories { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+.crm-pos-cart-panel { background: #1e293b; padding: 1rem; display: flex; flex-direction: column; border-left: 1px solid #334155; }
+.crm-pos-cart-lines { list-style: none; padding: 0; margin: 0; flex: 1; overflow: auto; }
+.crm-pos-cart-lines li { display: grid; grid-template-columns: 1fr 56px auto 32px; gap: 0.35rem; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid #334155; font-size: 0.85rem; }
+.crm-pos-cart-totals { margin: 1rem 0; padding-top: 0.75rem; border-top: 1px solid #334155; }
+.crm-pos-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.crm-pos-modal { background: #fff; color: #0f172a; padding: 1.5rem; border-radius: 12px; min-width: 280px; }
+.crm-btn-block { width: 100%; }
+.crm-mb { margin-bottom: 0.75rem; }
+@media (max-width: 900px) {
+  .crm-pos-terminal-body { grid-template-columns: 1fr; }
+  .crm-pos-cart-panel { border-left: none; border-top: 1px solid #334155; max-height: 45vh; }
+}
+
+/* Manufacturing / MRP */
+.mfg-shortage-table .mfg-shortage-row td {
+  background: #fef2f2;
+  color: #991b1b;
+}
+.mfg-floor-actions .crm-btn {
+  min-height: 44px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (max-width: 640px) {
+  .mfg-floor-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mfg-floor-actions .crm-btn {
+    width: 100%;
+  }
+}
+
+/* Quality Control */
+.qc-checklist { list-style: none; padding: 0; }
+.qc-checklist li { padding: 0.75rem 0; border-bottom: 1px solid var(--crm-border, #e2e8f0); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.qc-item-fail { background: #fef2f2; }
+.qc-alert-list { list-style: none; padding: 0; }
+.qc-alert-list li { padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.qc-alert-critical { border-color: #fca5a5; background: #fef2f2; }
+.qc-alert-high { border-color: #fdba74; background: #fff7ed; }
+.qc-alert-normal { background: #f8fafc; }
+.crm-badge-danger { background: #fee2e2; color: #991b1b; }
+
+/* Maintenance / CMMS */
+.mnt-pm-overdue-row td { background: #fff7ed; }
+.crm-mnt-status-operational { background: #dcfce7; color: #166534; }
+.crm-mnt-status-under_maintenance { background: #fef9c3; color: #854d0e; }
+.crm-mnt-status-breakdown { background: #fee2e2; color: #991b1b; }
+.crm-mnt-status-retired { background: #f1f5f9; color: #64748b; }
+.crm-mnt-mwo-open { background: #dbeafe; color: #1e40af; }
+.crm-mnt-mwo-in_progress { background: #fef9c3; color: #854d0e; }
+.crm-mnt-mwo-waiting_parts { background: #ffedd5; color: #9a3412; }
+.crm-mnt-mwo-completed { background: #dcfce7; color: #166534; }
+.crm-mnt-mwo-cancelled { background: #f1f5f9; color: #64748b; }
+.crm-mnt-criticality-critical { background: #fee2e2; color: #991b1b; }
+.crm-mnt-criticality-high { background: #ffedd5; color: #9a3412; }
+.crm-mnt-criticality-medium { background: #e0f2fe; color: #0369a1; }
+.crm-mnt-criticality-low { background: #f1f5f9; color: #64748b; }
+.mnt-complete-form { max-width: 480px; border-top: 1px solid #e2e8f0; padding-top: 1rem; }
+
+/* Field Service */
+.fs-sla-breach-row td { background: #fef2f2; }
+.fs-site-card { padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+.fs-site-card h4 { margin: 0 0 0.5rem; font-size: 0.9rem; }
+.fs-assign-form, .fs-complete-form { max-width: 480px; border-top: 1px solid #e2e8f0; padding-top: 1rem; }
+.fs-detail-actions { flex-wrap: wrap; gap: 0.35rem; }
+.crm-fs-status-draft { background: #f1f5f9; color: #64748b; }
+.crm-fs-status-scheduled { background: #dbeafe; color: #1e40af; }
+.crm-fs-status-dispatched { background: #e0e7ff; color: #3730a3; }
+.crm-fs-status-in_progress { background: #fef9c3; color: #854d0e; }
+.crm-fs-status-waiting_parts { background: #ffedd5; color: #9a3412; }
+.crm-fs-status-completed { background: #dcfce7; color: #166534; }
+.crm-fs-status-cancelled { background: #f1f5f9; color: #64748b; }
+.crm-fs-status-rescheduled { background: #fce7f3; color: #9d174d; }
+.crm-fs-priority-urgent { background: #fee2e2; color: #991b1b; }
+.crm-fs-priority-high { background: #ffedd5; color: #9a3412; }
+.crm-fs-priority-normal { background: #e0f2fe; color: #0369a1; }
+.crm-fs-priority-low { background: #f1f5f9; color: #64748b; }
+
+/* Subscriptions */
+.crm-sub-status-trialing { background: #e0e7ff; color: #3730a3; }
+.crm-sub-status-active { background: #dcfce7; color: #166534; }
+.crm-sub-status-past_due { background: #fee2e2; color: #991b1b; }
+.crm-sub-status-cancelled { background: #f1f5f9; color: #64748b; }
+.crm-sub-status-expired { background: #f1f5f9; color: #475569; }
+
+/* Rental */
+.crm-rental-status-draft { background: #f1f5f9; color: #64748b; }
+.crm-rental-status-confirmed { background: #dbeafe; color: #1e40af; }
+.crm-rental-status-delivered { background: #e0e7ff; color: #3730a3; }
+.crm-rental-status-on_rent { background: #dcfce7; color: #166534; }
+.crm-rental-status-return_scheduled { background: #fef9c3; color: #854d0e; }
+.crm-rental-status-returned { background: #ffedd5; color: #9a3412; }
+.crm-rental-status-closed { background: #f1f5f9; color: #475569; }
+.crm-rental-status-cancelled { background: #fee2e2; color: #991b1b; }
+.crm-rental-asset-active { background: #dcfce7; color: #166534; }
+.crm-rental-asset-maintenance { background: #fef9c3; color: #854d0e; }
+.crm-rental-asset-retired { background: #f1f5f9; color: #64748b; }
+.rental-overdue-row { background: #fff7ed; }
+
+.ai-reports-generate-card {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.ai-reports-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+}
+@media (max-width: 900px) {
+  .ai-reports-layout { grid-template-columns: 1fr; }
+}
+.ai-reports-headline h2 { margin: 0.25rem 0 0.5rem; }
+.ai-reports-bullets { margin: 0.75rem 0 0 1.25rem; }
+.ai-reports-bullets li { margin-bottom: 0.35rem; }
+.ai-reports-watch-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.ai-reports-watch-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.ai-reports-sidebar {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.ai-reports-section {
+  padding: 1rem 0;
+  border-top: 1px solid #e2e8f0;
+}
+.ai-reports-metrics {
+  background: #f1f5f9;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.crm-ai-severity-critical { background: #7f1d1d; color: #fff; }
+.crm-ai-severity-high { background: #fee2e2; color: #991b1b; }
+.crm-ai-severity-medium { background: #fef9c3; color: #854d0e; }
+.crm-ai-severity-low { background: #e0f2fe; color: #0369a1; }
+
+.workflow-json {
+  background: #f1f5f9;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.workflow-action-row {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.crm-workflow-status-executed { background: #dcfce7; color: #166534; }
+.crm-workflow-status-partial { background: #fef9c3; color: #854d0e; }
+.crm-workflow-status-failed { background: #fee2e2; color: #991b1b; }
+.crm-workflow-status-skipped { background: #f1f5f9; color: #64748b; }
+.rental-overdue-row { background: #fef2f2; }

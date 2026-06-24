@@ -57,6 +57,9 @@ def _product_response(product: Product) -> ProductResponse:
         completion_timeline=product.completion_timeline,
         description=product.description,
         status=product.status,
+        is_manufactured=bool(product.is_manufactured),
+        is_raw_material=bool(product.is_raw_material),
+        default_bom_id=product.default_bom_id,
         created_at=product.created_at,
         updated_at=product.updated_at,
     )

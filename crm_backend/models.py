@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
 
@@ -82,6 +82,35 @@ class Company(Base):
     payslips = relationship("Payslip", back_populates="company")
     chat_messages = relationship("ChatMessage", back_populates="company")
     system_settings = relationship("SystemSetting", back_populates="company", uselist=False)
+    website_settings = relationship("WebsiteSettings", back_populates="company", uselist=False)
+    website_pages = relationship("WebsitePage", back_populates="company")
+    website_forms = relationship("WebsiteForm", back_populates="company")
+    website_blog_posts = relationship("WebsiteBlogPost", back_populates="company")
+    store_settings = relationship("StoreSettings", back_populates="company", uselist=False)
+    store_orders = relationship("StoreOrder", back_populates="company")
+    pos_settings = relationship("PosSettings", back_populates="company", uselist=False)
+    pos_registers = relationship("PosRegister", back_populates="company")
+    pos_bills = relationship("PosBill", back_populates="company")
+    manufacturing_settings = relationship("ManufacturingSettings", back_populates="company", uselist=False)
+    work_orders = relationship("WorkOrder", back_populates="company")
+    quality_settings = relationship("QualitySettings", back_populates="company", uselist=False)
+    inspection_points = relationship("InspectionPoint", back_populates="company")
+    maintenance_settings = relationship("MaintenanceSettings", back_populates="company", uselist=False)
+    maintenance_assets = relationship("MaintenanceAsset", back_populates="company")
+    maintenance_work_orders = relationship("MaintenanceWorkOrder", back_populates="company")
+    field_service_settings = relationship("FieldServiceSettings", back_populates="company", uselist=False)
+    field_service_orders = relationship("FieldServiceOrder", back_populates="company")
+    subscription_settings = relationship("SubscriptionSettings", back_populates="company", uselist=False)
+    subscription_plans = relationship("SubscriptionPlan", back_populates="company")
+    customer_subscriptions = relationship("CustomerSubscription", back_populates="company")
+    rental_settings = relationship("RentalSettings", back_populates="company", uselist=False)
+    rental_assets = relationship("RentalAsset", back_populates="company")
+    rental_contracts = relationship("RentalContract", back_populates="company")
+    ai_report_settings = relationship("AiReportSettings", back_populates="company", uselist=False)
+    ai_insight_runs = relationship("AiInsightRun", back_populates="company")
+    workflow_settings = relationship("WorkflowSettings", back_populates="company", uselist=False)
+    workflows = relationship("Workflow", back_populates="company")
+    workflow_runs = relationship("WorkflowRun", back_populates="company")
 
 
 class SystemSetting(Base):
@@ -201,6 +230,22 @@ class Product(Base):
     status = Column(String(20), nullable=False, default="active")
     inventory_tracked = Column(Boolean, nullable=False, default=False)
     on_hand_quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    sell_online = Column(Boolean, nullable=False, default=False)
+    online_slug = Column(String(80), nullable=True, index=True)
+    online_description = Column(Text, nullable=True)
+    online_image_url = Column(String(500), nullable=True)
+    compare_at_price = Column(Numeric(12, 2), nullable=True)
+    sell_at_pos = Column(Boolean, nullable=False, default=False)
+    pos_category = Column(String(80), nullable=True)
+    pos_sort_order = Column(Integer, nullable=False, default=0)
+    is_manufactured = Column(Boolean, nullable=False, default=False)
+    is_raw_material = Column(Boolean, nullable=False, default=False)
+    is_spare_part = Column(Boolean, nullable=False, default=False)
+    default_bom_id = Column(Integer, ForeignKey("bom_headers.id"), nullable=True)
+    default_incoming_template_id = Column(Integer, ForeignKey("quality_checklist_templates.id"), nullable=True)
+    default_final_template_id = Column(Integer, ForeignKey("quality_checklist_templates.id"), nullable=True)
+    requires_incoming_qc = Column(Boolean, nullable=False, default=False)
+    requires_final_qc = Column(Boolean, nullable=False, default=False)
     unit_valuation = Column(Numeric(14, 2), nullable=False, default=0)
     reorder_level = Column(Numeric(12, 2), nullable=True)
     opening_recorded = Column(Boolean, nullable=False, default=False)
@@ -1741,4 +1786,1455 @@ class UploadedFile(Base):
 
     company = relationship("Company")
     uploaded_by = relationship("User")
+
+
+class WebsiteSettings(Base):
+    __tablename__ = "website_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True, index=True)
+    company_slug = Column(String(80), nullable=False, unique=True, index=True)
+    home_page_id = Column(Integer, ForeignKey("website_pages.id"), nullable=True)
+    default_lead_assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="website_settings")
+    home_page = relationship("WebsitePage", foreign_keys=[home_page_id])
+    default_lead_assignee = relationship("User", foreign_keys=[default_lead_assignee_id])
+
+
+class WebsitePage(Base):
+    __tablename__ = "website_pages"
+    __table_args__ = (UniqueConstraint("company_id", "slug", name="uq_website_pages_company_slug"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    slug = Column(String(80), nullable=False, index=True)
+    page_type = Column(String(20), nullable=False, default="general", index=True)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    seo_title = Column(String(200), nullable=True)
+    seo_description = Column(String(500), nullable=True)
+    sections_json = Column(JSON, nullable=False, default=list)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    is_home = Column(Boolean, nullable=False, default=False)
+    preview_token = Column(String(64), nullable=True, index=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="website_pages")
+    product = relationship("Product")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    updated_by = relationship("User", foreign_keys=[updated_by_id])
+
+
+class WebsiteForm(Base):
+    __tablename__ = "website_forms"
+    __table_args__ = (UniqueConstraint("company_id", "slug", name="uq_website_forms_company_slug"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    slug = Column(String(80), nullable=False, index=True)
+    fields_json = Column(JSON, nullable=False, default=list)
+    success_message = Column(String(500), nullable=False, default="Thank you! We will contact you shortly.")
+    redirect_url = Column(String(255), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="website_forms")
+    submissions = relationship("WebsiteFormSubmission", back_populates="form")
+
+
+class WebsiteFormSubmission(Base):
+    __tablename__ = "website_form_submissions"
+
+    id = Column(Integer, primary_key=True)
+    form_id = Column(Integer, ForeignKey("website_forms.id"), nullable=False, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    payload_json = Column(JSON, nullable=False, default=dict)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True, index=True)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    utm_source = Column(String(100), nullable=True)
+    utm_medium = Column(String(100), nullable=True)
+    utm_campaign = Column(String(100), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    form = relationship("WebsiteForm", back_populates="submissions")
+    lead = relationship("Lead")
+
+
+class WebsiteBlogPost(Base):
+    __tablename__ = "website_blog_posts"
+    __table_args__ = (UniqueConstraint("company_id", "slug", name="uq_website_blog_posts_company_slug"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    slug = Column(String(80), nullable=False, index=True)
+    excerpt = Column(String(500), nullable=True)
+    body_html = Column(Text, nullable=False, default="")
+    cover_image_url = Column(String(500), nullable=True)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    seo_title = Column(String(200), nullable=True)
+    seo_description = Column(String(500), nullable=True)
+    tags = Column(JSON, nullable=False, default=list)
+    preview_token = Column(String(64), nullable=True, index=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="website_blog_posts")
+    author = relationship("User", foreign_keys=[author_id])
+
+
+class WebsitePageView(Base):
+    __tablename__ = "website_page_views"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    page_id = Column(Integer, ForeignKey("website_pages.id"), nullable=True, index=True)
+    post_id = Column(Integer, ForeignKey("website_blog_posts.id"), nullable=True, index=True)
+    path = Column(String(255), nullable=False)
+    session_id = Column(String(64), nullable=True, index=True)
+    viewed_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class StoreSettings(Base):
+    __tablename__ = "store_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True, index=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    store_name = Column(String(120), nullable=True)
+    currency = Column(String(3), nullable=False, default="INR")
+    guest_checkout_allowed = Column(Boolean, nullable=False, default=True)
+    flat_shipping_rate = Column(Numeric(12, 2), nullable=False, default=99)
+    free_shipping_above = Column(Numeric(12, 2), nullable=True)
+    default_payment_method = Column(String(30), nullable=False, default="cod")
+    order_number_prefix = Column(String(10), nullable=False, default="WEB")
+    auto_create_sales_order = Column(Boolean, nullable=False, default=True)
+    auto_create_invoice = Column(Boolean, nullable=False, default=False)
+    inventory_reserve_on_checkout = Column(Boolean, nullable=False, default=False)
+    return_window_days = Column(Integer, nullable=False, default=7)
+    bank_details = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    company = relationship("Company", back_populates="store_settings")
+
+
+class StoreCustomer(Base):
+    __tablename__ = "store_customers"
+    __table_args__ = (UniqueConstraint("company_id", "email", name="uq_store_customers_company_email"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    phone = Column(String(30), nullable=True)
+    password_hash = Column(String(255), nullable=False)
+    name = Column(String(120), nullable=False)
+    gstin = Column(String(15), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    contact = relationship("Contact")
+    addresses = relationship("StoreCustomerAddress", back_populates="customer")
+    orders = relationship("StoreOrder", back_populates="customer")
+
+
+class StoreCustomerAddress(Base):
+    __tablename__ = "store_customer_addresses"
+
+    id = Column(Integer, primary_key=True)
+    customer_id = Column(Integer, ForeignKey("store_customers.id"), nullable=False, index=True)
+    label = Column(String(40), nullable=False, default="Home")
+    line1 = Column(String(255), nullable=False)
+    line2 = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=False)
+    state = Column(String(100), nullable=False)
+    pincode = Column(String(10), nullable=False)
+    is_default_shipping = Column(Boolean, nullable=False, default=False)
+    is_default_billing = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    customer = relationship("StoreCustomer", back_populates="addresses")
+
+
+class StoreCart(Base):
+    __tablename__ = "store_carts"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    session_id = Column(String(64), nullable=True, index=True)
+    customer_id = Column(Integer, ForeignKey("store_customers.id"), nullable=True, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    items = relationship("StoreCartItem", back_populates="cart", cascade="all, delete-orphan")
+    customer = relationship("StoreCustomer")
+
+
+class StoreCartItem(Base):
+    __tablename__ = "store_cart_items"
+
+    id = Column(Integer, primary_key=True)
+    cart_id = Column(Integer, ForeignKey("store_carts.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False, default=1)
+    unit_price_snapshot = Column(Numeric(12, 2), nullable=False, default=0)
+    gst_rate_snapshot = Column(Numeric(5, 2), nullable=False, default=18)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    cart = relationship("StoreCart", back_populates="items")
+    product = relationship("Product")
+
+
+class StoreOrder(Base):
+    __tablename__ = "store_orders"
+    __table_args__ = (UniqueConstraint("company_id", "order_number", name="uq_store_orders_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    order_number = Column(String(40), nullable=False, index=True)
+    customer_id = Column(Integer, ForeignKey("store_customers.id"), nullable=True, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True, index=True)
+    sales_order_id = Column(Integer, ForeignKey("sales_orders.id"), nullable=True, index=True)
+    invoice_id = Column(Integer, ForeignKey("invoices.id"), nullable=True, index=True)
+    status = Column(String(30), nullable=False, default="pending_payment", index=True)
+    payment_status = Column(String(30), nullable=False, default="unpaid", index=True)
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    tax_total = Column(Numeric(14, 2), nullable=False, default=0)
+    shipping_total = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    currency = Column(String(3), nullable=False, default="INR")
+    guest_email = Column(String(255), nullable=True)
+    guest_phone = Column(String(30), nullable=True)
+    guest_name = Column(String(120), nullable=True)
+    shipping_address_json = Column(JSON, nullable=True)
+    billing_address_json = Column(JSON, nullable=True)
+    shipping_method = Column(String(30), nullable=False, default="standard")
+    payment_method = Column(String(30), nullable=False, default="cod")
+    tracking_number = Column(String(120), nullable=True)
+    customer_note = Column(Text, nullable=True)
+    placed_at = Column(DateTime(timezone=True), nullable=True)
+    paid_at = Column(DateTime(timezone=True), nullable=True)
+    shipped_at = Column(DateTime(timezone=True), nullable=True)
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    company = relationship("Company", back_populates="store_orders")
+    customer = relationship("StoreCustomer", back_populates="orders")
+    contact = relationship("Contact")
+    items = relationship("StoreOrderItem", back_populates="order", cascade="all, delete-orphan")
+    payments = relationship("StorePayment", back_populates="order")
+    returns = relationship("StoreReturn", back_populates="order")
+
+
+class StoreOrderItem(Base):
+    __tablename__ = "store_order_items"
+
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("store_orders.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    product_name_snapshot = Column(String(255), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False, default=1)
+    unit_price = Column(Numeric(12, 2), nullable=False, default=0)
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_total = Column(Numeric(14, 2), nullable=False, default=0)
+
+    order = relationship("StoreOrder", back_populates="items")
+    product = relationship("Product")
+
+
+class StorePayment(Base):
+    __tablename__ = "store_payments"
+
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("store_orders.id"), nullable=False, index=True)
+    amount = Column(Numeric(14, 2), nullable=False)
+    method = Column(String(30), nullable=False)
+    gateway_reference = Column(String(120), nullable=True)
+    status = Column(String(30), nullable=False, default="pending")
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    order = relationship("StoreOrder", back_populates="payments")
+
+
+class StoreReturn(Base):
+    __tablename__ = "store_returns"
+    __table_args__ = (UniqueConstraint("company_id", "return_number", name="uq_store_returns_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    order_id = Column(Integer, ForeignKey("store_orders.id"), nullable=False, index=True)
+    return_number = Column(String(40), nullable=False, index=True)
+    status = Column(String(30), nullable=False, default="requested", index=True)
+    reason = Column(Text, nullable=False)
+    items_json = Column(JSON, nullable=False, default=list)
+    refund_amount = Column(Numeric(14, 2), nullable=True)
+    requested_at = Column(DateTime(timezone=True), server_default=func.now())
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    resolved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    order = relationship("StoreOrder", back_populates="returns")
+
+
+class PosSettings(Base):
+    __tablename__ = "pos_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True, index=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    default_register_id = Column(Integer, ForeignKey("pos_registers.id"), nullable=True)
+    bill_number_prefix = Column(String(10), nullable=False, default="POS")
+    auto_create_invoice = Column(Boolean, nullable=False, default=True)
+    inventory_deduct_on_sale = Column(Boolean, nullable=False, default=True)
+    allow_negative_stock = Column(Boolean, nullable=False, default=False)
+    receipt_header = Column(Text, nullable=True)
+    receipt_footer = Column(Text, nullable=True)
+    require_customer_phone = Column(Boolean, nullable=False, default=False)
+    max_line_discount_pct = Column(Numeric(5, 2), nullable=False, default=0)
+    return_window_days = Column(Integer, nullable=False, default=7)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    company = relationship("Company", back_populates="pos_settings")
+
+
+class PosRegister(Base):
+    __tablename__ = "pos_registers"
+    __table_args__ = (UniqueConstraint("company_id", "code", name="uq_pos_registers_company_code"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    code = Column(String(20), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    default_payment_method = Column(String(20), nullable=False, default="cash")
+    opening_float_default = Column(Numeric(12, 2), nullable=False, default=2000)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company", back_populates="pos_registers")
+    sessions = relationship("PosSession", back_populates="register")
+
+
+class PosSession(Base):
+    __tablename__ = "pos_sessions"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    register_id = Column(Integer, ForeignKey("pos_registers.id"), nullable=False, index=True)
+    opened_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    closed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="open", index=True)
+    opening_float = Column(Numeric(12, 2), nullable=False, default=0)
+    closing_cash_counted = Column(Numeric(12, 2), nullable=True)
+    expected_cash = Column(Numeric(12, 2), nullable=True)
+    cash_variance = Column(Numeric(12, 2), nullable=True)
+    opened_at = Column(DateTime(timezone=True), server_default=func.now())
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+
+    register = relationship("PosRegister", back_populates="sessions")
+    opened_by = relationship("User", foreign_keys=[opened_by_id])
+    closed_by = relationship("User", foreign_keys=[closed_by_id])
+    carts = relationship("PosCart", back_populates="session")
+    bills = relationship("PosBill", back_populates="session")
+
+
+class PosCart(Base):
+    __tablename__ = "pos_carts"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    session_id = Column(Integer, ForeignKey("pos_sessions.id"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="active", index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    customer_name = Column(String(120), nullable=True)
+    customer_phone = Column(String(30), nullable=True)
+    customer_gstin = Column(String(15), nullable=True)
+    held_label = Column(String(80), nullable=True)
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    discount_total = Column(Numeric(14, 2), nullable=False, default=0)
+    tax_total = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    session = relationship("PosSession", back_populates="carts")
+    items = relationship("PosCartItem", back_populates="cart", cascade="all, delete-orphan")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class PosCartItem(Base):
+    __tablename__ = "pos_cart_items"
+
+    id = Column(Integer, primary_key=True)
+    cart_id = Column(Integer, ForeignKey("pos_carts.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False, default=1)
+    unit_price = Column(Numeric(12, 2), nullable=False, default=0)
+    discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_total = Column(Numeric(14, 2), nullable=False, default=0)
+
+    cart = relationship("PosCart", back_populates="items")
+    product = relationship("Product")
+
+
+class PosBill(Base):
+    __tablename__ = "pos_bills"
+    __table_args__ = (UniqueConstraint("company_id", "bill_number", name="uq_pos_bills_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    bill_number = Column(String(40), nullable=False, index=True)
+    session_id = Column(Integer, ForeignKey("pos_sessions.id"), nullable=False, index=True)
+    register_id = Column(Integer, ForeignKey("pos_registers.id"), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    invoice_id = Column(Integer, ForeignKey("invoices.id"), nullable=True)
+    status = Column(String(30), nullable=False, default="completed", index=True)
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    discount_total = Column(Numeric(14, 2), nullable=False, default=0)
+    tax_total = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    customer_name = Column(String(120), nullable=True)
+    customer_phone = Column(String(30), nullable=True)
+    customer_gstin = Column(String(15), nullable=True)
+    cashier_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    voided_at = Column(DateTime(timezone=True), nullable=True)
+    void_reason = Column(Text, nullable=True)
+    voided_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    company = relationship("Company", back_populates="pos_bills")
+    session = relationship("PosSession", back_populates="bills")
+    register = relationship("PosRegister")
+    contact = relationship("Contact")
+    invoice = relationship("Invoice")
+    cashier = relationship("User", foreign_keys=[cashier_id])
+    voided_by = relationship("User", foreign_keys=[voided_by_id])
+    items = relationship("PosBillItem", back_populates="bill", cascade="all, delete-orphan")
+    payments = relationship("PosPayment", back_populates="bill", cascade="all, delete-orphan")
+    returns = relationship("PosReturn", back_populates="bill")
+
+
+class PosBillItem(Base):
+    __tablename__ = "pos_bill_items"
+
+    id = Column(Integer, primary_key=True)
+    bill_id = Column(Integer, ForeignKey("pos_bills.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    product_name_snapshot = Column(String(255), nullable=False)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    unit_price = Column(Numeric(12, 2), nullable=False)
+    discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_total = Column(Numeric(14, 2), nullable=False)
+
+    bill = relationship("PosBill", back_populates="items")
+    product = relationship("Product")
+
+
+class PosPayment(Base):
+    __tablename__ = "pos_payments"
+
+    id = Column(Integer, primary_key=True)
+    bill_id = Column(Integer, ForeignKey("pos_bills.id"), nullable=False, index=True)
+    amount = Column(Numeric(14, 2), nullable=False)
+    method = Column(String(20), nullable=False)
+    reference = Column(String(120), nullable=True)
+    status = Column(String(20), nullable=False, default="completed")
+    crm_payment_id = Column(Integer, nullable=True)
+
+    bill = relationship("PosBill", back_populates="payments")
+
+
+class PosReturn(Base):
+    __tablename__ = "pos_returns"
+    __table_args__ = (UniqueConstraint("company_id", "return_number", name="uq_pos_returns_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    bill_id = Column(Integer, ForeignKey("pos_bills.id"), nullable=False, index=True)
+    return_number = Column(String(40), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="completed")
+    reason = Column(Text, nullable=False)
+    refund_amount = Column(Numeric(14, 2), nullable=False)
+    refund_method = Column(String(20), nullable=False, default="cash")
+    items_json = Column(JSON, nullable=False, default=list)
+    processed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    processed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    bill = relationship("PosBill", back_populates="returns")
+    processed_by = relationship("User")
+
+
+class ManufacturingSettings(Base):
+    __tablename__ = "manufacturing_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    work_order_prefix = Column(String(10), nullable=False, default="WO")
+    auto_reserve_materials_on_release = Column(Boolean, nullable=False, default=False)
+    require_qc_before_receipt = Column(Boolean, nullable=False, default=True)
+    default_scrap_pct = Column(Numeric(5, 2), nullable=False, default=0)
+    allow_negative_issue = Column(Boolean, nullable=False, default=False)
+    default_checklist_json = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="manufacturing_settings")
+
+
+class BomHeader(Base):
+    __tablename__ = "bom_headers"
+    __table_args__ = (UniqueConstraint("company_id", "product_id", "version", name="uq_bom_headers_product_version"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    version = Column(String(20), nullable=False, default="1.0")
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    output_qty = Column(Numeric(12, 2), nullable=False, default=1)
+    output_uom = Column(String(30), nullable=False, default="Unit")
+    notes = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    product = relationship("Product", foreign_keys=[product_id])
+    lines = relationship("BomLine", back_populates="bom", cascade="all, delete-orphan", order_by="BomLine.sort_order")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class BomLine(Base):
+    __tablename__ = "bom_lines"
+
+    id = Column(Integer, primary_key=True)
+    bom_id = Column(Integer, ForeignKey("bom_headers.id"), nullable=False, index=True)
+    component_product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    quantity = Column(Numeric(12, 4), nullable=False)
+    scrap_pct = Column(Numeric(5, 2), nullable=False, default=0)
+    sort_order = Column(Integer, nullable=False, default=0)
+    notes = Column(Text, nullable=True)
+
+    bom = relationship("BomHeader", back_populates="lines")
+    component_product = relationship("Product", foreign_keys=[component_product_id])
+
+
+class WorkOrder(Base):
+    __tablename__ = "work_orders"
+    __table_args__ = (UniqueConstraint("company_id", "work_order_number", name="uq_work_orders_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    work_order_number = Column(String(40), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    bom_id = Column(Integer, ForeignKey("bom_headers.id"), nullable=True)
+    sales_order_id = Column(Integer, ForeignKey("sales_orders.id"), nullable=True, index=True)
+    sales_order_line_id = Column(Integer, ForeignKey("sales_order_line_items.id"), nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    planned_qty = Column(Numeric(12, 2), nullable=False)
+    completed_qty = Column(Numeric(12, 2), nullable=False, default=0)
+    scrap_qty = Column(Numeric(12, 2), nullable=False, default=0)
+    planned_start = Column(Date, nullable=True)
+    planned_end = Column(Date, nullable=True)
+    actual_start = Column(DateTime(timezone=True), nullable=True)
+    actual_end = Column(DateTime(timezone=True), nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    priority = Column(String(10), nullable=False, default="normal")
+    notes = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="work_orders")
+    product = relationship("Product", foreign_keys=[product_id])
+    bom = relationship("BomHeader")
+    sales_order = relationship("SalesOrder")
+    sales_order_line = relationship("SalesOrderLineItem")
+    project = relationship("Project")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    material_plans = relationship(
+        "WorkOrderMaterialPlan",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+    )
+    material_issues = relationship(
+        "WorkOrderMaterialIssue",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+    )
+    receipts = relationship(
+        "WorkOrderReceipt",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+    )
+    quality_inspections = relationship(
+        "QualityInspection",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+    )
+
+
+class WorkOrderMaterialPlan(Base):
+    __tablename__ = "work_order_material_plans"
+
+    id = Column(Integer, primary_key=True)
+    work_order_id = Column(Integer, ForeignKey("work_orders.id"), nullable=False, index=True)
+    component_product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    required_qty = Column(Numeric(12, 4), nullable=False)
+    issued_qty = Column(Numeric(12, 4), nullable=False, default=0)
+    unit = Column(String(30), nullable=False, default="Unit")
+
+    work_order = relationship("WorkOrder", back_populates="material_plans")
+    component_product = relationship("Product")
+
+
+class WorkOrderMaterialIssue(Base):
+    __tablename__ = "work_order_material_issues"
+
+    id = Column(Integer, primary_key=True)
+    work_order_id = Column(Integer, ForeignKey("work_orders.id"), nullable=False, index=True)
+    component_product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    quantity = Column(Numeric(12, 4), nullable=False)
+    stock_movement_id = Column(Integer, ForeignKey("stock_movements.id"), nullable=True)
+    issued_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    issued_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    work_order = relationship("WorkOrder", back_populates="material_issues")
+    component_product = relationship("Product")
+    issued_by = relationship("User")
+    stock_movement = relationship("StockMovement")
+
+
+class WorkOrderReceipt(Base):
+    __tablename__ = "work_order_receipts"
+
+    id = Column(Integer, primary_key=True)
+    work_order_id = Column(Integer, ForeignKey("work_orders.id"), nullable=False, index=True)
+    quantity = Column(Numeric(12, 2), nullable=False)
+    stock_movement_id = Column(Integer, ForeignKey("stock_movements.id"), nullable=True)
+    received_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    received_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    work_order = relationship("WorkOrder", back_populates="receipts")
+    received_by = relationship("User")
+    stock_movement = relationship("StockMovement")
+
+
+class QualityInspection(Base):
+    __tablename__ = "quality_inspections"
+    __table_args__ = (UniqueConstraint("company_id", "inspection_number", name="uq_quality_inspections_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    work_order_id = Column(Integer, ForeignKey("work_orders.id"), nullable=True, index=True)
+    inspection_point_id = Column(Integer, ForeignKey("inspection_points.id"), nullable=True, index=True)
+    template_id = Column(Integer, ForeignKey("quality_checklist_templates.id"), nullable=True)
+    inspection_number = Column(String(40), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="pending", index=True)
+    checklist_json = Column(JSON, nullable=False, default=list)
+    notes = Column(Text, nullable=True)
+    reference_type = Column(String(30), nullable=True, index=True)
+    reference_id = Column(Integer, nullable=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True, index=True)
+    batch_ref = Column(String(80), nullable=True)
+    inspected_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    inspected_at = Column(DateTime(timezone=True), nullable=True)
+    waived_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    waiver_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    work_order = relationship("WorkOrder", back_populates="quality_inspections")
+    inspection_point = relationship("InspectionPoint")
+    template = relationship("QualityChecklistTemplate")
+    product = relationship("Product", foreign_keys=[product_id])
+    inspected_by = relationship("User", foreign_keys=[inspected_by_id])
+    waived_by = relationship("User", foreign_keys=[waived_by_id])
+    corrective_actions = relationship("CorrectiveAction", back_populates="inspection")
+    alerts = relationship("QualityAlert", back_populates="inspection")
+
+
+class QualitySettings(Base):
+    __tablename__ = "quality_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    inspection_number_prefix = Column(String(10), nullable=False, default="QC")
+    capa_number_prefix = Column(String(10), nullable=False, default="CAPA")
+    default_incoming_required = Column(Boolean, nullable=False, default=False)
+    block_on_fail_default = Column(Boolean, nullable=False, default=True)
+    alert_repeat_fail_threshold = Column(Integer, nullable=False, default=3)
+    alert_overdue_hours = Column(Integer, nullable=False, default=24)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="quality_settings")
+
+
+class InspectionPoint(Base):
+    __tablename__ = "inspection_points"
+    __table_args__ = (UniqueConstraint("company_id", "code", name="uq_inspection_points_company_code"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    code = Column(String(40), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    point_type = Column(String(20), nullable=False)
+    trigger = Column(String(30), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    block_on_fail = Column(Boolean, nullable=False, default=True)
+    default_template_id = Column(Integer, ForeignKey("quality_checklist_templates.id"), nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    company = relationship("Company", back_populates="inspection_points")
+
+
+class QualityChecklistTemplate(Base):
+    __tablename__ = "quality_checklist_templates"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True, index=True)
+    inspection_point_id = Column(Integer, ForeignKey("inspection_points.id"), nullable=True, index=True)
+    items_json = Column(JSON, nullable=False, default=list)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    version = Column(String(20), nullable=False, default="1.0")
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    product = relationship("Product", foreign_keys=[product_id])
+    inspection_point = relationship("InspectionPoint", foreign_keys=[inspection_point_id])
+    created_by = relationship("User")
+
+
+class QualityAlert(Base):
+    __tablename__ = "quality_alerts"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    alert_type = Column(String(30), nullable=False, index=True)
+    severity = Column(String(10), nullable=False, default="medium")
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    inspection_id = Column(Integer, ForeignKey("quality_inspections.id"), nullable=True, index=True)
+    capa_id = Column(Integer, ForeignKey("corrective_actions.id"), nullable=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="open", index=True)
+    acknowledged_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    inspection = relationship("QualityInspection", back_populates="alerts")
+    capa = relationship("CorrectiveAction", back_populates="alerts")
+    product = relationship("Product")
+    acknowledged_by = relationship("User")
+
+
+class CorrectiveAction(Base):
+    __tablename__ = "corrective_actions"
+    __table_args__ = (UniqueConstraint("company_id", "capa_number", name="uq_corrective_actions_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    capa_number = Column(String(40), nullable=False, index=True)
+    inspection_id = Column(Integer, ForeignKey("quality_inspections.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    action_type = Column(String(30), nullable=False, default="rework")
+    status = Column(String(20), nullable=False, default="open", index=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    due_date = Column(Date, nullable=True)
+    root_cause = Column(Text, nullable=True)
+    corrective_steps = Column(Text, nullable=False, default="")
+    verification_notes = Column(Text, nullable=True)
+    closed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    inspection = relationship("QualityInspection", back_populates="corrective_actions")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    closed_by = relationship("User", foreign_keys=[closed_by_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    alerts = relationship("QualityAlert", back_populates="capa")
+
+
+class MaintenanceSettings(Base):
+    __tablename__ = "maintenance_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    work_order_prefix = Column(String(10), nullable=False, default="MWO")
+    asset_code_prefix = Column(String(10), nullable=False, default="AST")
+    default_pm_interval_days = Column(Integer, nullable=False, default=90)
+    critical_downtime_alert_hours = Column(Integer, nullable=False, default=4)
+    auto_deduct_spare_parts = Column(Boolean, nullable=False, default=True)
+    allow_negative_spare_parts = Column(Boolean, nullable=False, default=False)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="maintenance_settings")
+
+
+class MaintenanceAssetCategory(Base):
+    __tablename__ = "maintenance_asset_categories"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    company = relationship("Company")
+    assets = relationship("MaintenanceAsset", back_populates="category")
+
+
+class MaintenanceAsset(Base):
+    __tablename__ = "maintenance_assets"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    asset_code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    category_id = Column(Integer, ForeignKey("maintenance_asset_categories.id"), nullable=True)
+    status = Column(String(30), nullable=False, default="operational", index=True)
+    criticality = Column(String(20), nullable=False, default="medium")
+    location_notes = Column(String(255), nullable=True)
+    manufacturer = Column(String(120), nullable=True)
+    model = Column(String(120), nullable=True)
+    serial_number = Column(String(80), nullable=True)
+    purchase_date = Column(Date, nullable=True)
+    warranty_end = Column(Date, nullable=True)
+    vendor_contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    pm_interval_days = Column(Integer, nullable=True)
+    last_service_date = Column(Date, nullable=True)
+    next_pm_due_date = Column(Date, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="maintenance_assets")
+    category = relationship("MaintenanceAssetCategory", back_populates="assets")
+    vendor_contact = relationship("Contact", foreign_keys=[vendor_contact_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    work_orders = relationship("MaintenanceWorkOrder", back_populates="asset")
+
+
+class MaintenanceWorkOrder(Base):
+    __tablename__ = "maintenance_work_orders"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    work_order_number = Column(String(40), nullable=False, index=True)
+    asset_id = Column(Integer, ForeignKey("maintenance_assets.id"), nullable=False, index=True)
+    type = Column(String(20), nullable=False, default="breakdown", index=True)
+    priority = Column(String(20), nullable=False, default="normal")
+    status = Column(String(20), nullable=False, default="open", index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    reported_at = Column(DateTime(timezone=True), nullable=False)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    downtime_minutes = Column(Integer, nullable=True)
+    root_cause = Column(Text, nullable=True)
+    resolution_notes = Column(Text, nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    vendor_contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="maintenance_work_orders")
+    asset = relationship("MaintenanceAsset", back_populates="work_orders")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    vendor_contact = relationship("Contact", foreign_keys=[vendor_contact_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    parts = relationship("MaintenanceWoPart", back_populates="work_order")
+
+
+class MaintenanceWoPart(Base):
+    __tablename__ = "maintenance_wo_parts"
+
+    id = Column(Integer, primary_key=True)
+    work_order_id = Column(Integer, ForeignKey("maintenance_work_orders.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Numeric(14, 4), nullable=False)
+    stock_movement_id = Column(Integer, ForeignKey("stock_movements.id"), nullable=True)
+    issued_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    issued_at = Column(DateTime(timezone=True), nullable=False)
+
+    work_order = relationship("MaintenanceWorkOrder", back_populates="parts")
+    product = relationship("Product")
+    issued_by = relationship("User", foreign_keys=[issued_by_id])
+
+
+class FieldServiceSettings(Base):
+    __tablename__ = "field_service_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    order_prefix = Column(String(10), nullable=False, default="FSO")
+    default_sla_hours = Column(Integer, nullable=False, default=48)
+    auto_deduct_parts = Column(Boolean, nullable=False, default=True)
+    allow_negative_parts = Column(Boolean, nullable=False, default=False)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    service_types_json = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="field_service_settings")
+
+
+class FieldServiceOrder(Base):
+    __tablename__ = "field_service_orders"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    order_number = Column(String(40), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=False, index=True)
+    type = Column(String(20), nullable=False, default="repair", index=True)
+    priority = Column(String(20), nullable=False, default="normal")
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    site_address = Column(Text, nullable=True)
+    site_contact_name = Column(String(120), nullable=True)
+    site_contact_phone = Column(String(30), nullable=True)
+    site_notes = Column(Text, nullable=True)
+    scheduled_start = Column(DateTime(timezone=True), nullable=True)
+    scheduled_end = Column(DateTime(timezone=True), nullable=True)
+    dispatched_at = Column(DateTime(timezone=True), nullable=True)
+    arrived_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    resolution_notes = Column(Text, nullable=True)
+    root_cause = Column(Text, nullable=True)
+    assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    sla_due_at = Column(DateTime(timezone=True), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="field_service_orders")
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    parts = relationship("FieldServiceOrderPart", back_populates="field_service_order")
+
+
+class FieldServiceOrderPart(Base):
+    __tablename__ = "field_service_order_parts"
+
+    id = Column(Integer, primary_key=True)
+    field_service_order_id = Column(Integer, ForeignKey("field_service_orders.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Numeric(14, 4), nullable=False)
+    stock_movement_id = Column(Integer, ForeignKey("stock_movements.id"), nullable=True)
+    issued_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    issued_at = Column(DateTime(timezone=True), nullable=False)
+
+    field_service_order = relationship("FieldServiceOrder", back_populates="parts")
+    product = relationship("Product")
+    issued_by = relationship("User", foreign_keys=[issued_by_id])
+
+
+class SubscriptionSettings(Base):
+    __tablename__ = "subscription_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    subscription_prefix = Column(String(10), nullable=False, default="SUB")
+    default_reminder_days = Column(JSON, nullable=False, default=list)
+    auto_invoice_mode = Column(String(10), nullable=False, default="draft")
+    auto_invoice_on_billing_date = Column(Boolean, nullable=False, default=True)
+    grace_period_days = Column(Integer, nullable=False, default=7)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    allow_immediate_cancel = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="subscription_settings")
+
+
+class SubscriptionPlan(Base):
+    __tablename__ = "subscription_plans"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    plan_code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    billing_interval = Column(String(20), nullable=False, default="monthly")
+    interval_days = Column(Integer, nullable=True)
+    price = Column(Numeric(14, 2), nullable=False)
+    currency = Column(String(3), nullable=False, default="INR")
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    trial_days = Column(Integer, nullable=False, default=0)
+    status = Column(String(20), nullable=False, default="active")
+    sort_order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="subscription_plans")
+    product = relationship("Product")
+    subscriptions = relationship("CustomerSubscription", back_populates="plan")
+
+
+class CustomerSubscription(Base):
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    subscription_number = Column(String(40), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=False, index=True)
+    plan_id = Column(Integer, ForeignKey("subscription_plans.id"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="active", index=True)
+    quantity = Column(Integer, nullable=False, default=1)
+    unit_price = Column(Numeric(14, 2), nullable=True)
+    start_date = Column(Date, nullable=False)
+    trial_end_date = Column(Date, nullable=True)
+    current_period_start = Column(Date, nullable=True)
+    current_period_end = Column(Date, nullable=True)
+    next_billing_date = Column(Date, nullable=True)
+    cancel_at_period_end = Column(Boolean, nullable=False, default=False)
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
+    ended_at = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="customer_subscriptions")
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    plan = relationship("SubscriptionPlan", back_populates="subscriptions")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    subscription_invoices = relationship("SubscriptionInvoice", back_populates="subscription")
+    plan_changes = relationship("SubscriptionPlanChange", back_populates="subscription")
+
+
+class SubscriptionInvoice(Base):
+    __tablename__ = "subscription_invoices"
+
+    id = Column(Integer, primary_key=True)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=False, index=True)
+    invoice_id = Column(Integer, ForeignKey("invoices.id"), nullable=False, index=True)
+    billing_period_start = Column(Date, nullable=False)
+    billing_period_end = Column(Date, nullable=False)
+    generated_at = Column(DateTime(timezone=True), nullable=False)
+
+    subscription = relationship("CustomerSubscription", back_populates="subscription_invoices")
+    invoice = relationship("Invoice")
+
+
+class SubscriptionPlanChange(Base):
+    __tablename__ = "subscription_plan_changes"
+
+    id = Column(Integer, primary_key=True)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=False, index=True)
+    from_plan_id = Column(Integer, ForeignKey("subscription_plans.id"), nullable=False)
+    to_plan_id = Column(Integer, ForeignKey("subscription_plans.id"), nullable=False)
+    effective_date = Column(Date, nullable=False)
+    change_type = Column(String(20), nullable=False, default="same_tier")
+    notes = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    subscription = relationship("CustomerSubscription", back_populates="plan_changes")
+    from_plan = relationship("SubscriptionPlan", foreign_keys=[from_plan_id])
+    to_plan = relationship("SubscriptionPlan", foreign_keys=[to_plan_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class RentalSettings(Base):
+    __tablename__ = "rental_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    contract_prefix = Column(String(10), nullable=False, default="RNT")
+    default_rate_basis = Column(String(10), nullable=False, default="daily")
+    default_deposit_percent = Column(Numeric(5, 2), nullable=False, default=20)
+    late_fee_per_day = Column(Numeric(14, 2), nullable=False, default=500)
+    grace_hours_after_due = Column(Integer, nullable=False, default=24)
+    auto_invoice_mode = Column(String(10), nullable=False, default="draft")
+    require_deposit_before_delivery = Column(Boolean, nullable=False, default=True)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    allow_overbook = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="rental_settings")
+
+
+class RentalAsset(Base):
+    __tablename__ = "rental_assets"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    asset_code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(30), nullable=False, default="other")
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    quantity_available = Column(Integer, nullable=False, default=1)
+    rate_daily = Column(Numeric(14, 2), nullable=True)
+    rate_weekly = Column(Numeric(14, 2), nullable=True)
+    rate_monthly = Column(Numeric(14, 2), nullable=True)
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    deposit_amount = Column(Numeric(14, 2), nullable=True)
+    status = Column(String(20), nullable=False, default="active")
+    location_notes = Column(Text, nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="rental_assets")
+    product = relationship("Product")
+    contract_lines = relationship("RentalContractLine", back_populates="rental_asset")
+
+
+class RentalContract(Base):
+    __tablename__ = "rental_contracts"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    contract_number = Column(String(40), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="draft", index=True)
+    rate_basis = Column(String(10), nullable=False, default="daily")
+    rental_start = Column(DateTime(timezone=True), nullable=False)
+    rental_end = Column(DateTime(timezone=True), nullable=False)
+    actual_return_at = Column(DateTime(timezone=True), nullable=True)
+    delivery_address = Column(Text, nullable=True)
+    delivery_contact_name = Column(String(120), nullable=True)
+    delivery_contact_phone = Column(String(30), nullable=True)
+    delivery_scheduled_at = Column(DateTime(timezone=True), nullable=True)
+    delivery_completed_at = Column(DateTime(timezone=True), nullable=True)
+    return_scheduled_at = Column(DateTime(timezone=True), nullable=True)
+    return_completed_at = Column(DateTime(timezone=True), nullable=True)
+    subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    deposit_required = Column(Numeric(14, 2), nullable=False, default=0)
+    deposit_received = Column(Numeric(14, 2), nullable=False, default=0)
+    deposit_refunded = Column(Numeric(14, 2), nullable=False, default=0)
+    deposit_deducted = Column(Numeric(14, 2), nullable=False, default=0)
+    late_fee_total = Column(Numeric(14, 2), nullable=False, default=0)
+    damage_charge_total = Column(Numeric(14, 2), nullable=False, default=0)
+    grand_total = Column(Numeric(14, 2), nullable=False, default=0)
+    notes = Column(Text, nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="rental_contracts")
+    contact = relationship("Contact", foreign_keys=[contact_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    lines = relationship("RentalContractLine", back_populates="contract", cascade="all, delete-orphan")
+    deposits = relationship("RentalDeposit", back_populates="contract", cascade="all, delete-orphan")
+    rental_invoices = relationship("RentalInvoice", back_populates="contract")
+
+
+class RentalContractLine(Base):
+    __tablename__ = "rental_contract_lines"
+
+    id = Column(Integer, primary_key=True)
+    contract_id = Column(Integer, ForeignKey("rental_contracts.id"), nullable=False, index=True)
+    rental_asset_id = Column(Integer, ForeignKey("rental_assets.id"), nullable=False, index=True)
+    quantity = Column(Integer, nullable=False, default=1)
+    rate_basis = Column(String(10), nullable=False, default="daily")
+    unit_rate = Column(Numeric(14, 2), nullable=False)
+    line_days = Column(Integer, nullable=False, default=1)
+    line_subtotal = Column(Numeric(14, 2), nullable=False, default=0)
+    gst_rate = Column(Numeric(5, 2), nullable=False, default=18)
+    line_total = Column(Numeric(14, 2), nullable=False, default=0)
+    return_condition = Column(String(20), nullable=True)
+    damage_notes = Column(Text, nullable=True)
+    damage_charge = Column(Numeric(14, 2), nullable=True)
+
+    contract = relationship("RentalContract", back_populates="lines")
+    rental_asset = relationship("RentalAsset", back_populates="contract_lines")
+
+
+class RentalDeposit(Base):
+    __tablename__ = "rental_deposits"
+
+    id = Column(Integer, primary_key=True)
+    contract_id = Column(Integer, ForeignKey("rental_contracts.id"), nullable=False, index=True)
+    type = Column(String(20), nullable=False)
+    amount = Column(Numeric(14, 2), nullable=False)
+    payment_method = Column(String(20), nullable=False, default="cash")
+    reference = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    recorded_at = Column(DateTime(timezone=True), nullable=False)
+
+    contract = relationship("RentalContract", back_populates="deposits")
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+
+
+class RentalInvoice(Base):
+    __tablename__ = "rental_invoices"
+
+    id = Column(Integer, primary_key=True)
+    contract_id = Column(Integer, ForeignKey("rental_contracts.id"), nullable=False, index=True)
+    invoice_id = Column(Integer, ForeignKey("invoices.id"), nullable=False, index=True)
+    invoice_type = Column(String(20), nullable=False, default="rental")
+    generated_at = Column(DateTime(timezone=True), nullable=False)
+
+    contract = relationship("RentalContract", back_populates="rental_invoices")
+    invoice = relationship("Invoice")
+
+
+class AiReportSettings(Base):
+    __tablename__ = "ai_report_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    default_period = Column(String(20), nullable=False, default="30d")
+    default_domains_json = Column(JSON, nullable=False, default=list)
+    include_executive_brief = Column(Boolean, nullable=False, default=True)
+    anomaly_thresholds_json = Column(JSON, nullable=False, default=dict)
+    notify_roles_json = Column(JSON, nullable=False, default=list)
+    generation_mode = Column(String(20), nullable=False, default="template")
+    llm_provider = Column(String(40), nullable=True)
+    redact_pii = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="ai_report_settings")
+
+
+class AiInsightRun(Base):
+    __tablename__ = "ai_insight_runs"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    run_number = Column(String(40), nullable=False, index=True)
+    period_start = Column(Date, nullable=False)
+    period_end = Column(Date, nullable=False)
+    domains_json = Column(JSON, nullable=False, default=list)
+    status = Column(String(20), nullable=False, default="pending", index=True)
+    executive_headline = Column(Text, nullable=True)
+    executive_summary = Column(Text, nullable=True)
+    error_message = Column(Text, nullable=True)
+    generated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    company = relationship("Company", back_populates="ai_insight_runs")
+    generated_by = relationship("User", foreign_keys=[generated_by_id])
+    sections = relationship("AiInsightSection", back_populates="run", cascade="all, delete-orphan")
+
+
+class AiInsightSection(Base):
+    __tablename__ = "ai_insight_sections"
+
+    id = Column(Integer, primary_key=True)
+    run_id = Column(Integer, ForeignKey("ai_insight_runs.id"), nullable=False, index=True)
+    domain = Column(String(20), nullable=False)
+    headline = Column(Text, nullable=False)
+    narrative = Column(Text, nullable=False)
+    bullets_json = Column(JSON, nullable=False, default=list)
+    watch_items_json = Column(JSON, nullable=False, default=list)
+    metrics_json = Column(JSON, nullable=False, default=dict)
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    run = relationship("AiInsightRun", back_populates="sections")
+
+
+class WorkflowSettings(Base):
+    __tablename__ = "workflow_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, unique=True)
+    is_enabled = Column(Boolean, nullable=False, default=False)
+    max_active_workflows = Column(Integer, nullable=False, default=50)
+    default_run_as_role = Column(String(40), nullable=False, default="Admin")
+    rate_limit_per_hour = Column(Integer, nullable=False, default=500)
+    notify_on_failure = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="workflow_settings")
+
+
+class Workflow(Base):
+    __tablename__ = "workflows"
+    __table_args__ = (UniqueConstraint("company_id", "workflow_code", name="uq_workflows_company_code"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    workflow_code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    module = Column(String(20), nullable=False)
+    trigger_type = Column(String(60), nullable=False, index=True)
+    trigger_config_json = Column(JSON, nullable=False, default=dict)
+    conditions_json = Column(JSON, nullable=False, default=list)
+    actions_json = Column(JSON, nullable=False, default=list)
+    priority = Column(Integer, nullable=False, default=100)
+    stop_on_match = Column(Boolean, nullable=False, default=False)
+    is_active = Column(Boolean, nullable=False, default=False, index=True)
+    run_count = Column(Integer, nullable=False, default=0)
+    last_run_at = Column(DateTime(timezone=True), nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    company = relationship("Company", back_populates="workflows")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    updated_by = relationship("User", foreign_keys=[updated_by_id])
+    runs = relationship("WorkflowRun", back_populates="workflow", cascade="all, delete-orphan")
+
+
+class WorkflowRun(Base):
+    __tablename__ = "workflow_runs"
+    __table_args__ = (UniqueConstraint("company_id", "run_number", name="uq_workflow_runs_company_number"),)
+
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    workflow_id = Column(Integer, ForeignKey("workflows.id"), nullable=False, index=True)
+    run_number = Column(String(40), nullable=False, index=True)
+    trigger_type = Column(String(60), nullable=False)
+    record_type = Column(String(40), nullable=False)
+    record_id = Column(Integer, nullable=False)
+    status = Column(String(20), nullable=False, default="skipped", index=True)
+    conditions_result_json = Column(JSON, nullable=False, default=list)
+    actions_result_json = Column(JSON, nullable=False, default=list)
+    error_message = Column(Text, nullable=True)
+    is_dry_run = Column(Boolean, nullable=False, default=False)
+    triggered_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    company = relationship("Company", back_populates="workflow_runs")
+    workflow = relationship("Workflow", back_populates="runs")
 

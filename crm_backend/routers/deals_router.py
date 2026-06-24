@@ -25,6 +25,7 @@ from schemas import (
     DealUpdateRequest,
     StaffAssigneeResponse,
 )
+from services.workflow_events import emit_deal_lifecycle, emit_workflow_event
 
 router = APIRouter(prefix="/deals", tags=["deals"])
 
@@ -416,6 +417,14 @@ def create_deal(
         details=f"Created deal {deal.title}",
         ip_address=get_client_ip(request),
     )
+    emit_workflow_event(
+        db,
+        company_id=company.id,
+        trigger_type="deal.created",
+        record_type="deal",
+        record_id=deal.id,
+        actor_id=user.id,
+    )
     return _deal_to_response(_get_deal(db, deal.id, company.id))
 
 
@@ -470,6 +479,14 @@ def update_deal(
         details=details,
         ip_address=get_client_ip(request),
     )
+    emit_deal_lifecycle(
+        db,
+        company_id=company.id,
+        deal_id=deal.id,
+        old_stage=old_stage,
+        new_stage=deal.stage,
+        actor_id=user.id,
+    )
     return _deal_to_response(_get_deal(db, deal.id, company.id))
 
 
@@ -503,6 +520,14 @@ def update_deal_stage(
         email=user.email,
         details=f"Moved deal {deal.title} from {old_stage} to {deal.stage}",
         ip_address=get_client_ip(request),
+    )
+    emit_deal_lifecycle(
+        db,
+        company_id=company.id,
+        deal_id=deal.id,
+        old_stage=old_stage,
+        new_stage=deal.stage,
+        actor_id=user.id,
     )
     return _deal_to_response(_get_deal(db, deal.id, company.id))
 

@@ -26,6 +26,7 @@ from models import (
     User,
 )
 from permissions import role_has_permission
+from services.quality_service import create_incoming_po_inspection
 from purchase_order_config import (
     ALLOWED_TRANSITIONS,
     APPROVAL_THRESHOLD,
@@ -763,6 +764,8 @@ def record_receipt(
     )
     _rollup_fulfillment(po)
     _sync_fulfillment_status(po)
+    db.flush()
+    create_incoming_po_inspection(db, company, po, line.product_id)
     db.commit()
     log_activity(db, user.id, user.email, "purchase_order_receipt_recorded", f"Receipt on {po.po_number}", get_client_ip(request))
     return _po_response(_get_po(db, po.id, company.id))

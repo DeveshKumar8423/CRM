@@ -320,6 +320,9 @@ class ProductBaseFields(BaseModel):
     completion_timeline: str | None = Field(default=None, max_length=80)
     description: str | None = Field(default=None, max_length=8000)
     status: str = "active"
+    is_manufactured: bool = False
+    is_raw_material: bool = False
+    default_bom_id: int | None = None
 
 
 class ProductCreateRequest(ProductBaseFields):
@@ -351,6 +354,9 @@ class ProductResponse(BaseModel):
     completion_timeline: str | None
     description: str | None
     status: str
+    is_manufactured: bool = False
+    is_raw_material: bool = False
+    default_bom_id: int | None = None
     created_at: datetime | None
     updated_at: datetime | None
 

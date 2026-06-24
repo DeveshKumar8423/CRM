@@ -9,6 +9,7 @@ from auth_utils import get_client_ip, get_db, require_permission
 from config import STAFF_ROLES
 from lead_config import LEAD_SOURCES, LEAD_STATUSES, normalize_phone
 from models import Company, Contact, Lead, User
+from services.workflow_events import emit_workflow_event
 from schemas import (
     LeadConvertResponse,
     LeadCreateRequest,
@@ -321,6 +322,14 @@ def create_lead(
         email=user.email,
         details=f"Created lead {lead.name}",
         ip_address=get_client_ip(request),
+    )
+    emit_workflow_event(
+        db,
+        company_id=company.id,
+        trigger_type="lead.created",
+        record_type="lead",
+        record_id=lead.id,
+        actor_id=user.id,
     )
     return _lead_to_response(_get_lead(db, lead.id, company.id))
 

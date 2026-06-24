@@ -22,6 +22,7 @@ from leave_config import (
     MIN_REJECTION_NOTE_LENGTH,
 )
 from models import Company, LeaveRequest, User
+from services.workflow_events import emit_workflow_event
 from permissions import role_has_permission
 from config import STAFF_ROLES
 from schemas import (
@@ -598,6 +599,14 @@ def submit_leave(
         email=current_user.email,
         details=f"Submitted leave {leave.leave_number}",
         ip_address=get_client_ip(request),
+    )
+    emit_workflow_event(
+        db,
+        company_id=company.id,
+        trigger_type="leave.submitted",
+        record_type="leave",
+        record_id=leave.id,
+        actor_id=current_user.id,
     )
     return _leave_resp(db, leave)
 
