@@ -1,8 +1,8 @@
 # BlackPapers CRM — Frontend
 
-React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backend at `http://127.0.0.1:8000` (configured in `src/utils/api.js`).
+React (Create React App) UI for BlackPapers CRM. Talks to the FastAPI backend at `http://127.0.0.1:8000` (see `src/utils/api.js`).
 
-**Parent repo:** see [../README.md](../README.md) for full setup, database seeds, and backend instructions.
+**Parent repo:** [../README.md](../README.md) — setup, seeds, multi-tenant roadmap.
 
 ---
 
@@ -10,56 +10,100 @@ React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backen
 
 | Level | Status | Frontend coverage |
 |-------|--------|-------------------|
-| **Level 1** | **~100% done** | Auth, roles, contacts, products, dashboards, notifications, files, settings |
-| **Level 2** | ~85% done | Leads, pipeline, quotations, orders, invoices, client notes, follow-ups, payments, sales reports |
+| **Level 1** | **Done** | Auth, roles, contacts, products, dashboards, notifications, files, admin settings |
+| **Level 2** | **~85%** | Leads, pipeline, quotations, orders, invoices, notes, follow-ups, payments, reports |
+| **Level 3** | **~90%** | Expenses, POs, vendor bills, inventory, warehouses, tax/ledger/P&L reports |
+| **Level 4** | **~80%** | Projects, timesheets, leave, employees, attendance, recruitment, payroll, chat |
+| **UI shell** | **Done** | App launcher, landing page, GST document previews |
 
-### Level 1 pages
+---
+
+## Navigation model (current)
+
+The UI no longer uses a long horizontal nav strip. Navigation works in three layers:
+
+1. **Landing** (`/`) — India-first marketing page + **Choose your workspace** (role logins)
+2. **Role home** (`/admin-dashboard`, `/sales-dashboard`, etc.) — **Your apps** grid (Odoo-style tiles) + KPI snapshot
+3. **Module pages** (`/leads`, `/invoices`, …) — Slim header: logo → **Apps** breadcrumb → page title; **Alerts** + profile + logout
+
+Return to all modules anytime: click **BlackPapers** logo or **Apps** in the breadcrumb.
+
+### Key UI components
+
+| Component | Purpose |
+|-----------|---------|
+| `AppLauncher.jsx` | Permission-filtered app grid, grouped by category |
+| `AppIcon.jsx` | Module icons for tiles |
+| `config/appCatalog.js` | All module paths, permissions, landing-page tiles |
+| `RoleHomePage.jsx` | Shared role dashboard layout (hero + KPIs + apps) |
+| `DashboardLayout.jsx` | App shell header (no module strip) |
+| `NotificationBell.jsx` | Alerts panel — expand to read, **Open** dismisses + navigates |
+| `InvoiceDocument.jsx` / `QuotationDocument.jsx` | Print-ready GST layouts |
+
+---
+
+## Landing page (`Home.jsx`)
+
+- India-first copy (SMEs, NGOs, consultants, service businesses)
+- Module showcase grid (marketing — not logged-in)
+- **Get started** → workspace sign-in section
+- **Create portal account** → `/user-signup` (limited User role only; **not** full business CRM)
+- Staff use role portals: Admin, Sales, Accountant, Employee, Manager
+
+---
+
+## Role dashboards
+
+| Route | Role | Home experience |
+|-------|------|-----------------|
+| `/admin-dashboard` | Admin | Company KPIs + full app catalog (incl. email templates, numbering, roles) |
+| `/sales-dashboard` | Sales | Sales KPIs + CRM/billing apps |
+| `/accountant-dashboard` | Accountant | Finance KPIs + invoices, GST, payroll |
+| `/manager-dashboard` | Manager | Team KPIs + pipeline/reports |
+| `/employee-dashboard` | Employee | HR apps (attendance, leave, timesheets, projects) |
+| `/user-dashboard` | User | Portal profile only |
+
+---
+
+## Level 1 pages
 
 | Page | Route | Permission |
 |------|-------|------------|
-| Home / portal picker | `/` | Public |
-| Admin / Manager / Employee / Sales / Accountant login | `/admin-login`, `/manager-login`, `/employee-login`, `/sales-login`, `/accountant-login` | Public |
-| Forgot / reset password | `/forgot-password`, `/reset-password` | Public |
-| Role dashboards | `/admin-dashboard`, `/manager-dashboard`, `/employee-dashboard`, `/sales-dashboard`, `/accountant-dashboard` | By role |
-| My Profile | `/profile` | All staff |
-| Contacts (list, detail, form) | `/contacts`, `/contacts/:id`, `/contacts/new` | `contacts.view` |
-| Products (list, detail, form) | `/products`, `/products/:id`, `/products/new` | `products.view` |
-| Company Settings | `/admin/company` | `company.view` |
-| User Management | `/admin/users` | `users.view` |
-| Activity Logs | `/admin/activity-logs` | `activity.view` |
-| Document Branding | `/admin/branding` | `settings.edit` |
+| Home | `/` | Public |
+| Role logins | `/admin-login`, `/sales-login`, etc. | Public |
+| Role dashboards | `/admin-dashboard`, `/sales-dashboard`, … | By role |
+| My Profile | `/profile` | Staff / User |
+| Contacts | `/contacts`, `/contacts/:id` | `contacts.view` |
+| Products | `/products`, `/products/:id` | `products.view` |
+| Company | `/admin/company` | `company.view` |
+| Users | `/admin/users` | `users.view` |
+| Activity logs | `/admin/activity-logs` | `activity.view` |
+| Branding | `/admin/branding` | `settings.edit` |
 | Roles matrix | `/admin/roles-matrix` | `roles.view` |
-| Send staff alert | `/send-notification` | `notifications.send` (staff only; can target User role) |
-| Notifications (bell) | Header | `notifications.view` (staff + portal User) |
+| System config | `/admin/system-config` | Admin |
+| Numbering | `/admin/numbering-config` | `numbering_config.view` |
+| Email templates | `/admin/email-templates` | `company.view` |
+| Send alert | `/send-notification` | `notifications.send` |
+| Alerts (bell) | Header | `notifications.view` |
 | Documents | `/documents` | `files.view` / `files.view_own` |
-| System config / numbering / email templates | `/admin/system-config`, etc. | Admin |
 
-### Not built yet (frontend)
+---
 
-- WhatsApp / email send from CRM UI (templates exist; outbound delivery needs SMTP/WhatsApp API)
-- Live push notification delivery (in-app centre + **Admin → Send alert** by role works; email/SMS/cron is production setup)
-
-### Previously listed as not built — now available
-
-- File upload / document manager (`/documents`, record panels)
-- System settings UI (`/admin/system-config`, numbering, email templates, branding)
-
-### Level 2 pages
+## Level 2 pages
 
 | Page | Route | Permission |
 |------|-------|------------|
-| Leads (list, detail, form) | `/leads`, `/leads/:id`, `/leads/new` | `leads.view` |
-| Sales Pipeline (kanban) | `/pipeline` | `deals.view` |
-| Deals (list, detail, form) | `/deals`, `/deals/:id`, `/deals/new` | `deals.view` |
-| Follow-ups queue | `/follow-ups` | `reminders.view` |
-| Quotations | `/quotations`, `/quotations/:id`, approval queue, preview | `quotations.view` |
-| Sales Orders | `/sales-orders`, `/sales-orders/:id` | `sales_orders.view` |
-| Invoices | `/invoices`, `/invoices/:id`, review queue, preview | `invoices.view` |
+| Leads | `/leads`, `/leads/:id` | `leads.view` |
+| Pipeline | `/pipeline`, `/deals/:id` | `deals.view` |
+| Follow-ups | `/follow-ups` | `reminders.view` |
+| Quotations | `/quotations`, preview, approval queue | `quotations.view` |
+| Sales orders | `/sales-orders` | `sales_orders.view` |
+| Invoices | `/invoices`, preview, review queue | `invoices.view` |
 | Payments | `/payments` | `payments.view` |
-| Client Notes | `/client-notes`, `/client-notes/follow-ups` | `client_notes.view` |
-| Sales Reports | `/sales-reports` | `reports.view` |
+| Client notes | `/client-notes` | `client_notes.view` |
+| Sales reports | `/sales-reports` | `reports.view` |
 
-### Client-facing pages (no login)
+### Client-facing (no login)
 
 | Page | Route |
 |------|-------|
@@ -69,13 +113,9 @@ React (Create React App) UI for the BlackPapers CRM. Talks to the FastAPI backen
 
 ---
 
-## Top navigation
+## Level 3 & 4 pages (summary)
 
-The header nav in `DashboardLayout` shows links based on the logged-in user’s permissions. The **current section is highlighted** with a blue active state so you always know which module you’re in.
-
-Typical nav order: Profile → Leads → Pipeline → Follow-ups → Quotations → Orders → Invoices → Payments → Notes → Reports → Contacts → Products → Company Settings → User Management → Activity Logs
-
-Detail pages keep the parent section active (e.g. `/deals/12` highlights **Pipeline**).
+Expenses, purchase orders, vendor bills, inventory, stock movements, warehouses, tax reports, customer/vendor ledger, P&L — plus projects, timesheets, leave, employees, attendance, recruitment, payroll, approvals hub, internal chat. All reachable from the **app launcher** when the user’s role has permission.
 
 ---
 
@@ -83,21 +123,25 @@ Detail pages keep the parent section active (e.g. `/deals/12` highlights **Pipel
 
 ```
 crm_frontend/src/
-├── pages/              # Screen components (Leads, Pipeline, Payments, …)
-├── components/         # Shared UI (DashboardLayout, SalesKpis, RemindersPanel, …)
+├── pages/                 # Route screens
+├── components/            # AppLauncher, DashboardLayout, NotificationBell, documents…
+├── config/
+│   └── appCatalog.js      # Module tiles (single source for launcher + landing)
 ├── utils/
-│   ├── api.js          # API base URL, login, apiFetch
-│   ├── permissions.js  # Permission checks for nav and routes
-│   └── salesReports.js # Report tabs, CSV export helpers
-├── App.js              # Routes and ProtectedRoute wrappers
-└── crm.css             # Global CRM styles
+│   ├── api.js             # API URL, login, apiFetch
+│   ├── permissions.js     # hasPermission() for routes and tiles
+│   ├── roleHome.js        # Role → dashboard path mapping
+│   ├── invoiceBranding.js
+│   └── quotationBranding.js
+├── App.js                 # Routes + ProtectedRoute
+└── crm.css                # Global + landing + app-launcher styles
 ```
 
 ---
 
 ## How to run
 
-**Prerequisite:** backend must be running on port 8000 (see main README).
+**Prerequisite:** backend on port 8000 ([main README](../README.md)).
 
 ```powershell
 cd crm_frontend
@@ -113,60 +157,40 @@ Open **http://localhost:3000**
 npm run build
 ```
 
-Output goes to `build/`. Serve with any static host (nginx, Vercel, etc.) and point API calls to your production backend URL in `src/utils/api.js`.
-
----
-
-## Environment / API connection
-
-The frontend reads the API URL from `src/utils/api.js`:
-
-```js
-export const API_URL = "http://127.0.0.1:8000";
-```
-
-Change this when deploying to a live server. JWT token and permissions are stored in `localStorage` after login.
+Serve `build/` with a static host. Update `API_URL` in `src/utils/api.js` for production.
 
 ---
 
 ## Auth & permissions
 
-- `ProtectedRoute` in `App.js` checks role and required permission before rendering a page.
-- `hasPermission()` in `utils/permissions.js` controls which nav links appear.
-- After backend permission seeds change, users must **log out and log back in** to refresh their permission list.
+- `ProtectedRoute` checks role + permission before rendering a page.
+- `AppLauncher` filters tiles with `hasPermission()` from `appCatalog.js`.
+- After backend permission changes: **log out and log back in**.
 
 ---
 
-## Dashboard widgets
+## Testing notifications (Alerts)
 
-Staff dashboards (`AdminDashboard`, `ManagerDashboard`, `EmployeeDashboard`) include:
-
-- **SalesKpis** — pipeline value, open deals, pending quotes, overdue invoices, follow-ups due/overdue
-- **Contact stats** — active vs inactive client counts
-
----
-
-## Sales flow links
-
-Detail pages link to the next step in the sales cycle:
-
-```
-Lead detail → create/view deal
-Deal detail → create quotation
-Quotation detail → create sales order
-Sales order detail → create invoice
-Invoice detail → payments / outstanding view
-```
+1. Backend: `python seed_demo_level1.py --reset`
+2. Log in as `sales@crm.com` / `sales123` (or Admin)
+3. Click **Alerts** in the header
+4. Tap an alert to expand → **Open** goes to the linked page and removes it from the list
 
 ---
 
-## Scripts (Create React App)
+## Sales document previews
 
-| Command | Purpose |
-|---------|---------|
-| `npm start` | Dev server on port 3000 |
-| `npm run build` | Production build |
-| `npm test` | Run tests (if configured) |
+- **Quotations:** `QuotationDocument.jsx` — 4-page formal layout, print-friendly
+- **Invoices:** `InvoiceDocument.jsx` — GST service invoice layout (BlackPapers branding)
+- Demo records: `seed_demo_flagship_quote.py`, `seed_demo_flagship_invoice.py`
+
+---
+
+## Not built yet (frontend)
+
+- WhatsApp / email **send** from CRM (templates UI exists; needs SMTP/WhatsApp API)
+- Push / SMS delivery (in-app alerts work)
+- Multi-tenant **Register your business** flow (roadmap — [../docs/MULTI_TENANT_ROADMAP.md](../docs/MULTI_TENANT_ROADMAP.md))
 
 ---
 
@@ -174,9 +198,10 @@ Invoice detail → payments / outstanding view
 
 | Issue | Fix |
 |-------|-----|
-| Blank page after login | Check browser console; ensure backend is running |
-| “Cannot reach the server” | Start backend: `uvicorn main:app --reload` |
-| Missing nav items (Follow-ups, Payments) | Re-run `seed_permissions.py`, then log out and back in |
-| CORS / network errors | Confirm `API_URL` matches backend host and port |
+| Blank page after login | Browser console; ensure backend is running |
+| Cannot reach server | Start `uvicorn main:app --reload` on port 8000 |
+| Missing app tiles | `seed_permissions.py`, log out and back in |
+| No alerts | `python seed_demo_level1.py --reset` |
+| CORS errors | `API_URL` must match backend host/port |
 
-For database setup, seeds, and demo data, see the [main README](../README.md).
+Database setup and full seed order: [main README](../README.md).
