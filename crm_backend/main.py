@@ -46,6 +46,19 @@ from routers.system_config_router import router as system_config_router
 from routers.email_templates_router import router as email_templates_router
 from routers.files_router import router as files_router
 from routers.notifications_router import router as notifications_router
+from routers.website_router import public_router as website_public_router
+from routers.website_router import router as website_router
+from routers.ecommerce_router import public_router as ecommerce_public_router
+from routers.ecommerce_router import router as ecommerce_router
+from routers.pos_router import router as pos_router
+from routers.manufacturing_router import router as manufacturing_router
+from routers.quality_router import router as quality_router
+from routers.maintenance_router import router as maintenance_router
+from routers.field_service_router import router as field_service_router
+from routers.subscriptions_router import router as subscriptions_router
+from routers.rental_router import router as rental_router
+from routers.ai_reports_router import router as ai_reports_router
+from routers.workflow_router import router as workflow_router
 
 app = FastAPI(title="CRM API")
 
@@ -103,3 +116,16 @@ app.include_router(system_config_router)
 app.include_router(email_templates_router)
 app.include_router(files_router)
 app.include_router(notifications_router)
+app.include_router(website_router)
+app.include_router(website_public_router)
+app.include_router(ecommerce_router)
+app.include_router(ecommerce_public_router)
+app.include_router(pos_router)
+app.include_router(manufacturing_router)
+app.include_router(quality_router)
+app.include_router(maintenance_router)
+app.include_router(field_service_router)
+app.include_router(subscriptions_router)
+app.include_router(rental_router)
+app.include_router(ai_reports_router)
+app.include_router(workflow_router)

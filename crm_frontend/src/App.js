@@ -121,6 +121,91 @@ import ResetPassword from "./pages/ResetPassword";
 import SystemConfiguration from "./pages/SystemConfiguration";
 import EmailTemplates from "./pages/EmailTemplates";
 import Documents from "./pages/Documents";
+import WebsiteDashboard from "./pages/WebsiteDashboard";
+import WebsitePages from "./pages/WebsitePages";
+import WebsitePageEditor from "./pages/WebsitePageEditor";
+import WebsiteForms from "./pages/WebsiteForms";
+import WebsiteFormEditor from "./pages/WebsiteFormEditor";
+import WebsiteBlog from "./pages/WebsiteBlog";
+import WebsiteBlogEditor from "./pages/WebsiteBlogEditor";
+import WebsiteSettings from "./pages/WebsiteSettings";
+import PublicSite from "./pages/PublicSite";
+import PublicBlog from "./pages/PublicBlog";
+import ShopCatalog from "./pages/ShopCatalog";
+import ShopProduct from "./pages/ShopProduct";
+import ShopCart from "./pages/ShopCart";
+import ShopCheckout from "./pages/ShopCheckout";
+import ShopConfirmation from "./pages/ShopConfirmation";
+import ShopAccount from "./pages/ShopAccount";
+import ShopAccountLogin from "./pages/ShopAccountLogin";
+import ShopAccountRegister from "./pages/ShopAccountRegister";
+import ShopAccountOrderDetail from "./pages/ShopAccountOrderDetail";
+import EcommerceDashboard from "./pages/EcommerceDashboard";
+import EcommerceOrders from "./pages/EcommerceOrders";
+import EcommerceOrderDetail from "./pages/EcommerceOrderDetail";
+import EcommerceReturns from "./pages/EcommerceReturns";
+import EcommerceCatalog from "./pages/EcommerceCatalog";
+import EcommerceSettings from "./pages/EcommerceSettings";
+import PosDashboard from "./pages/PosDashboard";
+import PosTerminal from "./pages/PosTerminal";
+import PosBills from "./pages/PosBills";
+import PosBillDetail from "./pages/PosBillDetail";
+import PosSessions from "./pages/PosSessions";
+import PosReturns from "./pages/PosReturns";
+import PosCatalog from "./pages/PosCatalog";
+import PosSettings from "./pages/PosSettings";
+import ManufacturingDashboard from "./pages/ManufacturingDashboard";
+import WorkOrders from "./pages/WorkOrders";
+import WorkOrderDetail from "./pages/WorkOrderDetail";
+import WorkOrderForm from "./pages/WorkOrderForm";
+import BomList from "./pages/BomList";
+import BomEditor from "./pages/BomEditor";
+import ManufacturingSettings from "./pages/ManufacturingSettings";
+import QualityDashboard from "./pages/QualityDashboard";
+import QualityInspections from "./pages/QualityInspections";
+import QualityInspectionDetail from "./pages/QualityInspectionDetail";
+import QualityInspectionForm from "./pages/QualityInspectionForm";
+import QualityTemplates from "./pages/QualityTemplates";
+import CorrectiveActions, { CorrectiveActionDetail, CorrectiveActionForm } from "./pages/CorrectiveActions";
+import QualitySettings from "./pages/QualitySettings";
+import QualityInspectionPoints from "./pages/QualityInspectionPoints";
+import MaintenanceDashboard from "./pages/MaintenanceDashboard";
+import MaintenanceAssets from "./pages/MaintenanceAssets";
+import MaintenanceAssetDetail from "./pages/MaintenanceAssetDetail";
+import MaintenanceAssetForm from "./pages/MaintenanceAssetForm";
+import MaintenanceWorkOrders from "./pages/MaintenanceWorkOrders";
+import MaintenanceWorkOrderDetail from "./pages/MaintenanceWorkOrderDetail";
+import MaintenanceWorkOrderForm from "./pages/MaintenanceWorkOrderForm";
+import MaintenancePmSchedule from "./pages/MaintenancePmSchedule";
+import MaintenanceSettings from "./pages/MaintenanceSettings";
+import FieldServiceDashboard from "./pages/FieldServiceDashboard";
+import FieldServiceOrders from "./pages/FieldServiceOrders";
+import FieldServiceOrderDetail from "./pages/FieldServiceOrderDetail";
+import FieldServiceOrderForm from "./pages/FieldServiceOrderForm";
+import FieldServiceSchedule from "./pages/FieldServiceSchedule";
+import FieldServiceSettings from "./pages/FieldServiceSettings";
+import SubscriptionsDashboard from "./pages/SubscriptionsDashboard";
+import SubscriptionList from "./pages/SubscriptionList";
+import SubscriptionPlans from "./pages/SubscriptionPlans";
+import SubscriptionForm from "./pages/SubscriptionForm";
+import SubscriptionDetail from "./pages/SubscriptionDetail";
+import SubscriptionSettings from "./pages/SubscriptionSettings";
+import RentalDashboard from "./pages/RentalDashboard";
+import AiReportsHub from "./pages/AiReportsHub";
+import AiInsightRunDetail from "./pages/AiInsightRunDetail";
+import AiReportsSettings from "./pages/AiReportsSettings";
+import WorkflowsHub from "./pages/WorkflowsHub";
+import WorkflowForm from "./pages/WorkflowForm";
+import WorkflowDetail from "./pages/WorkflowDetail";
+import WorkflowRuns from "./pages/WorkflowRuns";
+import WorkflowRunDetail from "./pages/WorkflowRunDetail";
+import WorkflowSettings from "./pages/WorkflowSettings";
+import RentalCalendar from "./pages/RentalCalendar";
+import RentalAssets from "./pages/RentalAssets";
+import RentalContracts from "./pages/RentalContracts";
+import RentalContractForm from "./pages/RentalContractForm";
+import RentalContractDetail from "./pages/RentalContractDetail";
+import RentalSettings from "./pages/RentalSettings";
 import AdminBranding from "./pages/AdminBranding";
 import RolesMatrix from "./pages/RolesMatrix";
 import SendNotification from "./pages/SendNotification";
@@ -145,6 +230,19 @@ function App() {
         <Route path="/quote/:token" element={<ClientQuoteView />} />
         <Route path="/order/:token" element={<ClientOrderView />} />
         <Route path="/invoice/:token" element={<ClientInvoiceView />} />
+        <Route path="/s/:companySlug/blog/:postSlug" element={<PublicBlog />} />
+        <Route path="/s/:companySlug/blog" element={<PublicBlog />} />
+        <Route path="/s/:companySlug/shop/:productSlug" element={<ShopProduct />} />
+        <Route path="/s/:companySlug/shop" element={<ShopCatalog />} />
+        <Route path="/s/:companySlug/cart" element={<ShopCart />} />
+        <Route path="/s/:companySlug/checkout/confirmation/:orderNumber" element={<ShopConfirmation />} />
+        <Route path="/s/:companySlug/checkout" element={<ShopCheckout />} />
+        <Route path="/s/:companySlug/account/login" element={<ShopAccountLogin />} />
+        <Route path="/s/:companySlug/account/register" element={<ShopAccountRegister />} />
+        <Route path="/s/:companySlug/account/orders/:orderNumber" element={<ShopAccountOrderDetail />} />
+        <Route path="/s/:companySlug/account" element={<ShopAccount />} />
+        <Route path="/s/:companySlug/:pageSlug" element={<PublicSite />} />
+        <Route path="/s/:companySlug" element={<PublicSite />} />
 
         <Route
           path="/admin-dashboard"
@@ -1331,6 +1429,670 @@ function App() {
               requiredPermissions={["files.view", "files.view_own"]}
             >
               <Documents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.manage">
+              <WebsiteSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/pages/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.manage">
+              <WebsitePageEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/pages/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.manage">
+              <WebsitePageEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/pages"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.view">
+              <WebsitePages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/forms/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.forms">
+              <WebsiteFormEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/forms/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.forms">
+              <WebsiteFormEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/forms"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.view">
+              <WebsiteForms />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/blog/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.manage">
+              <WebsiteBlogEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/blog/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.manage">
+              <WebsiteBlogEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website/blog"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.view">
+              <WebsiteBlog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/website"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="website.view">
+              <WebsiteDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.manage_settings">
+              <EcommerceSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce/catalog"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.manage_catalog">
+              <EcommerceCatalog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce/returns"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.view">
+              <EcommerceReturns />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.view">
+              <EcommerceOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce/orders"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.view">
+              <EcommerceOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ecommerce"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ecommerce.view">
+              <EcommerceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/terminal"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.bill">
+              <PosTerminal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.manage_settings">
+              <PosSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/catalog"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.manage_catalog">
+              <PosCatalog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/returns"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.view">
+              <PosReturns />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/sessions"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.view">
+              <PosSessions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/bills/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.view">
+              <PosBillDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos/bills"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.view">
+              <PosBills />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pos"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="pos.view">
+              <PosDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.manage_settings">
+              <ManufacturingSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/quality"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <QualityInspections />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/boms/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.manage_bom">
+              <BomEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/boms/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.view">
+              <BomEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/boms"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.view">
+              <BomList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/work-orders/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.create_wo">
+              <WorkOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/work-orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.view">
+              <WorkOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing/work-orders"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.view">
+              <WorkOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturing"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="manufacturing.view">
+              <ManufacturingDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.manage_settings">
+              <QualitySettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/inspection-points"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.manage_templates">
+              <QualityInspectionPoints />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/templates"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <QualityTemplates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/corrective-actions/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.manage_capa">
+              <CorrectiveActionForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/corrective-actions/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <CorrectiveActionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/corrective-actions"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <CorrectiveActions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/inspections/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.inspect">
+              <QualityInspectionForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/inspections/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <QualityInspectionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality/inspections"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <QualityInspections />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quality"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="quality.view">
+              <QualityDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.manage_settings">
+              <MaintenanceSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/pm-schedule"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenancePmSchedule />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/work-orders/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.create_wo">
+              <MaintenanceWorkOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/work-orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenanceWorkOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/work-orders"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenanceWorkOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/assets/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.manage_assets">
+              <MaintenanceAssetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/assets/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.manage_assets">
+              <MaintenanceAssetForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/assets/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenanceAssetDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/assets"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenanceAssets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="maintenance.view">
+              <MaintenanceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.manage_settings">
+              <FieldServiceSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service/schedule"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.view">
+              <FieldServiceSchedule />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service/orders/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.create">
+              <FieldServiceOrderForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.view">
+              <FieldServiceOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service/orders"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.view">
+              <FieldServiceOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/field-service"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="field_service.view">
+              <FieldServiceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.manage_settings">
+              <SubscriptionSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/plans"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.view">
+              <SubscriptionPlans />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/list"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.view">
+              <SubscriptionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.create">
+              <SubscriptionForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.view">
+              <SubscriptionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="subscriptions.view">
+              <SubscriptionsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.manage_settings">
+              <RentalSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/calendar"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.view">
+              <RentalCalendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/assets"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.view">
+              <RentalAssets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/contracts/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.create">
+              <RentalContractForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/contracts/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.view">
+              <RentalContractDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental/contracts"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.view">
+              <RentalContracts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="rental.view">
+              <RentalDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-reports/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ai_reports.manage_settings">
+              <AiReportsSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-reports/runs/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ai_reports.view">
+              <AiInsightRunDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-reports"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="ai_reports.view">
+              <AiReportsHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/settings"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.manage_settings">
+              <WorkflowSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/runs/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.view">
+              <WorkflowRunDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/runs"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.view">
+              <WorkflowRuns />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/new"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.create">
+              <WorkflowForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.edit">
+              <WorkflowForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows/:id"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.view">
+              <WorkflowDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workflows"
+          element={
+            <ProtectedRoute allowedRoles={STAFF_ROLES} requiredPermission="workflows.view">
+              <WorkflowsHub />
             </ProtectedRoute>
           }
         />
